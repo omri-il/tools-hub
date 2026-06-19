@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מחולל אימייל אוטומטי לטופס Google</title>
+  <meta name="description" content="כלי שמייצר עבורכם את הקוד (Google Apps Script) לשליחת אימייל אוטומטי לכל מי שממלא טופס Google — עם תצוגה חיה של המייל. ממלאים טופס פשוט, מעתיקים את הקוד, מדביקים בגיליון. בעברית." />
+  <meta property="og:title" content="מחולל אימייל אוטומטי לטופס Google" />
+  <meta property="og:description" content="מייצר את הקוד לשליחת אימייל אוטומטי בעת מילוי טופס Google — עם תצוגה חיה. בלי לכתוב קוד ביד." />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0f1a; --bg-soft: #1a1a2e;
+      --card: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.18);
+      --text: #f4f4f8; --text-dim: #a8a8c0; --text-soft: #6d6d8a;
+      --accent: #1a73e8; --accent-2: #06d6a0; --danger: #ef476f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Heebo', system-ui, sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 28px 20px 60px; line-height: 1.5;
+    }
+    .bg-glow {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(55% 45% at 15% 0%, rgba(26,115,232,0.16), transparent 60%),
+        radial-gradient(50% 45% at 90% 5%, rgba(6,214,160,0.12), transparent 60%);
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; }
+    .back-link { color: var(--text-soft); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+    .back-link:hover { color: var(--text); }
+    header { text-align: center; margin: 14px 0 26px; }
+    h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); font-weight: 900; letter-spacing: -0.02em; }
+    h1 .em { color: var(--accent); }
+    .tagline { color: var(--text-dim); margin-top: 8px; max-width: 640px; margin-inline: auto; }
+
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px;
+    }
+    .panel h3 { font-size: 1.1rem; margin-bottom: 4px; }
+    .panel .sub { color: var(--text-soft); font-size: 0.85rem; margin-bottom: 16px; }
+
+    .field { margin-bottom: 16px; }
+    .field > label { display: block; font-weight: 700; margin-bottom: 7px; font-size: 0.95rem; }
+    .field .hint { color: var(--text-soft); font-weight: 500; font-size: 0.82rem; }
+    input[type=text], input[type=date], input[type=url], textarea, select {
+      width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-family: 'Heebo', sans-serif;
+      font-size: 0.98rem; padding: 11px 13px; transition: border-color .2s;
+    }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--border-hover); }
+    textarea { min-height: 120px; resize: vertical; line-height: 1.7; }
+    ::placeholder { color: var(--text-soft); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 480px) { .two { grid-template-columns: 1fr; } }
+
+    .check { display: flex; align-items: flex-start; gap: 9px; }
+    .check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent-2); cursor: pointer; flex: 0 0 auto; }
+    .check label { cursor: pointer; font-weight: 500; color: var(--text-dim); font-size: 0.92rem; }
+    .reveal { margin-top: 12px; padding-inline-start: 27px; display: none; }
+    .reveal.show { display: block; }
+
+    /* buttons editor */
+    .btn-rows { display: flex; flex-direction: column; gap: 10px; }
+    .btn-item {
+      display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; align-items: center;
+      background: rgba(0,0,0,0.18); border: 1px solid var(--border); border-radius: 10px; padding: 8px;
+    }
+    @media (max-width: 560px) { .btn-item { grid-template-columns: 1fr 1fr; } }
+    .btn-item input { padding: 9px 11px; font-size: 0.9rem; }
+    .btn-item select { padding: 9px; font-size: 0.85rem; }
+    .btn-remove {
+      background: rgba(239,71,111,0.15); color: #ff8aa6; border: none; border-radius: 8px;
+      width: 36px; height: 36px; font-size: 1rem; cursor: pointer; font-weight: 700;
+    }
+    .btn-remove:hover { background: rgba(239,71,111,0.28); }
+    .add-btn {
+      margin-top: 10px; background: rgba(255,255,255,0.06); color: var(--text-dim);
+      border: 1px dashed var(--border-hover); border-radius: 10px; padding: 10px;
+      width: 100%; cursor: pointer; font-family: 'Heebo'; font-weight: 600; font-size: 0.92rem;
+    }
+    .add-btn:hover { color: var(--text); }
+
+    /* preview */
+    .preview-frame {
+      background: #eef1f5; border-radius: 14px; padding: 18px; max-height: 640px; overflow: auto;
+    }
+    .preview-frame .label-mini { color: #64748b; font-size: 0.8rem; margin-bottom: 10px; text-align: center; }
+
+    /* output */
+    .output { margin-top: 26px; }
+    .code-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    .code-head h3 { font-size: 1.15rem; }
+    .code-actions { display: flex; gap: 8px; }
+    .act {
+      font-family: 'Heebo'; font-weight: 700; border: none; border-radius: 10px; cursor: pointer;
+      padding: 10px 16px; font-size: 0.92rem; transition: filter .2s, transform .1s;
+    }
+    .act:active { transform: translateY(1px); }
+    .act-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #06121f; }
+    .act-primary:hover { filter: brightness(1.08); }
+    .act-ghost { background: rgba(255,255,255,0.06); color: var(--text-dim); border: 1px solid var(--border); }
+    .act-ghost:hover { color: var(--text); }
+    pre.code {
+      direction: ltr; text-align: left; background: #0a0a14; border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px; overflow: auto; max-height: 460px;
+      font-family: 'Consolas', 'Courier New', monospace; font-size: 0.82rem; line-height: 1.55;
+      color: #d6d6e7; white-space: pre; tab-size: 2;
+    }
+    details.guide {
+      margin-top: 18px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 4px 18px;
+    }
+    details.guide summary { cursor: pointer; font-weight: 700; padding: 14px 0; font-size: 1rem; }
+    details.guide ol { margin: 4px 0 18px; padding-inline-start: 22px; color: var(--text-dim); line-height: 1.9; }
+    details.guide code { background: rgba(255,255,255,0.08); padding: 2px 7px; border-radius: 5px; font-size: 0.85em; }
+    details.guide strong { color: var(--text); }
+
+    footer { margin-top: 44px; color: var(--text-soft); font-size: 0.85rem; text-align: center; }
+    footer a { color: var(--text-dim); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--accent-2); color: #06121f; font-weight: 700; padding: 12px 22px; border-radius: 12px;
+      opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+  <div class="wrap">
+    <a class="back-link" href="../">→ חזרה לכל הכלים</a>
+
+    <header>
+      <h1>מחולל <span class="em">אימייל אוטומטי</span> לטופס 📧</h1>
+      <p class="tagline">ממלאים את הפרטים, רואים תצוגה חיה של המייל, ומקבלים קוד מוכן להדבקה ב-Google Apps Script. כל מי שימלא את הטופס יקבל את המייל אוטומטית — בלי לכתוב שורת קוד.</p>
+    </header>
+
+    <div class="layout">
+      <!-- ===== FORM ===== -->
+      <div class="panel">
+        <h3>פרטי המייל</h3>
+        <p class="sub">כל שינוי כאן מתעדכן מיד בתצוגה ובקוד שמשמאל.</p>
+
+        <div class="field">
+          <label for="subject">נושא המייל <span class="hint">(מופיע גם ככותרת בראש המייל)</span></label>
+          <input type="text" id="subject" placeholder="למשל: איך לבחור את כלי ה-AI הנכון בהוראת מדעים?" />
+        </div>
+
+        <div class="field">
+          <label for="body">גוף המייל
+            <span class="hint">— שורה ריקה = פסקה חדשה · עטפו מילים ב-**כוכביות** כדי להדגיש</span>
+          </label>
+          <textarea id="body" placeholder="תודה רבה שהשתתפתם בסדנה שלי על **בחירת כלי AI במדעים**.
+
+אני שולח לכם את **המצגת** מהמפגש, וגם **סרטון** הסבר.
+
+אשמח לשמוע את התובנות שלכם!"></textarea>
+        </div>
+
+        <div class="field">
+          <label>כפתורים <span class="hint">(קישורים: מצגת, סרטון, דף עבודה...)</span></label>
+          <div class="btn-rows" id="btnRows"></div>
+          <button class="add-btn" id="addBtn" type="button">➕ הוסף כפתור</button>
+        </div>
+
+        <div class="field">
+          <div class="check">
+            <input type="checkbox" id="personalize" />
+            <label for="personalize">פנייה אישית בשם המשתתף <span class="hint">("שלום דנה," במקום "שלום רב,")</span></label>
+          </div>
+          <div class="reveal" id="nameReveal">
+            <label for="nameCol" style="font-weight:600;font-size:0.88rem;display:block;margin-bottom:6px;">באיזו עמודה בגיליון נמצא השם?</label>
+            <select id="nameCol">
+              <option value="2">עמודה C — השאלה הראשונה בטופס</option>
+              <option value="3">עמודה D — השאלה השנייה</option>
+              <option value="4">עמודה E — השאלה השלישית</option>
+              <option value="5">עמודה F — השאלה הרביעית</option>
+            </select>
+            <p class="hint" style="margin-top:6px;">עמודה A = חותמת זמן, עמודה B = אימייל. לכן השאלה הראשונה בטופס היא בדרך כלל עמודה C.</p>
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
+
+        <div class="field" style="margin-bottom:6px;">
+          <label for="webhook">חיבור ל-MailerLite <span class="hint">(אישי לעומרי — אופציונלי)</span></label>
+          <input type="url" id="webhook" placeholder="כתובת ה-webhook (נשמרת רק בדפדפן שלך)" dir="ltr" />
+          <p class="hint" style="margin-top:6px;">🔒 אם תמלא — הקוד יוסיף משתתפים אוטומטית למעקב 5 הימים ב-MailerLite. הכתובת נשמרת רק במחשב שלך ולא מתפרסמת בדף.</p>
+          <div class="reveal show" id="eventReveal" style="padding-inline-start:0;margin-top:12px;display:none;">
+            <div class="two">
+              <div><label for="eventName" style="font-weight:600;font-size:0.88rem;display:block;margin-bottom:6px;">שם האירוע</label>
+                <input type="text" id="eventName" placeholder="למשל: בחירת כלי AI במדעים" /></div>
+              <div><label for="eventDate" style="font-weight:600;font-size:0.88rem;display:block;margin-bottom:6px;">תאריך האירוע</label>
+                <input type="date" id="eventDate" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PREVIEW ===== -->
+      <div class="panel">
+        <h3>תצוגה חיה של המייל</h3>
+        <p class="sub">כך ייראה המייל שהמשתתפים יקבלו.</p>
+        <div class="preview-frame">
+          <div class="label-mini" id="subjPreview">— נושא —</div>
+          <div id="emailPreview"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== OUTPUT ===== -->
+    <div class="output panel">
+      <div class="code-head">
+        <h3>הקוד המוכן להדבקה</h3>
+        <div class="code-actions">
+          <button class="act act-primary" id="copyBtn" type="button">📋 העתק קוד</button>
+          <button class="act act-ghost" id="downloadBtn" type="button">⬇️ הורד קובץ .gs</button>
+        </div>
+      </div>
+      <pre class="code" id="codeOut" dir="ltr"></pre>
+
+      <details class="guide">
+        <summary>איך מתקינים את הקוד? (5 שלבים פשוטים)</summary>
+        <ol>
+          <li>בטופס Google שלכם — ודאו שמופעל <strong>"Collect email addresses"</strong> (האימייל נקרא מעמודה B).</li>
+          <li>פתחו את <strong>הגיליון המחובר לטופס</strong> → תפריט <code>Extensions</code> → <code>Apps Script</code>.</li>
+          <li>מחקו את הקוד הקיים, <strong>הדביקו את הקוד מכאן</strong>, ולחצו על 💾 לשמירה.</li>
+          <li>הריצו פעם אחת את הפונקציה <code>sendTestEmail</code> ואשרו את ההרשאות — יישלח אליכם מייל בדיקה.</li>
+          <li>הגדירו טריגר: לחצו על סמל השעון ⏰ (Triggers) → <code>Add Trigger</code> → בחרו פונקציה <code>sendEmailOnFormSubmit</code>, מקור <code>From form</code>, סוג <code>On form submit</code> → שמרו.</li>
+        </ol>
+        <p style="color:var(--text-dim);padding-bottom:14px;">זהו! מעכשיו כל מי שימלא את הטופס יקבל את המייל אוטומטית. 🎉</p>
+      </details>
+    </div>
+
+    <footer>
+      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשום מקום.</p>
+      <p style="margin-top:8px;">מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a> · <a href="mailto:hello@omri-iram.co.il">hello@omri-iram.co.il</a></p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast">הקוד הועתק!</div>
+
+  <script>
+    // ---------- elements ----------
+    const $ = id => document.getElementById(id);
+    const subjectEl = $('subject'), bodyEl = $('body'), btnRows = $('btnRows');
+    const personalizeEl = $('personalize'), nameRevealEl = $('nameReveal'), nameColEl = $('nameCol');
+    const webhookEl = $('webhook'), eventRevealEl = $('eventReveal'), eventNameEl = $('eventName'), eventDateEl = $('eventDate');
+    const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
+
+    const PALETTE = [
+      { name: 'כחול', hex: '#1a73e8' }, { name: 'אדום', hex: '#ea4335' },
+      { name: 'ירוק', hex: '#34a853' }, { name: 'סגול', hex: '#9334e8' },
+      { name: 'כתום', hex: '#f59e0b' }
+    ];
+
+    // ---------- helpers ----------
+    function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function boldHtml(s){ return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
+
+    function bodyToHtml(text){
+      return text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(p => {
+        const inner = boldHtml(esc(p)).replace(/\n/g, '<br>');
+        return '<p style="font-size: 16px; line-height: 1.6; color: #334155;">' + inner + '</p>';
+      }).join('');
+    }
+    function bodyToText(text){
+      return text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+        .map(p => p.replace(/\*\*(.+?)\*\*/g, '*$1*')).join('\n\n');
+    }
+    function buttonsHtmlFrom(buttons, escapeIt){
+      const f = escapeIt ? esc : (x => x);
+      return buttons.map(b =>
+        '<a href="' + f(b.url) + '" target="_blank" style="background-color: ' + b.color +
+        '; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; ' +
+        'font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; ' +
+        'box-shadow: 0 2px 4px rgba(0,0,0,0.15);">' + f(b.text) + '</a>'
+      ).join('');
+    }
+
+    const SIGNATURE_HTML =
+      '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">' +
+      '<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>' +
+      '<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">עומרי אירם</p>' +
+      '<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:+972525121007" style="color: #334155; text-decoration: none;">052-512-1007</a></p>' +
+      '<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: #1a73e8; text-decoration: none;">omri-iram.co.il</a></p>';
+
+    // ---------- buttons editor ----------
+    function colorOptions(selected){
+      return PALETTE.map(c => '<option value="' + c.hex + '"' + (c.hex===selected?' selected':'') + '>' + c.name + '</option>').join('');
+    }
+    function addButtonRow(text, url, color){
+      const div = document.createElement('div');
+      div.className = 'btn-item';
+      div.innerHTML =
+        '<input type="text" class="b-text" placeholder="טקסט הכפתור, למשל: לצפייה במצגת 📊" value="' + esc(text||'') + '">' +
+        '<input type="url" class="b-url" dir="ltr" placeholder="https://..." value="' + esc(url||'') + '">' +
+        '<select class="b-color">' + colorOptions(color||'#1a73e8') + '</select>' +
+        '<button type="button" class="btn-remove" title="הסר">✕</button>';
+      div.querySelector('.btn-remove').addEventListener('click', () => { div.remove(); update(); });
+      div.querySelectorAll('input,select').forEach(el => el.addEventListener('input', update));
+      btnRows.appendChild(div);
+    }
+    function readButtons(){
+      return [...btnRows.querySelectorAll('.btn-item')].map(row => ({
+        text: row.querySelector('.b-text').value.trim(),
+        url: row.querySelector('.b-url').value.trim(),
+        color: row.querySelector('.b-color').value
+      })).filter(b => b.text && b.url);
+    }
+
+    // ---------- read config ----------
+    function readConfig(){
+      return {
+        subject: subjectEl.value.trim(),
+        body: bodyEl.value,
+        buttons: readButtons(),
+        personalize: personalizeEl.checked,
+        nameColumn: parseInt(nameColEl.value, 10),
+        webhook: webhookEl.value.trim(),
+        eventName: eventNameEl.value.trim(),
+        eventDate: eventDateEl.value.trim()
+      };
+    }
+
+    // ---------- preview ----------
+    function buildPreview(cfg){
+      const subject = cfg.subject || 'נושא המייל';
+      const greeting = cfg.personalize ? 'שלום ישראל,' : 'שלום רב,';
+      const html =
+        '<div style="direction: rtl; text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">' +
+          '<h2 style="color: #1a73e8; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
+          '<p style="font-size: 16px; line-height: 1.6; color: #334155;">' + greeting + '</p>' +
+          bodyToHtml(cfg.body) +
+          '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(cfg.buttons, true) + '</div>' +
+          SIGNATURE_HTML +
+        '</div>';
+      emailPreview.innerHTML = html;
+      subjPreview.textContent = 'נושא: ' + subject + (cfg.personalize ? '  ·  פנייה בשם' : '');
+    }
+
+    // ---------- code generation ----------
+    function generateScript(cfg){
+      const buttons = cfg.buttons;
+      const buttonsLiteral = buttons.length
+        ? buttons.map(b => '    { text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) + ', color: ' + JSON.stringify(b.color) + ' }').join(',\n')
+        : '    // הוסיפו כפתורים בכלי';
+      const bodyHtml = bodyToHtml(cfg.body);
+      const bodyText = bodyToText(cfg.body);
+      const nameColVal = cfg.personalize ? String(cfg.nameColumn) : 'null';
+      const hasWebhook = !!cfg.webhook;
+
+      const eventBlock = hasWebhook
+        ? '\n// ===== פרטי האירוע (ל-MailerLite) =====\n' +
+          'var EVENT_NAME  = ' + JSON.stringify(cfg.eventName) + ';\n' +
+          'var EVENT_DATE  = ' + JSON.stringify(cfg.eventDate) + ';\n' +
+          'var WEBHOOK_URL = ' + JSON.stringify(cfg.webhook) + ';\n' +
+          '// ======================================\n'
+        : '';
+
+      const mlFunction = hasWebhook
+        ? '\n\nfunction addAttendeeToMailerLite_(email, name) {\n' +
+          '  var payload = { email: email, event_name: EVENT_NAME, event_date: EVENT_DATE };\n' +
+          '  if (name) payload.name = name;\n' +
+          '  var resp = UrlFetchApp.fetch(WEBHOOK_URL, {\n' +
+          '    method: "post", contentType: "application/json",\n' +
+          '    payload: JSON.stringify(payload), muteHttpExceptions: true\n' +
+          '  });\n' +
+          '  Logger.log("Webhook " + resp.getResponseCode() + ": " + resp.getContentText());\n' +
+          '}'
+        : '';
+
+      const mlCallSubmit = hasWebhook
+        ? '\n\n    try { addAttendeeToMailerLite_(emailAddress, name); }\n' +
+          '    catch (mlErr) { Logger.log("MailerLite error: " + mlErr.toString()); }'
+        : '';
+
+      const mlCallManual = hasWebhook
+        ? '\n        try { addAttendeeToMailerLite_(currentEmail, null); }\n' +
+          '        catch (mlErr) { Logger.log("MailerLite error: " + mlErr.toString()); }'
+        : '';
+
+      return (
+'/**\n' +
+' * אימייל אוטומטי בעת מילוי טופס Google' + (hasWebhook ? ' + הוספה ל-MailerLite' : '') + '\n' +
+' * נוצר במחולל של עומרי אירם — https://tools.omri-iram.co.il/email-generator/\n' +
+' *\n' +
+' * התקנה: Extensions → Apps Script בגיליון המחובר לטופס, הדביקו קוד זה,\n' +
+' * ואז הגדירו טריגר "On form submit" לפונקציה sendEmailOnFormSubmit.\n' +
+' */\n' +
+eventBlock +
+'\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא פנייה בשם)\n' +
+'\n\n' +
+'function getEmailContent(recipientName) {\n' +
+'  var subject = ' + JSON.stringify(cfg.subject) + ';\n' +
+'  var greeting = recipientName ? ("שלום " + recipientName + ",") : "שלום רב,";\n' +
+'\n' +
+'  // כל שורה = כפתור אחד\n' +
+'  var BUTTONS = [\n' +
+buttonsLiteral + '\n' +
+'  ];\n' +
+'\n' +
+'  var buttonsHtml = BUTTONS.map(function (b) {\n' +
+'    return \'<a href="\' + b.url + \'" target="_blank" style="background-color: \' + b.color +\n' +
+'      \'; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; \' +\n' +
+'      \'font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; \' +\n' +
+'      \'box-shadow: 0 2px 4px rgba(0,0,0,0.15);">\' + b.text + \'</a>\';\n' +
+'  }).join(\'\');\n' +
+'\n' +
+'  var buttonsText = BUTTONS.map(function (b) { return b.text + ": " + b.url; }).join("\\n");\n' +
+'\n' +
+'  var bodyHtml = ' + JSON.stringify(bodyHtml) + ';\n' +
+'  var bodyText = ' + JSON.stringify(bodyText) + ';\n' +
+'\n' +
+'  var htmlBody =\n' +
+'    \'<div style="direction: rtl; text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">\' +\n' +
+'      \'<h2 style="color: #1a73e8; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
+'      \'<p style="font-size: 16px; line-height: 1.6; color: #334155;">\' + greeting + \'</p>\' +\n' +
+'      bodyHtml +\n' +
+'      \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' +\n' +
+'      \'<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">\' +\n' +
+'      \'<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>\' +\n' +
+'      \'<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">עומרי אירם</p>\' +\n' +
+'      \'<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:+972525121007" style="color: #334155; text-decoration: none;">052-512-1007</a></p>\' +\n' +
+'      \'<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: #1a73e8; text-decoration: none;">omri-iram.co.il</a></p>\' +\n' +
+'    \'</div>\';\n' +
+'\n' +
+'  var textBody = greeting + "\\n\\n" + bodyText + "\\n\\n" + buttonsText +\n' +
+'    "\\n\\nבברכה,\\nעומרי אירם\\nטלפון: 052-512-1007\\nאתר: https://omri-iram.co.il";\n' +
+'\n' +
+'  return { subject: subject, htmlBody: htmlBody, textBody: textBody };\n' +
+'}' +
+mlFunction +
+'\n\n\n' +
+'function sendEmailOnFormSubmit(e) {\n' +
+'  try {\n' +
+'    if (!e || !e.values) return;\n' +
+'    var emailAddress = e.values[1]; // עמודה B — "collect email addresses"\n' +
+'    if (!emailAddress || emailAddress.indexOf(\'@\') === -1) return;\n' +
+'\n' +
+'    var name = (NAME_COLUMN !== null && e.values[NAME_COLUMN]) ? e.values[NAME_COLUMN] : null;\n' +
+'    var emailData = getEmailContent(name);\n' +
+'\n' +
+'    MailApp.sendEmail({\n' +
+'      to: emailAddress,\n' +
+'      subject: emailData.subject,\n' +
+'      body: emailData.textBody,\n' +
+'      htmlBody: emailData.htmlBody\n' +
+'    });\n' +
+'    Logger.log("אימייל נשלח אל: " + emailAddress);' +
+mlCallSubmit + '\n' +
+'  } catch (error) {\n' +
+'    Logger.log("שגיאה: " + error.toString());\n' +
+'  }\n' +
+'}\n' +
+'\n\n' +
+'function sendTestEmail() {\n' +
+'  var myEmail = Session.getActiveUser().getEmail();\n' +
+'  var emailData = getEmailContent(null);\n' +
+'  MailApp.sendEmail({\n' +
+'    to: myEmail,\n' +
+'    subject: "[בדיקה] " + emailData.subject,\n' +
+'    body: emailData.textBody,\n' +
+'    htmlBody: emailData.htmlBody\n' +
+'  });\n' +
+'  Logger.log("מייל בדיקה נשלח אל: " + myEmail);\n' +
+'}\n' +
+'\n\n' +
+'function sendEmailToManualList() {\n' +
+'  var emailsList = [\n' +
+'    // "name@example.com",\n' +
+'  ];\n' +
+'  var emailData = getEmailContent(null);\n' +
+'  var successCount = 0;\n' +
+'  for (var i = 0; i < emailsList.length; i++) {\n' +
+'    var currentEmail = emailsList[i].trim();\n' +
+'    if (currentEmail.indexOf(\'@\') !== -1) {\n' +
+'      try {\n' +
+'        MailApp.sendEmail({\n' +
+'          to: currentEmail,\n' +
+'          subject: emailData.subject,\n' +
+'          body: emailData.textBody,\n' +
+'          htmlBody: emailData.htmlBody\n' +
+'        });\n' +
+'        successCount++;' +
+mlCallManual + '\n' +
+'      } catch (err) {\n' +
+'        Logger.log("שגיאה בשליחה ל-" + currentEmail + ": " + err.toString());\n' +
+'      }\n' +
+'    }\n' +
+'  }\n' +
+'  Logger.log("נשלח ל-" + successCount + " אנשים.");\n' +
+'}\n'
+      );
+    }
+
+    // ---------- master update ----------
+    let lastCode = '';
+    function update(){
+      const cfg = readConfig();
+      buildPreview(cfg);
+      lastCode = generateScript(cfg);
+      codeOut.textContent = lastCode;
+    }
+
+    // ---------- events ----------
+    [subjectEl, bodyEl, eventNameEl, eventDateEl].forEach(el => el.addEventListener('input', update));
+    personalizeEl.addEventListener('change', () => { nameRevealEl.classList.toggle('show', personalizeEl.checked); update(); });
+    nameColEl.addEventListener('change', update);
+    webhookEl.addEventListener('input', () => {
+      try { localStorage.setItem('mlWebhook', webhookEl.value.trim()); } catch(_){}
+      eventRevealEl.style.display = webhookEl.value.trim() ? 'block' : 'none';
+      update();
+    });
+    $('addBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8'); update(); });
+
+    $('copyBtn').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(lastCode); showToast('הקוד הועתק!'); }
+      catch(_) {
+        const r = document.createRange(); r.selectNode(codeOut);
+        getSelection().removeAllRanges(); getSelection().addRange(r);
+        document.execCommand('copy'); getSelection().removeAllRanges();
+        showToast('הקוד הועתק!');
+      }
+    });
+    $('downloadBtn').addEventListener('click', () => {
+      const blob = new Blob([lastCode], { type: 'text/javascript' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'auto-email.gs';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    let toastTimer;
+    function showToast(msg){
+      const t = $('toast'); t.textContent = msg; t.classList.add('show');
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    // ---------- init ----------
+    addButtonRow('לצפייה במצגת המפגש 📊', '', '#1a73e8');
+    addButtonRow('לצפייה בסרטון ההסבר 🎥', '', '#ea4335');
+    try {
+      const saved = localStorage.getItem('mlWebhook');
+      if (saved) { webhookEl.value = saved; eventRevealEl.style.display = 'block'; }
+    } catch(_){}
+    update();
+  </script>
+</body>
+</html>

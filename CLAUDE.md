@@ -24,6 +24,7 @@ That's it — the grid auto-flows.
 2. **מערכת מענה המוני ב-Gmail** → Google Apps Script web app
 3. **תמלול אוטומטי לסרטונים** → whisper-agent dashboard (VPS, http://147.79.114.195:8080)
 4. **הגרלת זוכה** → `randomizer/` (in-repo static page, client-side raffle/randomizer)
+5. **מחולל אימייל אוטומטי לטופס** → `email-generator/` (in-repo static page). Generates a Google Apps Script for "auto-email on Google Form submit" from a friendly Hebrew form + live preview. Mirrors Omri's real bound-script template (MailApp send + signature + button palette). Optional MailerLite webhook is stored in **localStorage only** (never committed) so the public page never exposes the n8n endpoint; when present, the generated code includes the `addAttendeeToMailerLite_` integration, otherwise it generates email-only code.
 
 ## Deploy
 
