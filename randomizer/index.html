@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הגרלת זוכה — בחירת מנצח אקראית</title>
+  <meta name="description" content="כלי חינמי להגרלת זוכה מתוך רשימת שמות או אימיילים. מדביקים רשימה, לוחצים, ומקבלים מנצח אקראי והוגן — הכל רץ בדפדפן שלכם." />
+  <meta property="og:title" content="הגרלת זוכה — בחירת מנצח אקראית" />
+  <meta property="og:description" content="מדביקים רשימת שמות או אימיילים ומגרילים זוכה אחד למקום הראשון. הוגן, אקראי, וחינמי." />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --bg-soft: #1a1a2e;
+      --card: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.18);
+      --text: #f4f4f8;
+      --text-dim: #a8a8c0;
+      --text-soft: #6d6d8a;
+      --accent: #ffd166;
+      --accent-2: #ef476f;
+      --accent-3: #06d6a0;
+      --gold: #ffd166;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Heebo', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 48px;
+      overflow-x: hidden;
+    }
+    .bg-glow {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(60% 50% at 20% 0%, rgba(239, 71, 111, 0.16), transparent 60%),
+        radial-gradient(50% 50% at 90% 10%, rgba(6, 214, 160, 0.13), transparent 60%),
+        radial-gradient(70% 60% at 50% 100%, rgba(255, 209, 102, 0.10), transparent 60%);
+    }
+    .back-link {
+      align-self: flex-start;
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 18px;
+      transition: color .2s;
+    }
+    .back-link:hover { color: var(--text); }
+    header { text-align: center; max-width: 620px; margin-bottom: 28px; }
+    h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: -0.02em; }
+    h1 .spark { color: var(--gold); }
+    .tagline { color: var(--text-dim); margin-top: 10px; font-size: 1.05rem; line-height: 1.6; }
+
+    .panel {
+      width: 100%; max-width: 620px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(6px);
+    }
+    label.field-label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-weight: 700; margin-bottom: 10px;
+    }
+    .counter { font-size: 0.9rem; font-weight: 500; color: var(--accent-3); }
+    textarea {
+      width: 100%; min-height: 170px; resize: vertical;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Heebo', sans-serif;
+      font-size: 1rem; line-height: 1.7;
+      padding: 14px 16px;
+      transition: border-color .2s;
+    }
+    textarea:focus { outline: none; border-color: var(--border-hover); }
+    textarea::placeholder { color: var(--text-soft); }
+
+    .options { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--text-dim); font-size: 0.92rem; }
+    .options input { width: 18px; height: 18px; accent-color: var(--accent-3); cursor: pointer; }
+    .options label { cursor: pointer; }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+    button {
+      font-family: 'Heebo', sans-serif; font-weight: 700;
+      border: none; border-radius: 12px; cursor: pointer;
+      transition: transform .12s, opacity .2s, filter .2s;
+    }
+    button:active { transform: translateY(1px) scale(0.99); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      flex: 1 1 auto; min-width: 200px;
+      font-size: 1.2rem; padding: 16px 24px;
+      background: linear-gradient(135deg, var(--accent-2), var(--gold));
+      color: #1a0f12;
+    }
+    .btn-primary:not(:disabled):hover { filter: brightness(1.07); }
+    .btn-ghost {
+      padding: 16px 20px; font-size: 1rem;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border-hover); }
+
+    /* Stage */
+    .stage {
+      margin: 26px auto 0; max-width: 620px; width: 100%;
+      min-height: 150px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .stage.empty { color: var(--text-soft); font-size: 1rem; }
+    .draw-label {
+      font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em;
+      color: var(--gold); margin-bottom: 6px; opacity: 0; transition: opacity .3s;
+    }
+    .draw-label.show { opacity: 1; }
+    .display {
+      font-size: clamp(1.8rem, 7vw, 3.4rem);
+      font-weight: 900; line-height: 1.2;
+      word-break: break-word;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, #fff, var(--gold));
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      min-height: 1.2em;
+    }
+    .display.spinning {
+      background: none; -webkit-text-fill-color: var(--text); color: var(--text);
+      opacity: 0.85;
+    }
+    .winner-card {
+      margin-top: 16px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      animation: pop .5s cubic-bezier(.2,1.4,.4,1);
+    }
+    @keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .trophy { font-size: 2.4rem; }
+    .place { font-size: 1rem; font-weight: 700; color: var(--gold); letter-spacing: 0.05em; }
+
+    canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+    footer { margin-top: 40px; color: var(--text-soft); font-size: 0.85rem; text-align: center; }
+    footer a { color: var(--text-dim); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+    .privacy { display: inline-flex; align-items: center; gap: 6px; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+  <canvas id="confetti"></canvas>
+
+  <a class="back-link" href="../">→ חזרה לכל הכלים</a>
+
+  <header>
+    <h1>הגרלת <span class="spark">זוכה</span> 🏆</h1>
+    <p class="tagline">מדביקים רשימה של שמות או אימיילים, לוחצים על הכפתור — ומקבלים זוכה אחד למקום הראשון. הוגן, אקראי, וחינמי.</p>
+  </header>
+
+  <div class="panel">
+    <label class="field-label" for="names">
+      <span>המשתתפים</span>
+      <span class="counter" id="counter">0 משתתפים</span>
+    </label>
+    <textarea id="names" placeholder="הדביקו כאן שם או אימייל אחד בכל שורה, למשל:&#10;דנה כהן&#10;yossi@example.com&#10;מיכל לוי"></textarea>
+
+    <div class="options">
+      <input type="checkbox" id="dedupe" checked />
+      <label for="dedupe">הסר כפילויות (כל משתתף נספר פעם אחת)</label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="drawBtn">🎲 הגרל זוכה!</button>
+      <button class="btn-ghost" id="clearBtn">נקה</button>
+    </div>
+  </div>
+
+  <div class="stage empty" id="stage">
+    כאן יופיע הזוכה שלכם ✨
+  </div>
+
+  <footer>
+    <p class="privacy">🔒 הכל רץ במחשב שלכם — שום מידע לא נשלח לשום מקום.</p>
+    <p style="margin-top:8px;">מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a> · <a href="mailto:hello@omri-iram.co.il">hello@omri-iram.co.il</a></p>
+  </footer>
+
+  <script>
+    const namesEl = document.getElementById('names');
+    const counterEl = document.getElementById('counter');
+    const dedupeEl = document.getElementById('dedupe');
+    const drawBtn = document.getElementById('drawBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const stage = document.getElementById('stage');
+
+    let spinning = false;
+
+    function getParticipants() {
+      let list = namesEl.value
+        .split('\n')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+      if (dedupeEl.checked) {
+        const seen = new Set();
+        list = list.filter(x => {
+          const k = x.toLowerCase();
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+      }
+      return list;
+    }
+
+    function updateCounter() {
+      const n = getParticipants().length;
+      counterEl.textContent = n === 1 ? 'משתתף אחד' : n + ' משתתפים';
+    }
+
+    // Cryptographically fair random index in [0, n)
+    function fairIndex(n) {
+      if (n <= 0) return 0;
+      const max = Math.floor(0xFFFFFFFF / n) * n;
+      const buf = new Uint32Array(1);
+      let x;
+      do { crypto.getRandomValues(buf); x = buf[0]; } while (x >= max);
+      return x % n;
+    }
+
+    namesEl.addEventListener('input', updateCounter);
+    dedupeEl.addEventListener('change', updateCounter);
+
+    clearBtn.addEventListener('click', () => {
+      if (spinning) return;
+      namesEl.value = '';
+      updateCounter();
+      stage.className = 'stage empty';
+      stage.innerHTML = 'כאן יופיע הזוכה שלכם ✨';
+      namesEl.focus();
+    });
+
+    drawBtn.addEventListener('click', () => {
+      if (spinning) return;
+      const list = getParticipants();
+      if (list.length === 0) {
+        stage.className = 'stage empty';
+        stage.innerHTML = 'הוסיפו לפחות משתתף אחד כדי להגריל 🙂';
+        namesEl.focus();
+        return;
+      }
+      if (list.length === 1) {
+        showWinner(list[0]);
+        return;
+      }
+      spin(list);
+    });
+
+    function spin(list) {
+      spinning = true;
+      drawBtn.disabled = true;
+      clearBtn.disabled = true;
+      const winnerIdx = fairIndex(list.length);
+      const winner = list[winnerIdx];
+
+      stage.className = 'stage';
+      stage.innerHTML =
+        '<div class="draw-label show">מגרילים...</div>' +
+        '<div class="display spinning" id="disp">' + escapeHtml(list[0]) + '</div>';
+      const disp = document.getElementById('disp');
+
+      let delay = 50;          // start fast
+      const totalTime = 2600;  // ms
+      let elapsed = 0;
+      let i = fairIndex(list.length);
+
+      function tick() {
+        i = (i + 1) % list.length;
+        disp.textContent = list[i];
+        elapsed += delay;
+        // ease-out: gradually slow down
+        const progress = Math.min(elapsed / totalTime, 1);
+        delay = 50 + Math.pow(progress, 3) * 360;
+        if (elapsed < totalTime) {
+          setTimeout(tick, delay);
+        } else {
+          showWinner(winner);
+        }
+      }
+      setTimeout(tick, delay);
+    }
+
+    function showWinner(winner) {
+      spinning = false;
+      drawBtn.disabled = false;
+      clearBtn.disabled = false;
+      drawBtn.textContent = '🎲 הגרל שוב';
+      stage.className = 'stage';
+      stage.innerHTML =
+        '<div class="winner-card">' +
+          '<div class="trophy">🏆</div>' +
+          '<div class="place">המקום הראשון</div>' +
+          '<div class="display">' + escapeHtml(winner) + '</div>' +
+        '</div>';
+      fireConfetti();
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    /* ---- lightweight confetti ---- */
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let pieces = [];
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    addEventListener('resize', resize); resize();
+
+    const COLORS = ['#ffd166', '#ef476f', '#06d6a0', '#118ab2', '#ffffff'];
+    function fireConfetti() {
+      const n = 140;
+      for (let j = 0; j < n; j++) {
+        pieces.push({
+          x: innerWidth / 2 + (Math.random() - 0.5) * 120,
+          y: innerHeight / 2.4,
+          vx: (Math.random() - 0.5) * 11,
+          vy: -(Math.random() * 11 + 5),
+          g: 0.28 + Math.random() * 0.15,
+          size: 5 + Math.random() * 6,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          rot: Math.random() * 6.28,
+          vr: (Math.random() - 0.5) * 0.4,
+          life: 0
+        });
+      }
+      if (!rafRunning) { rafRunning = true; requestAnimationFrame(loop); }
+    }
+    let rafRunning = false;
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life++;
+        ctx.save();
+        ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+      });
+      pieces = pieces.filter(p => p.y < canvas.height + 40 && p.life < 260);
+      if (pieces.length > 0) { requestAnimationFrame(loop); }
+      else { ctx.clearRect(0, 0, canvas.width, canvas.height); rafRunning = false; }
+    }
+
+    updateCounter();
+  </script>
+</body>
+</html>
