@@ -22,6 +22,7 @@ That's it — the grid auto-flows.
 
 1. **סרגל פרקים ליוטיוב** → `chapter-bar-web` (GitHub Pages)
 2. **מערכת מענה המוני ב-Gmail** → Google Apps Script web app
+3. **תמלול אוטומטי לסרטונים** → whisper-agent dashboard (VPS, http://147.79.114.195:8080)
 
 ## Deploy
 
