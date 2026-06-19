@@ -244,6 +244,42 @@
           <button class="add-btn" id="addBtn" type="button">＋ הוסף כפתור</button>
         </div>
 
+        <hr class="divider">
+
+        <div class="field">
+          <label>עיצוב המייל ושולח <span class="hint">— כך ייראה וירגיש המכתב</span></label>
+          <div class="two">
+            <div>
+              <label for="senderName" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">שם השולח</label>
+              <input type="text" id="senderName" value="עומרי אירם" placeholder="עומרי אירם" />
+            </div>
+            <div>
+              <label for="emailFont" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">גופן המייל</label>
+              <select id="emailFont">
+                <option value="arial">ברירת מחדל — Arial (נקי)</option>
+                <option value="heebo">הֵיבּוֹ — מודרני</option>
+                <option value="rubik">רוּבּיק — ידידותי</option>
+                <option value="assistant">אסיסטנט — קליל</option>
+                <option value="frank">פְרַנְק רוּהְל — אלגנטי (serif)</option>
+                <option value="tahoma">טהומה</option>
+                <option value="georgia">ג׳ורג׳יה — קלאסי (serif)</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:13px;">
+            <label for="accent" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">צבע ראשי <span class="hint">— כותרת המייל והקישורים</span></label>
+            <select id="accent">
+              <option value="#1a73e8">כחול</option>
+              <option value="#0d9488">טורקיז</option>
+              <option value="#7c3aed">סגול</option>
+              <option value="#dc2626">אדום</option>
+              <option value="#ea580c">כתום</option>
+              <option value="#059669">ירוק</option>
+              <option value="#0f172a">שחור־כחלחל</option>
+            </select>
+          </div>
+        </div>
+
         <div class="field" style="margin-bottom:6px;">
           <div class="check">
             <input type="checkbox" id="personalize" />
@@ -328,9 +364,34 @@
     const subjectEl = $('subject'), bodyEl = $('body'), btnRows = $('btnRows');
     const personalizeEl = $('personalize'), nameRevealEl = $('nameReveal'), nameColEl = $('nameCol');
     const webhookEl = $('webhook'), eventRevealEl = $('eventReveal'), eventNameEl = $('eventName'), eventDateEl = $('eventDate');
+    const senderEl = $('senderName'), fontEl = $('emailFont'), accentEl = $('accent');
     const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
 
-    const SENDER_NAME = 'עומרי אירם';
+    // email fonts: web-safe stacks + optional Google webfont (loaded via @import, graceful fallback)
+    const FONTS = {
+      arial:     { stack: "Arial, Helvetica, sans-serif" },
+      heebo:     { stack: "'Heebo', Arial, sans-serif", family: "Heebo:wght@400;500;700" },
+      rubik:     { stack: "'Rubik', Arial, sans-serif", family: "Rubik:wght@400;500;700" },
+      assistant: { stack: "'Assistant', Arial, sans-serif", family: "Assistant:wght@400;600;700" },
+      frank:     { stack: "'Frank Ruhl Libre', Georgia, serif", family: "Frank+Ruhl+Libre:wght@500;700" },
+      tahoma:    { stack: "Tahoma, Arial, sans-serif" },
+      georgia:   { stack: "Georgia, 'Times New Roman', serif" }
+    };
+    function fontStack(key){ return (FONTS[key] || FONTS.arial).stack; }
+    function fontImport(key){
+      const f = FONTS[key];
+      return (f && f.family)
+        ? "<style>@import url('https://fonts.googleapis.com/css2?family=" + f.family + "&display=swap');</style>"
+        : "";
+    }
+    function signatureHtml(sender, accent){
+      return '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">' +
+        '<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>' +
+        '<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">' + esc(sender) + '</p>' +
+        '<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:+972525121007" style="color: #334155; text-decoration: none;">052-512-1007</a></p>' +
+        '<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: ' + accent + '; text-decoration: none;">omri-iram.co.il</a></p>';
+    }
+
     const PALETTE = [
       { name: 'כחול', hex: '#1a73e8' }, { name: 'אדום', hex: '#ea4335' },
       { name: 'ירוק', hex: '#34a853' }, { name: 'סגול', hex: '#9334e8' },
@@ -360,13 +421,6 @@
         'box-shadow: 0 2px 4px rgba(0,0,0,0.15);">' + f(b.text) + '</a>'
       ).join('');
     }
-
-    const SIGNATURE_HTML =
-      '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">' +
-      '<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>' +
-      '<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">עומרי אירם</p>' +
-      '<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:+972525121007" style="color: #334155; text-decoration: none;">052-512-1007</a></p>' +
-      '<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: #1a73e8; text-decoration: none;">omri-iram.co.il</a></p>';
 
     // ---------- buttons editor ----------
     function colorOptions(selected){
@@ -398,6 +452,9 @@
         subject: subjectEl.value.trim(),
         body: bodyEl.value,
         buttons: readButtons(),
+        senderName: senderEl.value.trim() || 'עומרי אירם',
+        emailFont: fontEl.value,
+        accent: accentEl.value,
         personalize: personalizeEl.checked,
         nameColumn: parseInt(nameColEl.value, 10),
         webhook: webhookEl.value.trim(),
@@ -411,12 +468,14 @@
       const subject = cfg.subject || 'נושא המייל';
       const sampleName = cfg.personalize ? 'ישראל' : '';
       const previewBody = cfg.body.replace(/\{שם\}/g, sampleName);
-      const html =
-        '<div style="direction: rtl; text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">' +
-          '<h2 style="color: #1a73e8; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
+      const font = fontStack(cfg.emailFont);
+      const accent = cfg.accent;
+      const html = fontImport(cfg.emailFont) +
+        '<div style="direction: rtl; text-align: right; font-family: ' + font + '; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">' +
+          '<h2 style="color: ' + accent + '; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
           (bodyToHtml(previewBody) || '<p style="color:#94a3b8;font-size:15px;">— כתבו את גוף המכתב כדי לראות תצוגה —</p>') +
           '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(cfg.buttons, true) + '</div>' +
-          SIGNATURE_HTML +
+          signatureHtml(cfg.senderName, accent) +
         '</div>';
       emailPreview.innerHTML = html;
       subjPreview.innerHTML = 'נושא: <strong>' + esc(subject) + '</strong>' + (cfg.personalize ? '  ·  פנייה בשם' : '');
@@ -471,7 +530,10 @@
 ' * התקנה: Extensions → Apps Script בגיליון המחובר לטופס, הדביקו קוד זה,\n' +
 ' * ואז הגדירו טריגר "On form submit" לפונקציה sendEmailOnFormSubmit.\n' +
 ' */\n' +
-'\nvar SENDER_NAME = ' + JSON.stringify(SENDER_NAME) + ';  // שם השולח שיוצג בתיבת הדואר\n' +
+'\nvar SENDER_NAME = ' + JSON.stringify(cfg.senderName) + ';  // שם השולח (תיבת דואר + חתימה)\n' +
+'var EMAIL_FONT  = ' + JSON.stringify(fontStack(cfg.emailFont)) + ';  // גופן המייל\n' +
+'var ACCENT      = ' + JSON.stringify(cfg.accent) + ';  // צבע ראשי (כותרת + קישורים)\n' +
+'var FONT_IMPORT = ' + JSON.stringify(fontImport(cfg.emailFont)) + ';\n' +
 eventBlock +
 '\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
 '\n\n' +
@@ -496,20 +558,20 @@ buttonsLiteral + '\n' +
 '  var bodyHtml = ' + JSON.stringify(bodyHtml) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
 '  var bodyText = ' + JSON.stringify(bodyText) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
 '\n' +
-'  var htmlBody =\n' +
-'    \'<div style="direction: rtl; text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">\' +\n' +
-'      \'<h2 style="color: #1a73e8; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
+'  var htmlBody = FONT_IMPORT +\n' +
+'    \'<div style="direction: rtl; text-align: right; font-family: \' + EMAIL_FONT + \'; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">\' +\n' +
+'      \'<h2 style="color: \' + ACCENT + \'; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
 '      bodyHtml +\n' +
 '      \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' +\n' +
 '      \'<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">\' +\n' +
 '      \'<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>\' +\n' +
-'      \'<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">עומרי אירם</p>\' +\n' +
+'      \'<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">\' + SENDER_NAME + \'</p>\' +\n' +
 '      \'<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:+972525121007" style="color: #334155; text-decoration: none;">052-512-1007</a></p>\' +\n' +
-'      \'<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: #1a73e8; text-decoration: none;">omri-iram.co.il</a></p>\' +\n' +
+'      \'<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: \' + ACCENT + \'; text-decoration: none;">omri-iram.co.il</a></p>\' +\n' +
 '    \'</div>\';\n' +
 '\n' +
 '  var textBody = bodyText + "\\n\\n" + buttonsText +\n' +
-'    "\\n\\nבברכה,\\nעומרי אירם\\nטלפון: 052-512-1007\\nאתר: https://omri-iram.co.il";\n' +
+'    "\\n\\nבברכה,\\n" + SENDER_NAME + "\\nטלפון: 052-512-1007\\nאתר: https://omri-iram.co.il";\n' +
 '\n' +
 '  return { subject: subject, htmlBody: htmlBody, textBody: textBody };\n' +
 '}' +
@@ -590,7 +652,9 @@ mlCallManual + '\n' +
     }
 
     // ---------- events ----------
-    [subjectEl, bodyEl, eventNameEl, eventDateEl].forEach(el => el.addEventListener('input', update));
+    [subjectEl, bodyEl, eventNameEl, eventDateEl, senderEl].forEach(el => el.addEventListener('input', update));
+    [fontEl, accentEl].forEach(el => el.addEventListener('change', update));
+    senderEl.addEventListener('input', () => { try { localStorage.setItem('senderName', senderEl.value.trim()); } catch(_){} });
     personalizeEl.addEventListener('change', () => { nameRevealEl.classList.toggle('show', personalizeEl.checked); update(); });
     nameColEl.addEventListener('change', update);
     webhookEl.addEventListener('input', () => {
@@ -630,6 +694,8 @@ mlCallManual + '\n' +
     try {
       const saved = localStorage.getItem('mlWebhook');
       if (saved) { webhookEl.value = saved; eventRevealEl.style.display = 'block'; }
+      const savedSender = localStorage.getItem('senderName');
+      if (savedSender) senderEl.value = savedSender;
     } catch(_){}
     update();
   </script>
