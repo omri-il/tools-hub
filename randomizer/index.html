@@ -88,6 +88,21 @@
     textarea:focus { outline: none; border-color: var(--border-hover); }
     textarea::placeholder { color: var(--text-soft); }
 
+    input.prize-input {
+      width: 100%;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Heebo', sans-serif;
+      font-size: 1rem;
+      padding: 13px 16px;
+      transition: border-color .2s;
+    }
+    input.prize-input:focus { outline: none; border-color: var(--border-hover); }
+    input.prize-input::placeholder { color: var(--text-soft); }
+    .field-block { margin-top: 18px; }
+
     .options { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--text-dim); font-size: 0.92rem; }
     .options input { width: 18px; height: 18px; accent-color: var(--accent-3); cursor: pointer; }
     .options label { cursor: pointer; }
@@ -150,6 +165,13 @@
     @keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .trophy { font-size: 2.4rem; }
     .place { font-size: 1rem; font-weight: 700; color: var(--gold); letter-spacing: 0.05em; }
+    .prize-line {
+      margin-top: 12px;
+      font-size: clamp(1.05rem, 3.5vw, 1.4rem);
+      font-weight: 700; color: var(--accent-3);
+      line-height: 1.4;
+    }
+    .prize-line .prize-emoji { margin-inline-end: 4px; }
 
     canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
 
@@ -177,6 +199,13 @@
     </label>
     <textarea id="names" placeholder="הדביקו כאן שם או אימייל אחד בכל שורה, למשל:&#10;דנה כהן&#10;yossi@example.com&#10;מיכל לוי"></textarea>
 
+    <div class="field-block">
+      <label class="field-label" for="prize">
+        <span>הפרס <span style="color:var(--text-soft);font-weight:500;">(אופציונלי)</span></span>
+      </label>
+      <input type="text" id="prize" class="prize-input" placeholder="מה הזוכה מקבל? למשל: כרטיס לסדנה, ספר דיגיטלי, שובר 100 ₪" />
+    </div>
+
     <div class="options">
       <input type="checkbox" id="dedupe" checked />
       <label for="dedupe">הסר כפילויות (כל משתתף נספר פעם אחת)</label>
@@ -201,6 +230,7 @@
     const namesEl = document.getElementById('names');
     const counterEl = document.getElementById('counter');
     const dedupeEl = document.getElementById('dedupe');
+    const prizeEl = document.getElementById('prize');
     const drawBtn = document.getElementById('drawBtn');
     const clearBtn = document.getElementById('clearBtn');
     const stage = document.getElementById('stage');
@@ -307,11 +337,16 @@
       clearBtn.disabled = false;
       drawBtn.textContent = '🎲 הגרל שוב';
       stage.className = 'stage';
+      const prize = prizeEl.value.trim();
+      const prizeHtml = prize
+        ? '<div class="prize-line"><span class="prize-emoji">🎁</span>זכה/תה ב: ' + escapeHtml(prize) + '</div>'
+        : '';
       stage.innerHTML =
         '<div class="winner-card">' +
           '<div class="trophy">🏆</div>' +
           '<div class="place">המקום הראשון</div>' +
           '<div class="display">' + escapeHtml(winner) + '</div>' +
+          prizeHtml +
         '</div>';
       fireConfetti();
     }
