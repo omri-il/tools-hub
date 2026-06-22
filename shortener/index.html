@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מקצר הקישורים שלי · עומרי אירם</title>
+  <meta name="description" content="קיצור קישורים אישי עם דומיין משלי — go.omri-iram.co.il. יוצרים קישור קצר, כינוי אישי, וסופרים קליקים." />
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css?v=1" />
+  <style>
+    .wrap { max-width: 720px; margin: 0 auto; padding: 16px 24px 80px; }
+    .back { display: inline-block; color: var(--text-dim); text-decoration: none; font-size: 14px; margin: 24px 0 8px; }
+    .back:hover { color: var(--text); }
+    .panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 26px; margin-top: 20px;
+    }
+    .panel h2 { margin: 0 0 6px; font-size: 20px; }
+    .panel .hint { color: var(--text-soft); font-size: 14px; margin: 0 0 18px; }
+    label { display: block; font-size: 14px; color: var(--text-dim); margin: 14px 0 6px; }
+    input[type=text], input[type=url], input[type=password] {
+      width: 100%; padding: 13px 15px; border-radius: 12px;
+      border: 1px solid var(--border); background: rgba(0,0,0,0.25);
+      color: var(--text); font-family: inherit; font-size: 15px; direction: ltr; text-align: left;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+    .alias-row { display: flex; align-items: stretch; gap: 0; direction: ltr; }
+    .alias-row .prefix {
+      display: flex; align-items: center; padding: 0 12px; font-size: 13px;
+      color: var(--text-soft); background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border); border-left: none;
+      border-radius: 0 12px 12px 0; white-space: nowrap;
+    }
+    .alias-row input { border-radius: 12px 0 0 12px; }
+    button {
+      font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
+      border: none; border-radius: 12px; padding: 13px 22px; color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .5; cursor: default; transform: none; }
+    .btn-row { margin-top: 20px; }
+    .ghost {
+      background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+      padding: 8px 14px; font-size: 13px; font-weight: 500;
+    }
+    .ghost:hover { color: var(--text); border-color: var(--border-hover); }
+    .msg { font-size: 14px; margin-top: 14px; }
+    .msg.error { color: #fca5a5; }
+    .result {
+      margin-top: 18px; padding: 16px 18px; border-radius: 14px;
+      background: var(--tag-bg); border: 1px solid var(--border);
+      display: none; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .result.show { display: flex; }
+    .result a { color: var(--tag-text); font-weight: 700; direction: ltr; word-break: break-all; }
+    .links { margin-top: 28px; }
+    .links h3 { font-size: 15px; color: var(--text-dim); margin: 0 0 12px; font-weight: 500; }
+    .link-item {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px;
+      background: var(--card); margin-bottom: 10px;
+    }
+    .link-item .short { color: var(--tag-text); font-weight: 700; direction: ltr; text-decoration: none; }
+    .link-item .short:hover { text-decoration: underline; }
+    .link-item .dest { color: var(--text-soft); font-size: 12px; direction: ltr; flex: 1 1 100%; word-break: break-all; }
+    .clicks { font-size: 13px; color: var(--text-dim); background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .spacer { flex: 1; }
+    .icon-btn { background: transparent; border: none; padding: 6px 8px; font-size: 15px; color: var(--text-soft); cursor: pointer; }
+    .icon-btn:hover { color: var(--text); transform: none; }
+    .empty { color: var(--text-soft); font-size: 14px; }
+    .gate-note { color: var(--text-soft); font-size: 13px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <a class="back" href="../">← כל הכלים</a>
+    <header style="text-align:center; padding: 12px 0 4px;">
+      <h1 style="font-size:clamp(28px,5vw,42px); font-weight:900; margin:0 0 8px;
+                 background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;
+                 background-clip:text;-webkit-text-fill-color:transparent;">מקצר הקישורים שלי</h1>
+      <p style="color:var(--text-dim); margin:0;">קישורים קצרים עם הדומיין שלי — <span style="direction:ltr;">go.omri-iram.co.il</span></p>
+    </header>
+
+    <!-- Password gate -->
+    <section id="gate" class="panel" style="display:none;">
+      <h2>🔒 כניסה</h2>
+      <p class="hint">הכלי הזה פרטי. הזן את הסיסמה כדי ליצור ולנהל קישורים.</p>
+      <input type="password" id="pw" placeholder="סיסמה" autocomplete="current-password" />
+      <div class="btn-row"><button id="unlock">כניסה</button></div>
+      <p class="msg error" id="gateMsg"></p>
+      <p class="gate-note">הסיסמה נשמרת רק בדפדפן שלך (localStorage) — לא נשלחת לשום מקום מלבד השרת שלך.</p>
+    </section>
+
+    <!-- Main app -->
+    <section id="app" style="display:none;">
+      <div class="panel">
+        <h2>יצירת קישור קצר</h2>
+        <p class="hint">הדבק קישור ארוך וקבל גרסה קצרה. אפשר לבחור כינוי משלך (לא חובה).</p>
+
+        <label for="url">הקישור הארוך</label>
+        <input type="url" id="url" placeholder="https://example.com/very/long/link" dir="ltr" />
+
+        <label for="alias">כינוי אישי (לא חובה)</label>
+        <div class="alias-row">
+          <input type="text" id="alias" placeholder="my-link" dir="ltr" />
+          <span class="prefix">go.omri-iram.co.il/</span>
+        </div>
+
+        <div class="btn-row">
+          <button id="create">✂️ קצר את הקישור</button>
+        </div>
+        <p class="msg error" id="createMsg"></p>
+
+        <div class="result" id="result">
+          <a id="resultLink" href="#" target="_blank" rel="noopener"></a>
+          <span class="spacer"></span>
+          <button class="ghost" id="copyResult">העתק</button>
+        </div>
+      </div>
+
+      <div class="links panel">
+        <h3>הקישורים שלי <button class="ghost" id="refresh" style="float:left;">רענן</button></h3>
+        <div id="list"><p class="empty">טוען…</p></div>
+      </div>
+
+      <div style="text-align:center; margin-top:18px;">
+        <button class="ghost" id="logout">התנתק</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API = "https://go.omri-iram.co.il";
+    const PW_KEY = "go_shortener_pw";
+    let pw = localStorage.getItem(PW_KEY) || "";
+
+    const $ = (id) => document.getElementById(id);
+    const show = (el, on) => { el.style.display = on ? "" : "none"; };
+
+    function render() {
+      const authed = !!pw;
+      show($("gate"), !authed);
+      show($("app"), authed);
+      if (authed) loadList();
+    }
+
+    async function api(path, opts = {}) {
+      opts.headers = Object.assign({ "Content-Type": "application/json", "X-Admin-Password": pw }, opts.headers || {});
+      const res = await fetch(API + path, opts);
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) { throw { unauthorized: true }; }
+      if (!res.ok) { throw { msg: data.error || ("שגיאה " + res.status) }; }
+      return data;
+    }
+
+    // --- gate ---
+    $("unlock").onclick = async () => {
+      const val = $("pw").value.trim();
+      if (!val) return;
+      pw = val;
+      try {
+        await api("/api/list");                 // validates the password
+        localStorage.setItem(PW_KEY, pw);
+        $("gateMsg").textContent = "";
+        render();
+      } catch (e) {
+        pw = "";
+        $("gateMsg").textContent = e.unauthorized ? "סיסמה שגויה" : (e.msg || "לא הצלחתי להתחבר לשרת");
+      }
+    };
+    $("pw").addEventListener("keydown", (e) => { if (e.key === "Enter") $("unlock").click(); });
+
+    $("logout").onclick = () => { localStorage.removeItem(PW_KEY); pw = ""; render(); };
+
+    // --- create ---
+    $("create").onclick = async () => {
+      const url = $("url").value.trim();
+      const alias = $("alias").value.trim();
+      $("createMsg").textContent = "";
+      $("result").classList.remove("show");
+      if (!url) { $("createMsg").textContent = "צריך להדביק קישור"; return; }
+      $("create").disabled = true;
+      try {
+        const data = await api("/api/create", { method: "POST", body: JSON.stringify({ url, alias }) });
+        const link = $("resultLink");
+        link.href = data.short; link.textContent = data.short;
+        $("result").classList.add("show");
+        $("url").value = ""; $("alias").value = "";
+        loadList();
+      } catch (e) {
+        if (e.unauthorized) { logoutToGate(); }
+        else $("createMsg").textContent = e.msg || "שגיאה ביצירת הקישור";
+      } finally {
+        $("create").disabled = false;
+      }
+    };
+
+    function logoutToGate() { localStorage.removeItem(PW_KEY); pw = ""; render(); }
+
+    $("copyResult").onclick = () => copy($("resultLink").textContent, $("copyResult"));
+    $("refresh").onclick = () => loadList();
+
+    function copy(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const old = btn.textContent; btn.textContent = "✓ הועתק";
+        setTimeout(() => { btn.textContent = old; }, 1400);
+      });
+    }
+
+    // --- list ---
+    async function loadList() {
+      const box = $("list");
+      try {
+        const links = await api("/api/list");
+        if (!links.length) { box.innerHTML = '<p class="empty">עדיין אין קישורים. צור את הראשון למעלה ☝️</p>'; return; }
+        box.innerHTML = "";
+        links.forEach((l) => {
+          const item = document.createElement("div");
+          item.className = "link-item";
+          item.innerHTML =
+            '<a class="short" href="' + l.short + '" target="_blank" rel="noopener"></a>' +
+            '<span class="clicks">👁 ' + l.clicks + '</span>' +
+            '<span class="spacer"></span>' +
+            '<button class="icon-btn copy" title="העתק">📋</button>' +
+            '<button class="icon-btn del" title="מחק">🗑</button>' +
+            '<span class="dest"></span>';
+          item.querySelector(".short").textContent = l.short;
+          item.querySelector(".dest").textContent = l.url;
+          item.querySelector(".copy").onclick = (e) => copy(l.short, e.target);
+          item.querySelector(".del").onclick = () => del(l.code);
+          box.appendChild(item);
+        });
+      } catch (e) {
+        if (e.unauthorized) logoutToGate();
+        else box.innerHTML = '<p class="empty">לא הצלחתי לטעון את הרשימה.</p>';
+      }
+    }
+
+    async function del(code) {
+      if (!confirm("למחוק את הקישור הקצר הזה? לא ניתן לשחזר.")) return;
+      try { await api("/api/delete", { method: "POST", body: JSON.stringify({ code }) }); loadList(); }
+      catch (e) { if (e.unauthorized) logoutToGate(); }
+    }
+
+    render();
+  </script>
+</body>
+</html>
