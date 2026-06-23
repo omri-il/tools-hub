@@ -43,6 +43,18 @@
     }
     button:hover { transform: translateY(-1px); }
     button:disabled { opacity: .5; cursor: default; transform: none; }
+    .seg {
+      display: flex; gap: 6px; margin-bottom: 8px; padding: 5px;
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .seg-btn {
+      flex: 1; background: transparent; color: var(--text-dim); font-weight: 500;
+      padding: 10px; border-radius: 8px; font-size: 14px;
+    }
+    .seg-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
+    .seg-btn:hover:not(.active) { color: var(--text); transform: none; }
+    .seg-sub { color: var(--text-soft); font-size: 13px; margin: 0 2px 6px; direction: rtl; }
+    .seg-sub span { direction: ltr; display: inline-block; }
     .btn-row { margin-top: 20px; }
     .ghost {
       background: transparent; border: 1px solid var(--border); color: var(--text-dim);
@@ -102,15 +114,23 @@
     <section id="app" style="display:none;">
       <div class="panel">
         <h2>יצירת קישור קצר</h2>
-        <p class="hint">הדבק קישור ארוך וקבל גרסה קצרה. אפשר לבחור כינוי משלך (לא חובה).</p>
+        <p class="hint">בחר את סוג הקישור, הדבק קישור ארוך וקבל גרסה קצרה.</p>
+
+        <div class="seg" role="tablist">
+          <button class="seg-btn active" data-mode="brand">🔗 הקישור שלי</button>
+          <button class="seg-btn" data-mode="tiny">⚡ TinyURL</button>
+        </div>
+        <p class="seg-sub" id="segSub"><span>go.omri-iram.co.il</span> — הדומיין שלך, עם כינוי אישי וספירת קליקים.</p>
 
         <label for="url">הקישור הארוך</label>
         <input type="url" id="url" placeholder="https://example.com/very/long/link" dir="ltr" />
 
-        <label for="alias">כינוי אישי (לא חובה)</label>
-        <div class="alias-row">
-          <input type="text" id="alias" placeholder="my-link" dir="ltr" />
-          <span class="prefix">go.omri-iram.co.il/</span>
+        <div id="aliasWrap">
+          <label for="alias">כינוי אישי (לא חובה)</label>
+          <div class="alias-row">
+            <input type="text" id="alias" placeholder="my-link" dir="ltr" />
+            <span class="prefix">go.omri-iram.co.il/</span>
+          </div>
         </div>
 
         <div class="btn-row">
@@ -179,21 +199,45 @@
 
     $("logout").onclick = () => { localStorage.removeItem(PW_KEY); pw = ""; render(); };
 
+    // --- mode chooser (branded go-link vs plain TinyURL) ---
+    let mode = "brand";
+    const segSub = {
+      brand: '<span>go.omri-iram.co.il</span> — הדומיין שלך, עם כינוי אישי וספירת קליקים.',
+      tiny:  '<span>tinyurl.com</span> — קישור קצר ופשוט, בלי המותג שלך. ליצירה והעתקה.'
+    };
+    const btnLabel = { brand: "✂️ קצר את הקישור", tiny: "⚡ צור קישור TinyURL" };
+    document.querySelectorAll(".seg-btn").forEach((btn) => {
+      btn.onclick = () => {
+        mode = btn.dataset.mode;
+        document.querySelectorAll(".seg-btn").forEach((b) => b.classList.toggle("active", b === btn));
+        show($("aliasWrap"), mode === "brand");
+        $("segSub").innerHTML = segSub[mode];
+        $("create").textContent = btnLabel[mode];
+        $("result").classList.remove("show");
+        $("createMsg").textContent = "";
+      };
+    });
+
     // --- create ---
     $("create").onclick = async () => {
       const url = $("url").value.trim();
-      const alias = $("alias").value.trim();
       $("createMsg").textContent = "";
       $("result").classList.remove("show");
       if (!url) { $("createMsg").textContent = "צריך להדביק קישור"; return; }
       $("create").disabled = true;
       try {
-        const data = await api("/api/create", { method: "POST", body: JSON.stringify({ url, alias }) });
+        let data;
+        if (mode === "tiny") {
+          data = await api("/api/tinyurl", { method: "POST", body: JSON.stringify({ url }) });
+        } else {
+          const alias = $("alias").value.trim();
+          data = await api("/api/create", { method: "POST", body: JSON.stringify({ url, alias }) });
+        }
         const link = $("resultLink");
         link.href = data.short; link.textContent = data.short;
         $("result").classList.add("show");
         $("url").value = ""; $("alias").value = "";
-        loadList();
+        if (mode === "brand") loadList();
       } catch (e) {
         if (e.unauthorized) { logoutToGate(); }
         else $("createMsg").textContent = e.msg || "שגיאה ביצירת הקישור";
