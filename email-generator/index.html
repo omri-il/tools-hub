@@ -226,6 +226,17 @@
         </div>
 
         <div class="field">
+          <label for="template">התחל מתבנית <span class="hint">— ממלא נושא, גוף וכפתורים</span></label>
+          <select id="template">
+            <option value="">— בחרו תבנית (לא חובה) —</option>
+            <option value="materials">חומרים מהמפגש</option>
+            <option value="thanks">תודה על ההרשמה</option>
+            <option value="webinar">הזמנה לוובינר</option>
+            <option value="update">עדכון / ניוזלטר קצר</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="subject">נושא המייל <span class="hint">— מופיע גם ככותרת בראש המכתב</span></label>
           <input type="text" id="subject" placeholder="לדוגמה: איך לבחור את כלי ה-AI הנכון בהוראת מדעים?" />
         </div>
@@ -247,6 +258,12 @@
           <label>כפתורי קישור <span class="hint">— מצגת, סרטון, דף עבודה...</span></label>
           <div class="btn-rows" id="btnRows"></div>
           <button class="add-btn" id="addBtn" type="button">＋ הוסף כפתור</button>
+        </div>
+
+        <div class="field">
+          <label for="logo">תמונה / לוגו בראש המייל <span class="hint">— קישור לתמונה, אופציונלי</span></label>
+          <input type="url" id="logo" dir="ltr" placeholder="https://example.com/logo.png" />
+          <p class="hint" style="margin-top:7px;">העלו את התמונה לאתר או ל-Google Drive (קישור ישיר) והדביקו כאן. תופיע במרכז בראש המייל.</p>
         </div>
 
         <hr class="divider">
@@ -353,6 +370,7 @@
         <div class="sheet-head">
           <span class="sheet-num">ב.</span>
           <h2>כך ייראה המייל</h2>
+          <button class="act act-ghost" id="fullPreview" type="button" style="margin-inline-start:auto;padding:7px 14px;font-size:0.82rem;">🔍 בדיקה בגודל מלא</button>
         </div>
         <div class="preview-desk">
           <div class="preview-tab" id="subjPreview">— נושא —</div>
@@ -408,6 +426,7 @@
     const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
     const trackEl = $('trackClicks'), trackRevealEl = $('trackReveal'), campaignEl = $('campaign'), trackNoteEl = $('trackNote');
     const phoneEl = $('phone'), websiteEl = $('website'), mlSection = $('mlSection');
+    const templateEl = $('template'), logoEl = $('logo');
     // Admin mode is shared site-wide via localStorage (unlocked on the hub or here).
     const ADMIN = (function(){ try { return localStorage.getItem('omri_admin') === '1'; } catch(_){ return false; } })();
 
@@ -508,7 +527,8 @@
         eventName: eventNameEl.value.trim(),
         eventDate: eventDateEl.value.trim(),
         trackClicks: trackEl.checked,
-        campaign: campaignEl.value.trim()
+        campaign: campaignEl.value.trim(),
+        logo: logoEl.value.trim()
       };
     }
 
@@ -521,6 +541,7 @@
       const accent = cfg.accent;
       const html = fontImport(cfg.emailFont) +
         '<div style="direction: rtl; text-align: right; font-family: ' + font + '; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">' +
+          (cfg.logo ? '<div style="text-align:center;margin-bottom:18px;"><img src="' + esc(cfg.logo) + '" alt="" style="max-width:100%;border-radius:8px;"></div>' : '') +
           '<h2 style="color: ' + accent + '; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
           (bodyToHtml(previewBody) || '<p style="color:#94a3b8;font-size:15px;">— כתבו את גוף המכתב כדי לראות תצוגה —</p>') +
           '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(cfg.buttons, true) + '</div>' +
@@ -624,6 +645,7 @@
 'var FONT_IMPORT = ' + JSON.stringify(fontImport(cfg.emailFont)) + ';\n' +
 'var SENDER_PHONE = ' + JSON.stringify(cfg.phone) + ';  // טלפון בחתימה (ריק = לא מוצג)\n' +
 'var SENDER_SITE  = ' + JSON.stringify(cfg.website) + ';  // אתר בחתימה (ריק = לא מוצג)\n' +
+'var TOP_IMAGE   = ' + JSON.stringify(cfg.logo || '') + ';  // תמונה/לוגו בראש המייל (קישור; ריק = אין)\n' +
 eventBlock +
 trackHeader +
 '\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
@@ -656,6 +678,7 @@ buttonsLiteral + '\n' +
 '\n' +
 '  var htmlBody = FONT_IMPORT +\n' +
 '    \'<div style="direction: rtl; text-align: right; font-family: \' + EMAIL_FONT + \'; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">\' +\n' +
+'      (TOP_IMAGE ? \'<div style="text-align: center; margin-bottom: 18px;"><img src="\' + TOP_IMAGE + \'" alt="" style="max-width: 100%; border-radius: 8px;"></div>\' : "") +\n' +
 '      \'<h2 style="color: \' + ACCENT + \'; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
 '      bodyHtml +\n' +
 '      \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' +\n' +
@@ -766,6 +789,32 @@ mlCallManual + '\n' +
       update();
     });
     $('addBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8'); update(); });
+    logoEl.addEventListener('input', update);
+
+    // ---------- templates ----------
+    const TEMPLATES = {
+      materials: { subject: 'החומרים מהמפגש שלנו 📎', body: 'שלום {שם},\n\nתודה רבה שהשתתפת! מצרף כאן את כל החומרים מהמפגש — המצגת והסרטון.\n\nאשמח לשמוע מה היה לך הכי שימושי.', buttons: [['לצפייה במצגת', '', '#1a73e8'], ['לצפייה בסרטון', '', '#ea4335']] },
+      thanks:    { subject: 'תודה על ההרשמה! 🎉', body: 'שלום {שם},\n\nתודה שנרשמת — שמחתי מאוד!\n\nכאן כל מה שצריך כדי להתחיל. נתראה בקרוב.', buttons: [['לכל הפרטים', '', '#1a73e8']] },
+      webinar:   { subject: 'הזמנה לוובינר 📅', body: 'שלום {שם},\n\nאני מזמין אותך לוובינר חינמי.\n\nשמרו את המקום ביומן, וביום האירוע לחצו על הקישור להצטרפות.', buttons: [['להצטרפות לוובינר', '', '#34a853'], ['הוספה ליומן', '', '#f59e0b']] },
+      update:    { subject: 'עדכון קצר ✨', body: 'שלום {שם},\n\nרציתי לעדכן אותך בכמה דברים חדשים.\n\n**הנה העיקר** — קראו ולחצו לפרטים.', buttons: [['קראו עוד', '', '#9334e8']] },
+    };
+    templateEl.addEventListener('change', () => {
+      const t = TEMPLATES[templateEl.value];
+      if (!t) return;
+      subjectEl.value = t.subject;
+      bodyEl.value = t.body;
+      btnRows.innerHTML = '';
+      t.buttons.forEach(b => addButtonRow(b[0], b[1], b[2]));
+      update();
+    });
+
+    // ---------- full-size preview (a quick "test" of how it looks) ----------
+    $('fullPreview').addEventListener('click', () => {
+      const w = window.open('', '_blank');
+      if (!w) return;
+      w.document.write('<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>תצוגת בדיקה</title></head><body style="background:#f1f5f9;margin:0;padding:30px;">' + emailPreview.innerHTML + '</body></html>');
+      w.document.close();
+    });
 
     $('copyBtn').addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(lastCode); showToast('הקוד הועתק'); }
