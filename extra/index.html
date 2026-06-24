@@ -95,14 +95,29 @@
           if(v==='9464'){ try{localStorage.setItem('omri_admin','1');}catch(_){}; location.reload(); } else if(v!==null){ alert('קוד שגוי'); } } });
     })();
 
-    function pwGet(){ try{return localStorage.getItem('extra_pw')||'';}catch(_){return '';} }
-    function pwSet(p){ try{localStorage.setItem('extra_pw',p);}catch(_){ } }
-    function pwClear(){ try{localStorage.removeItem('extra_pw');}catch(_){ } }
+    // Shared session token across all private tools — a 6-digit Google
+    // Authenticator code is exchanged for this signed token (30-day TTL).
+    const SESS_KEY='omri_session';
+    function tokGet(){ try{return localStorage.getItem(SESS_KEY)||'';}catch(_){return '';} }
+    function tokSet(t){ try{localStorage.setItem(SESS_KEY,t);}catch(_){ } }
+    function tokClear(){ try{localStorage.removeItem(SESS_KEY);}catch(_){ } }
+    // Exchange a 6-digit TOTP code for a session token. Returns true on success.
+    async function authWithCode(code){
+      try{
+        const res=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code})});
+        if(!res.ok) return false;
+        const d=await res.json().catch(()=>({}));
+        if(d.token){ tokSet(d.token); return true; }
+      }catch(_){}
+      return false;
+    }
     async function apiFetch(path,opts){
-      opts=opts||{}; let pw=pwGet(); if(!pw){ pw=prompt('סיסמת מערכת ההקלטות:')||''; if(pw)pwSet(pw); }
-      const mk=p=>Object.assign({},opts,{headers:Object.assign({},opts.headers||{},{'X-Admin-Password':p})});
-      let r=await fetch(API+path,mk(pw));
-      if(r.status===401){ pwClear(); const p2=prompt('סיסמה שגויה — הזינו שוב:')||''; if(p2){ pwSet(p2); r=await fetch(API+path,mk(p2)); } }
+      opts=opts||{};
+      const mk=t=>Object.assign({},opts,{headers:Object.assign({},opts.headers||{},{'X-Session':t})});
+      let t=tokGet();
+      if(!t){ const v=prompt('קוד מ-Google Authenticator (6 ספרות):')||''; if(v&&await authWithCode(v.trim())) t=tokGet(); }
+      let r=await fetch(API+path,mk(t));
+      if(r.status===401){ tokClear(); const v2=prompt('צריך להתחבר — קוד מ-Google Authenticator (6 ספרות):')||''; if(v2&&await authWithCode(v2.trim())) r=await fetch(API+path,mk(tokGet())); }
       return r;
     }
 
@@ -125,7 +140,7 @@
       if(mode==='name') body.contact_name=$('name').value.trim();
       let r; try{ r=await apiFetch('/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
       catch(e){ msg.textContent='שגיאת רשת.'; return; }
-      if(r.status===401){ msg.textContent='סיסמה שגויה. רעננו ונסו שוב.'; return; }
+      if(r.status===401){ msg.textContent='צריך להתחבר מחדש. רעננו ונסו שוב.'; return; }
       const j=await r.json().catch(()=>({}));
       if(!r.ok){ msg.textContent='שגיאה: '+(j.error||r.status); return; }
       const calls=j.calls||[];

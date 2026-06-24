@@ -100,14 +100,14 @@
       <p style="color:var(--text-dim); margin:0;">קישורים קצרים עם הדומיין שלי — <span style="direction:ltr;">go.omri-iram.co.il</span></p>
     </header>
 
-    <!-- Password gate -->
+    <!-- TOTP gate -->
     <section id="gate" class="panel" style="display:none;">
       <h2>🔒 כניסה</h2>
-      <p class="hint">הכלי הזה פרטי. הזן את הסיסמה כדי ליצור ולנהל קישורים.</p>
-      <input type="password" id="pw" placeholder="סיסמה" autocomplete="current-password" />
+      <p class="hint">הכלי הזה פרטי. הזן את הקוד בן 6 הספרות מ-Google Authenticator.</p>
+      <input type="text" id="pw" placeholder="קוד בן 6 ספרות" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr" />
       <div class="btn-row"><button id="unlock">כניסה</button></div>
       <p class="msg error" id="gateMsg"></p>
-      <p class="gate-note">הסיסמה נשמרת רק בדפדפן שלך (localStorage) — לא נשלחת לשום מקום מלבד השרת שלך.</p>
+      <p class="gate-note">הכניסה תקפה ל-30 יום, ומשותפת לכל הכלים הפרטיים. הקוד מתחלף כל 30 שניות.</p>
     </section>
 
     <!-- Main app -->
@@ -158,29 +158,44 @@
 
   <script>
     const API = "https://go.omri-iram.co.il";
-    const PW_KEY = "go_shortener_pw";
-    let pw = localStorage.getItem(PW_KEY) || "";
+    // Shared session token across all private tools (shortener, qr, extra).
+    // A 6-digit Google Authenticator code is exchanged for this signed token.
+    const SESS_KEY = "omri_session";
+    let token = localStorage.getItem(SESS_KEY) || "";
 
     const $ = (id) => document.getElementById(id);
     const show = (el, on) => { el.style.display = on ? "" : "none"; };
 
     function render() {
-      const authed = !!pw;
+      const authed = !!token;
       show($("gate"), !authed);
       show($("app"), authed);
       if (authed) loadList();
     }
 
+    // Exchange a 6-digit TOTP code for a session token. Returns true on success.
+    async function authWithCode(code) {
+      try {
+        const res = await fetch(API + "/api/auth", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: code })
+        });
+        if (!res.ok) return false;
+        const d = await res.json().catch(() => ({}));
+        if (d.token) { token = d.token; localStorage.setItem(SESS_KEY, token); return true; }
+      } catch (_) {}
+      return false;
+    }
+
     async function api(path, opts = {}, _retry = false) {
-      const headers = Object.assign({ "Content-Type": "application/json", "X-Admin-Password": pw }, opts.headers || {});
+      const headers = Object.assign({ "Content-Type": "application/json", "X-Session": token }, opts.headers || {});
       const res = await fetch(API + path, { method: opts.method, body: opts.body, headers });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
-        // Don't wipe a remembered password or dump to the full login screen — just
-        // re-prompt once inline and retry. Only a truly wrong password fails through.
+        // Session missing/expired — ask for a fresh code once, then retry.
         if (!_retry) {
-          const v = prompt("סיסמה שגויה או שפגה — הזן שוב:");
-          if (v) { pw = v; localStorage.setItem(PW_KEY, pw); return api(path, opts, true); }
+          const v = prompt("קוד מ-Google Authenticator (6 ספרות):");
+          if (v && await authWithCode(v.trim())) return api(path, opts, true);
         }
         throw { unauthorized: true };
       }
@@ -192,20 +207,16 @@
     $("unlock").onclick = async () => {
       const val = $("pw").value.trim();
       if (!val) return;
-      pw = val;
-      try {
-        await api("/api/list");                 // validates the password
-        localStorage.setItem(PW_KEY, pw);
-        $("gateMsg").textContent = "";
+      $("gateMsg").textContent = "";
+      if (await authWithCode(val)) {
         render();
-      } catch (e) {
-        pw = "";
-        $("gateMsg").textContent = e.unauthorized ? "סיסמה שגויה" : (e.msg || "לא הצלחתי להתחבר לשרת");
+      } else {
+        $("gateMsg").textContent = "קוד שגוי או שפג — נסו שוב";
       }
     };
     $("pw").addEventListener("keydown", (e) => { if (e.key === "Enter") $("unlock").click(); });
 
-    $("logout").onclick = () => { localStorage.removeItem(PW_KEY); pw = ""; render(); };
+    $("logout").onclick = () => { localStorage.removeItem(SESS_KEY); token = ""; render(); };
 
     // --- mode chooser (branded go-link vs plain TinyURL) ---
     let mode = "brand";
@@ -247,13 +258,13 @@
         $("url").value = ""; $("alias").value = "";
         if (mode === "brand") loadList();
       } catch (e) {
-        $("createMsg").textContent = e.unauthorized ? "סיסמה שגויה" : (e.msg || "שגיאה ביצירת הקישור");
+        $("createMsg").textContent = e.unauthorized ? "צריך להתחבר מחדש" : (e.msg || "שגיאה ביצירת הקישור");
       } finally {
         $("create").disabled = false;
       }
     };
 
-    function logoutToGate() { localStorage.removeItem(PW_KEY); pw = ""; render(); }
+    function logoutToGate() { localStorage.removeItem(SESS_KEY); token = ""; render(); }
 
     $("copyResult").onclick = () => copy($("resultLink").textContent, $("copyResult"));
     $("refresh").onclick = () => loadList();
@@ -289,7 +300,7 @@
           box.appendChild(item);
         });
       } catch (e) {
-        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "סיסמה שגויה — לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את הרשימה.") + '</p>';
+        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "צריך להתחבר מחדש — לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את הרשימה.") + '</p>';
       }
     }
 
