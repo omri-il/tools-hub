@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>בונה קישורי UTM</title>
+  <meta name="description" content="בונה קישורי UTM בעברית — מוסיפים מקור, מדיום וקמפיין לכל קישור כדי לדעת מאיפה הגיעו הקליקים. רץ בדפדפן." />
+  <meta property="og:title" content="בונה קישורי UTM" />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
+      --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#34d399; --accent2:#10b981;
+      font-family:'Heebo',system-ui,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(90% 60% at 50% -10%,rgba(52,211,153,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.5}
+    .wrap{max-width:760px;margin:0 auto}
+    .masthead{text-align:center;margin-bottom:34px}
+    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+    h1{font-weight:900;font-size:clamp(2rem,5vw,2.9rem);margin-top:10px}
+    h1 .em{color:var(--accent)}
+    .lede{color:var(--muted);font-weight:300;margin:14px auto 0;max-width:560px}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+    label{display:block;font-weight:600;font-size:.9rem;margin-bottom:7px}
+    label .req{color:var(--accent)}
+    .hint{color:var(--faint);font-weight:400;font-size:.8rem}
+    input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.98rem;padding:12px 14px;direction:ltr;text-align:left}
+    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,0.16)}
+    .field{margin-bottom:16px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:520px){.row{grid-template-columns:1fr}}
+    .out{margin-top:8px;background:#08090b;border:1px solid var(--line);border-radius:12px;padding:16px;direction:ltr;text-align:left;word-break:break-all;font-family:'Consolas',monospace;font-size:.9rem;color:#bfe9d6;min-height:54px}
+    .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:11px 20px;font-size:.92rem}
+    .btn-primary{background:var(--accent);color:#04261a}
+    .btn-primary:hover{background:var(--accent2)}
+    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+    .note{margin-top:18px;background:rgba(52,211,153,0.07);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:var(--muted);font-size:.85rem;line-height:1.7}
+    footer{margin-top:42px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
+    footer a{color:var(--muted)}
+    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#04261a;font-weight:700;padding:12px 22px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="masthead">
+      <div class="kicker">הכלים של עומרי אירם</div>
+      <h1>בונה קישורי <span class="em">UTM</span></h1>
+      <p class="lede">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין — וכך באנליטיקס תדעו בדיוק מאיזה ערוץ הגיעו הקליקים. ממלאים, מעתיקים, מפיצים.</p>
+    </div>
+
+    <div class="sheet">
+      <div class="field">
+        <label for="base">כתובת היעד <span class="req">*</span> <span class="hint">— הקישור שאליו מפנים</span></label>
+        <input type="text" id="base" placeholder="https://example.com/page" value="https://omri-iram.co.il" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="source">מקור (source) <span class="req">*</span> <span class="hint">— מאיפה</span></label>
+          <input type="text" id="source" list="sources" placeholder="facebook, newsletter, whatsapp" />
+          <datalist id="sources"><option value="facebook"><option value="instagram"><option value="whatsapp"><option value="newsletter"><option value="youtube"><option value="google"><option value="linkedin"></datalist>
+        </div>
+        <div class="field">
+          <label for="medium">מדיום (medium) <span class="req">*</span> <span class="hint">— איך</span></label>
+          <input type="text" id="medium" list="mediums" placeholder="social, email, cpc, post" />
+          <datalist id="mediums"><option value="social"><option value="email"><option value="cpc"><option value="post"><option value="story"><option value="bio"><option value="qr"></datalist>
+        </div>
+      </div>
+      <div class="field">
+        <label for="campaign">קמפיין (campaign) <span class="req">*</span> <span class="hint">— שם המבצע/הפעילות</span></label>
+        <input type="text" id="campaign" placeholder="passover_2026, ai_workshop" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="term">מונח (term) <span class="hint">— אופציונלי, מילת מפתח</span></label>
+          <input type="text" id="term" placeholder="" />
+        </div>
+        <div class="field">
+          <label for="content">תוכן (content) <span class="hint">— אופציונלי, להבדיל בין קישורים</span></label>
+          <input type="text" id="content" placeholder="button_a / button_b" />
+        </div>
+      </div>
+
+      <label>הקישור המוכן</label>
+      <div class="out" id="out">—</div>
+      <div class="actions">
+        <button class="btn btn-primary" id="copy" type="button">📋 העתק קישור</button>
+        <button class="btn btn-ghost" id="clear" type="button">נקה</button>
+      </div>
+    </div>
+
+    <div class="note">
+      💡 רוצים גם <strong>לדעת על איזה קישור לחצו יותר</strong>? בקרוב — קיצור כל קישור UTM דרך מקצר הקישורים, והשוואת מספר הקליקים ביניהם.
+    </div>
+
+    <footer>
+      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשום מקום.</p>
+      <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast">הועתק</div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const fields = ['base','source','medium','campaign','term','content'].map($);
+    const out = $('out');
+
+    function build(){
+      const base = $('base').value.trim();
+      if(!base){ out.textContent='—'; return ''; }
+      const params = [
+        ['utm_source', $('source').value.trim()],
+        ['utm_medium', $('medium').value.trim()],
+        ['utm_campaign', $('campaign').value.trim()],
+        ['utm_term', $('term').value.trim()],
+        ['utm_content', $('content').value.trim()],
+      ].filter(([,v]) => v);
+      let url = base;
+      if(params.length){
+        const qs = params.map(([k,v]) => k+'='+encodeURIComponent(v)).join('&');
+        url += (base.indexOf('?') === -1 ? '?' : '&') + qs;
+      }
+      out.textContent = url;
+      return url;
+    }
+    fields.forEach(el => el.addEventListener('input', build));
+
+    $('copy').addEventListener('click', async () => {
+      const url = build();
+      if(!url) return;
+      try { await navigator.clipboard.writeText(url); }
+      catch(_){ const r=document.createRange(); r.selectNode(out); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand('copy'); getSelection().removeAllRanges(); }
+      const t=$('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600);
+    });
+    $('clear').addEventListener('click', () => { fields.forEach(el=>{ if(el.id!=='base') el.value=''; }); build(); });
+
+    build();
+  </script>
+</body>
+</html>

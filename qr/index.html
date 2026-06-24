@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מחולל קודי QR</title>
+  <meta name="description" content="מחולל קוד QR חינמי בעברית — מזינים קישור או טקסט, בוחרים צבע וגודל, ומורידים PNG או SVG. הכל רץ בדפדפן." />
+  <meta property="og:title" content="מחולל קודי QR" />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
+      --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#38bdf8; --accent2:#0ea5e9;
+      --ok:#3ecf8e; font-family:'Heebo',system-ui,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(90% 60% at 50% -10%,rgba(56,189,248,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.5}
+    .wrap{max-width:980px;margin:0 auto}
+    .masthead{text-align:center;margin-bottom:36px}
+    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+    h1{font-weight:900;font-size:clamp(2rem,5vw,3rem);margin-top:10px}
+    h1 .em{color:var(--accent)}
+    .lede{color:var(--muted);font-weight:300;margin:14px auto 0;max-width:540px}
+    .layout{display:grid;grid-template-columns:1.1fr .9fr;gap:26px;align-items:start}
+    @media(max-width:820px){.layout{grid-template-columns:1fr}}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+    label{display:block;font-weight:600;font-size:.9rem;margin-bottom:8px}
+    .hint{color:var(--faint);font-weight:400;font-size:.8rem}
+    textarea,input[type=text],input[type=number],select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.98rem;padding:12px 14px}
+    textarea{min-height:90px;resize:vertical;direction:ltr;text-align:left}
+    input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,0.16)}
+    .field{margin-bottom:18px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .colorrow{display:flex;align-items:center;gap:10px}
+    input[type=color]{width:46px;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--panel);cursor:pointer;padding:3px}
+    input[type=range]{width:100%;accent-color:var(--accent)}
+    .check{display:flex;align-items:center;gap:9px;margin-top:6px}
+    .check input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+    .check label{margin:0;font-weight:500;color:var(--muted)}
+    .preview{display:flex;flex-direction:column;align-items:center;gap:18px}
+    .qbox{background:#fff;border-radius:14px;padding:18px;display:inline-block;background-image:linear-gradient(45deg,#e9edf2 25%,transparent 25%),linear-gradient(-45deg,#e9edf2 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e9edf2 75%),linear-gradient(-45deg,transparent 75%,#e9edf2 75%);background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0}
+    #qcanvas{display:block;border-radius:4px}
+    .dl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+    .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:11px 20px;font-size:.92rem}
+    .btn-primary{background:var(--accent);color:#04222e}
+    .btn-primary:hover{background:var(--accent2)}
+    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+    .err{color:#ff6b6b;font-size:.85rem;text-align:center}
+    footer{margin-top:46px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
+    footer a{color:var(--muted)}
+    .note{margin-top:18px;background:rgba(56,189,248,0.07);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:var(--muted);font-size:.85rem;line-height:1.7}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="masthead">
+      <div class="kicker">הכלים של עומרי אירם</div>
+      <h1>מחולל קודי <span class="em">QR</span></h1>
+      <p class="lede">מזינים קישור או טקסט, בוחרים צבע וגודל, ומורידים קוד QR מוכן — PNG או SVG. הכל רץ בדפדפן, בלי להעלות כלום.</p>
+    </div>
+
+    <div class="layout">
+      <div class="sheet">
+        <div class="field">
+          <label for="content">קישור או טקסט <span class="hint">— מה שה-QR יוביל אליו</span></label>
+          <textarea id="content" placeholder="https://example.com">https://omri-iram.co.il</textarea>
+        </div>
+        <div class="field row">
+          <div>
+            <label>צבע הקוד</label>
+            <div class="colorrow"><input type="color" id="fg" value="#0f172a" /><span class="hint" id="fgHex">#0f172a</span></div>
+          </div>
+          <div>
+            <label>צבע רקע</label>
+            <div class="colorrow"><input type="color" id="bg" value="#ffffff" /><span class="hint" id="bgHex">#ffffff</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="check"><input type="checkbox" id="transparent" /><label for="transparent">רקע שקוף (PNG)</label></div>
+        </div>
+        <div class="field row">
+          <div>
+            <label for="size">גודל <span class="hint" id="sizeVal">512px</span></label>
+            <input type="range" id="size" min="128" max="1024" step="32" value="512" />
+          </div>
+          <div>
+            <label for="ec">רמת תיקון שגיאות <span class="hint">— גבוה = עמיד יותר</span></label>
+            <select id="ec">
+              <option value="L">L — נמוך</option>
+              <option value="M" selected>M — בינוני</option>
+              <option value="Q">Q — גבוה</option>
+              <option value="H">H — הכי עמיד</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet preview">
+        <div class="qbox"><canvas id="qcanvas"></canvas></div>
+        <div class="dl">
+          <button class="btn btn-primary" id="dlPng" type="button">⬇ הורד PNG</button>
+          <button class="btn btn-ghost" id="dlSvg" type="button">⬇ הורד SVG</button>
+        </div>
+        <div class="err" id="err"></div>
+      </div>
+    </div>
+
+    <div class="note">
+      💡 רוצים <strong>QR דינמי</strong> — אחד שאפשר להדפיס ולשנות אחר כך לאן הוא מוביל, ולעקוב אחרי סריקות? זה בדרך, מבוסס על מקצר הקישורים.
+    </div>
+
+    <footer>
+      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשום מקום.</p>
+      <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const contentEl=$('content'), fgEl=$('fg'), bgEl=$('bg'), transEl=$('transparent'),
+          sizeEl=$('size'), ecEl=$('ec'), canvas=$('qcanvas'), errEl=$('err');
+
+    function opts(forDownload){
+      const light = transEl.checked ? '#00000000' : bgEl.value;
+      return {
+        width: parseInt(sizeEl.value,10),
+        margin: 2,
+        errorCorrectionLevel: ecEl.value,
+        color: { dark: fgEl.value, light: light }
+      };
+    }
+    function render(){
+      $('fgHex').textContent=fgEl.value; $('bgHex').textContent=bgEl.value;
+      $('sizeVal').textContent=sizeEl.value+'px';
+      bgEl.disabled = transEl.checked;
+      const text = contentEl.value.trim();
+      errEl.textContent='';
+      if(typeof QRCode==='undefined'){ errEl.textContent='טעינת ספריית ה-QR נכשלה. רעננו את הדף.'; return; }
+      if(!text){ const c=canvas.getContext('2d'); c.clearRect(0,0,canvas.width,canvas.height); return; }
+      QRCode.toCanvas(canvas, text, opts(), err => { if(err) errEl.textContent='שגיאה ביצירת הקוד'; });
+    }
+    function download(href, name){ const a=document.createElement('a'); a.href=href; a.download=name; a.click(); }
+    function fileBase(){
+      const t=contentEl.value.trim().replace(/^https?:\/\//,'').replace(/[^\w.-]+/g,'_').slice(0,40);
+      return 'qr_'+(t||'code');
+    }
+
+    [contentEl,fgEl,bgEl,sizeEl].forEach(el=>el.addEventListener('input',render));
+    ecEl.addEventListener('change',render);
+    transEl.addEventListener('change',render);
+
+    $('dlPng').addEventListener('click',()=>{
+      const text=contentEl.value.trim(); if(!text||typeof QRCode==='undefined')return;
+      QRCode.toDataURL(text, opts(true), (err,url)=>{ if(err){errEl.textContent='שגיאה';return;} download(url, fileBase()+'.png'); });
+    });
+    $('dlSvg').addEventListener('click',()=>{
+      const text=contentEl.value.trim(); if(!text||typeof QRCode==='undefined')return;
+      QRCode.toString(text, {type:'svg', margin:2, errorCorrectionLevel:ecEl.value, color:{dark:fgEl.value, light: transEl.checked?'#00000000':bgEl.value}}, (err,svg)=>{
+        if(err){errEl.textContent='שגיאה';return;}
+        download('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg), fileBase()+'.svg');
+      });
+    });
+
+    if(typeof QRCode==='undefined'){ window.addEventListener('load', render); } else { render(); }
+  </script>
+</body>
+</html>
