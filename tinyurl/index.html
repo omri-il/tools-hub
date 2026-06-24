@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מקצר קישורים מהיר</title>
+  <meta name="description" content="מקצר קישורים חינמי — הדביקו קישור ארוך וקבלו קישור קצר של TinyURL, מיד, בלי הרשמה." />
+  <meta property="og:title" content="מקצר קישורים מהיר" />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#38bdf8; --accent2:#0ea5e9; font-family:'Heebo',system-ui,sans-serif; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(90% 60% at 50% -10%,rgba(56,189,248,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.5}
+    .wrap{max-width:640px;margin:0 auto}
+    .back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:18px}
+    .masthead{text-align:center;margin-bottom:30px}
+    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+    h1{font-weight:900;font-size:clamp(2rem,5vw,2.8rem);margin-top:10px}
+    h1 .em{color:var(--accent)}
+    .lede{color:var(--muted);font-weight:300;margin:14px auto 0;max-width:520px}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+    label{display:block;font-weight:600;font-size:.9rem;margin-bottom:7px}
+    input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:1rem;padding:13px 14px;direction:ltr;text-align:left}
+    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,0.16)}
+    .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:12px 22px;font-size:.95rem;margin-top:14px}
+    .btn-primary{background:var(--accent);color:#04222e}
+    .btn-primary:hover{background:var(--accent2)}
+    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+    .out{margin-top:18px;background:#08090b;border:1px solid var(--line);border-radius:12px;padding:16px;display:none}
+    .out.show{display:block}
+    .out a{color:var(--accent);font-weight:700;font-size:1.1rem;text-decoration:none;direction:ltr;display:block;text-align:left;word-break:break-all}
+    .msg{margin-top:12px;color:var(--faint);font-size:.85rem;min-height:1em}
+    footer{margin-top:42px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
+    footer a{color:var(--muted)}
+    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#04222e;font-weight:700;padding:12px 22px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="../">→ חזרה לכל הכלים</a>
+    <div class="masthead">
+      <div class="kicker">הכלים של עומרי אירם</div>
+      <h1>מקצר קישורים <span class="em">מהיר</span></h1>
+      <p class="lede">הדביקו קישור ארוך וקבלו קישור קצר של TinyURL — מיד, בלי הרשמה ובלי התקנה.</p>
+    </div>
+
+    <div class="sheet">
+      <label for="url">הקישור הארוך</label>
+      <input type="text" id="url" placeholder="https://example.com/very/long/link?with=params" />
+      <button class="btn btn-primary" id="go" type="button">קצר את הקישור</button>
+      <div class="out" id="out"><a id="shortLink" href="#" target="_blank" rel="noopener"></a></div>
+      <div class="msg" id="msg"></div>
+      <button class="btn btn-ghost" id="copy" type="button" style="display:none">📋 העתק</button>
+    </div>
+
+    <footer>
+      <p>הקיצור נוצר דרך TinyURL. רוצים קישור עם דומיין משלכם + מעקב? יש גם <a href="../">מקצר ממותג</a> (אדמין).</p>
+      <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast">הועתק</div>
+
+  <script>
+    const $=id=>document.getElementById(id);
+    const API='https://go.omri-iram.co.il/api';
+    let last='';
+    async function shorten(){
+      const url=$('url').value.trim(), msg=$('msg'), out=$('out');
+      if(!/^https?:\/\//i.test(url)){ msg.textContent='הדביקו כתובת שמתחילה ב-http:// או https://'; out.classList.remove('show'); return; }
+      msg.textContent='מקצר…'; out.classList.remove('show'); $('copy').style.display='none';
+      try{
+        const r=await fetch(API+'/tinyurl',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+        const j=await r.json().catch(()=>({}));
+        if(!r.ok||!j.short){ msg.textContent='שגיאה: '+(j.error||'נסו שוב'); return; }
+        last=j.short; const a=$('shortLink'); a.href=j.short; a.textContent=j.short;
+        out.classList.add('show'); msg.textContent=''; $('copy').style.display='inline-block';
+      }catch(e){ msg.textContent='שגיאת רשת, נסו שוב.'; }
+    }
+    $('go').addEventListener('click',shorten);
+    $('url').addEventListener('keydown',e=>{ if(e.key==='Enter') shorten(); });
+    $('copy').addEventListener('click',async()=>{
+      if(!last)return;
+      try{ await navigator.clipboard.writeText(last); }catch(_){ }
+      const t=$('toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500);
+    });
+  </script>
+</body>
+</html>

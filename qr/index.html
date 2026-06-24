@@ -273,15 +273,26 @@
 
     // ---- dynamic QR (admin) — talks to the go-shortener API ----
     const API='https://go.omri-iram.co.il/api';
-    function shortenerPw(){ try{ let p=localStorage.getItem('go_shortener_pw'); if(!p){ p=prompt('סיסמת מקצר הקישורים:'); if(p) localStorage.setItem('go_shortener_pw',p); } return p||''; }catch(_){ return ''; } }
+    function pwGet(){ try{ return localStorage.getItem('go_shortener_pw')||''; }catch(_){ return ''; } }
+    function pwSet(p){ try{ localStorage.setItem('go_shortener_pw',p); }catch(_){ } }
+    function pwClear(){ try{ localStorage.removeItem('go_shortener_pw'); }catch(_){ } }
+    // fetch with the shortener password in a header; on 401 re-prompt once and retry.
+    async function apiFetch(path, opts){
+      opts=opts||{}; let pw=pwGet();
+      if(!pw){ pw=prompt('סיסמת מקצר הקישורים (go-shortener):')||''; if(pw) pwSet(pw); }
+      const mk=p=>Object.assign({},opts,{headers:Object.assign({},opts.headers||{},{'X-Admin-Password':p})});
+      let r=await fetch(API+path, mk(pw));
+      if(r.status===401){ pwClear(); const p2=prompt('סיסמה שגויה — הזינו שוב את סיסמת מקצר הקישורים:')||''; if(p2){ pwSet(p2); r=await fetch(API+path, mk(p2)); } }
+      return r;
+    }
     function codeOf(short){ return short.split('/').pop(); }
     function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
     async function dynList(){
       const box=$('dynList'); box.innerHTML='<span class="hint">טוען…</span>';
       try{
-        const r=await fetch(API+'/list',{headers:{'X-Admin-Password':shortenerPw()}});
-        if(r.status===401){ box.innerHTML='<span class="hint">סיסמה שגויה — רעננו והזינו שוב.</span>'; try{localStorage.removeItem('go_shortener_pw');}catch(_){} return; }
+        const r=await apiFetch('/list');
+        if(r.status===401){ box.innerHTML='<span class="hint">סיסמה שגויה. רעננו את הדף ונסו שוב.</span>'; return; }
         const links=await r.json();
         if(!Array.isArray(links)||!links.length){ box.innerHTML='<span class="hint">אין עדיין קישורים. צרו אחד למעלה.</span>'; return; }
         box.innerHTML='';
@@ -301,7 +312,7 @@
         });
         box.querySelectorAll('.dyn-save').forEach(b=>b.addEventListener('click',async()=>{
           const code=b.dataset.code, inp=box.querySelector('input[data-code="'+code+'"]'), url=inp.value.trim();
-          const r=await fetch(API+'/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,url,password:shortenerPw()})});
+          const r=await apiFetch('/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,url})});
           const j=await r.json().catch(()=>({})); $('dynMsg').textContent = r.ok ? ('היעד של '+code+' עודכן ✓') : ('שגיאה: '+(j.error||r.status));
         }));
         box.querySelectorAll('.dyn-use').forEach(b=>b.addEventListener('click',()=>{ contentEl.value=b.dataset.short; render(); window.scrollTo({top:0,behavior:'smooth'}); }));
@@ -312,8 +323,8 @@
       if(!url){ msg.textContent='הזינו יעד.'; return; }
       msg.textContent='יוצר…';
       try{
-        const body={url,password:shortenerPw()}; if(alias) body.alias=alias;
-        const r=await fetch(API+'/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const body={url}; if(alias) body.alias=alias;
+        const r=await apiFetch('/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
         const j=await r.json().catch(()=>({}));
         if(!r.ok){ msg.textContent='שגיאה: '+(j.error||r.status); return; }
         msg.textContent='נוצר! ה-QR למעלה מצביע כעת על '+j.short;
