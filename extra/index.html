@@ -24,8 +24,10 @@
     .tab{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--muted);padding:8px 16px;cursor:pointer;font-family:inherit;font-size:.9rem;font-weight:600}
     .tab.active{background:var(--accent);color:#2a1500;border-color:var(--accent)}
     label{display:block;font-weight:600;font-size:.86rem;margin-bottom:6px}
-    input[type=text],input[type=date]{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:11px 13px}
-    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(251,146,60,0.16)}
+    input[type=text],input[type=date],select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:11px 13px}
+    input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(251,146,60,0.16)}
+    .nbbar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-top:14px}
+    .nbbar label{color:var(--accent)}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .pane{display:none;margin-bottom:14px} .pane.active{display:block}
     .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:11px 20px;font-size:.92rem}
@@ -72,6 +74,10 @@
         <div class="pane" data-pane="name"><label>שם איש קשר</label><input type="text" id="name" placeholder="לדוגמה: דנה" /></div>
         <button class="btn btn-primary" id="searchBtn" type="button">חיפוש</button>
         <div class="msg" id="msg"></div>
+      </div>
+      <div class="nbbar">
+        <label for="nbSelect">📓 פנקס יעד ב-NotebookLM (לכפתור "שלח" בכל הקלטה)</label>
+        <select id="nbSelect"><option value="">טוען פנקסים…</option></select>
       </div>
       <div id="results"></div>
     </div>
@@ -156,7 +162,9 @@
         '<span class="meta">'+dir+' · '+(c.start||'')+' · '+fmtDur(c.duration)+' דק׳</span></div>'+
         (c.gist?('<div class="gist">🤖 '+c.gist+'</div>'):'')+
         '<div class="acts"><button class="btn btn-ghost play" type="button">▶ האזן</button>'+
-        '<button class="btn btn-ghost dl" type="button">⬇ הורד</button><span class="meta st"></span></div>';
+        '<button class="btn btn-ghost dl" type="button">⬇ הורד</button>'+
+        '<button class="btn btn-ghost nbsend" type="button">📓 שלח ל-NotebookLM</button>'+
+        '<span class="meta st"></span></div>';
       const st=d.querySelector('.st');
       async function getBlob(){
         st.textContent='טוען…';
@@ -174,10 +182,35 @@
         const u=URL.createObjectURL(b), a=document.createElement('a');
         a.href=u; a.download='recording_'+c.id+'.mp3'; document.body.appendChild(a); a.click(); a.remove();
       });
+      d.querySelector('.nbsend').addEventListener('click',async()=>{
+        const nb=$('nbSelect').value;
+        if(!nb){ st.textContent='בחרו פנקס יעד למעלה'; return; }
+        const btn=d.querySelector('.nbsend'); btn.disabled=true; st.textContent='שולח ל-NotebookLM… (עד דקה)';
+        const title='שיחה '+(c.number||c.id)+' '+(c.start||'').slice(0,10);
+        try{
+          const r=await apiFetch('/send-to-notebook',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({call_id:c.id,notebook_id:nb,title:title})});
+          const j=await r.json().catch(()=>({}));
+          if(!r.ok){ st.textContent = r.status===404?'אין הקלטה לשליחה':('שגיאה: '+(j.detail||j.error||r.status)); }
+          else { st.textContent='✓ נשלח ל-NotebookLM'; }
+        }catch(e){ st.textContent='שגיאת רשת'; }
+        finally{ btn.disabled=false; }
+      });
       return d;
     }
 
-    if(isAdmin()){ $('app').style.display='block'; $('searchBtn').addEventListener('click',doSearch); }
+    async function loadNotebooks(){
+      const sel=$('nbSelect'); if(!sel) return;
+      try{
+        const r=await apiFetch('/notebooks');
+        const j=await r.json().catch(()=>({}));
+        const list=(j.notebooks)||[];
+        if(!list.length){ sel.innerHTML='<option value="">לא נמצאו פנקסים</option>'; return; }
+        sel.innerHTML=list.map(n=>'<option value="'+n.id+'">'+(n.title||n.id)+'</option>').join('');
+      }catch(e){ sel.innerHTML='<option value="">שגיאה בטעינת פנקסים</option>'; }
+    }
+
+    if(isAdmin()){ $('app').style.display='block'; $('searchBtn').addEventListener('click',doSearch); loadNotebooks(); }
     else { $('lockNotice').style.display='block'; }
   </script>
 </body>
