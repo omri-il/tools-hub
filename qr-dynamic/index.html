@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR דינמי — מבוסס Google Sheet</title>
+  <meta name="description" content="צרו קוד QR שאפשר לשנות לאן הוא מפנה בלי להדפיס מחדש — היעד נשמר בתא בגוגל שיטס שלכם. חינמי, בלי שרת, רץ בדפדפן." />
+  <meta property="og:title" content="QR דינמי — מבוסס Google Sheet" />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
+      --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#a78bfa; --accent2:#8b5cf6;
+      font-family:'Heebo',system-ui,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(90% 60% at 50% -10%,rgba(167,139,250,0.10),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.5}
+    .wrap{max-width:780px;margin:0 auto}
+    a.back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:18px}
+    .masthead{text-align:center;margin-bottom:30px}
+    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent);cursor:default}
+    h1{font-weight:900;font-size:clamp(1.9rem,5vw,2.8rem);margin-top:10px}
+    h1 .em{color:var(--accent)}
+    .lede{color:var(--muted);font-weight:300;margin:14px auto 0;max-width:600px}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px}
+    .step{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+    .step .num{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#1a0f33;font-weight:900;display:flex;align-items:center;justify-content:center}
+    .step h2{font-size:1.15rem;font-weight:700}
+    label{display:block;font-weight:600;font-size:.9rem;margin-bottom:7px}
+    .hint{color:var(--faint);font-weight:400;font-size:.8rem}
+    input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:12px 14px;direction:ltr;text-align:left}
+    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(167,139,250,0.18)}
+    .field{margin-bottom:16px}
+    .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:11px 20px;font-size:.92rem}
+    .btn-primary{background:var(--accent);color:#1a0f33}
+    .btn-primary:hover{background:var(--accent2)}
+    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+    .codewrap{margin-top:16px;display:none}
+    .codewrap.show{display:block}
+    pre.code{background:#08090b;border:1px solid var(--line);border-radius:12px;padding:14px;direction:ltr;text-align:left;overflow:auto;max-height:300px;font-family:'Consolas',monospace;font-size:.8rem;color:#cbb9f5;white-space:pre;line-height:1.55}
+    ol.steps{margin:14px 18px 0;color:var(--muted);font-size:.9rem;line-height:1.9}
+    ol.steps b{color:var(--ink)}
+    ol.steps code{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:'Consolas',monospace;font-size:.85em;color:#cbb9f5}
+    .qresult{margin-top:18px;display:none;flex-direction:column;align-items:center;gap:16px}
+    .qresult.show{display:flex}
+    .qbox{border-radius:14px;padding:16px;background:#fff}
+    #qcanvas{display:block;max-width:100%;height:auto}
+    .dl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+    .err{color:#ff6b6b;font-size:.85rem;min-height:1em;margin-top:8px}
+    .note{margin-top:8px;background:rgba(167,139,250,0.08);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:var(--muted);font-size:.85rem;line-height:1.7}
+    footer{margin-top:40px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
+    footer a{color:var(--muted)}
+    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#1a0f33;font-weight:700;padding:12px 22px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="../">→ חזרה לכל הכלים</a>
+    <div class="masthead">
+      <div class="kicker">הכלים של עומרי אירם</div>
+      <h1>QR <span class="em">דינמי</span></h1>
+      <p class="lede">קוד QR אחד שאפשר <strong>לשנות לאן הוא מפנה בכל רגע — בלי להדפיס מחדש</strong>. היעד נשמר בתא בגוגל שיטס שלכם; משנים את התא, וה-QR כבר מפנה למקום החדש. הכל חינמי, בלי שרת שלי, רץ אצלכם.</p>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="sheet">
+      <div class="step"><div class="num">1</div><h2>צרו את הקוד</h2></div>
+      <div class="field">
+        <label for="dest">כתובת היעד ההתחלתית <span class="hint">— לאן ה-QR יפנה בהתחלה (אפשר לשנות אחר כך)</span></label>
+        <input type="text" id="dest" placeholder="https://example.com/my-page" />
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="gen" type="button">⚙️ צרו את קוד ה-Apps Script</button>
+      </div>
+      <p class="err" id="genErr"></p>
+
+      <div class="codewrap" id="codewrap">
+        <label>הקוד שלכם (Code.gs)</label>
+        <pre class="code" id="code"></pre>
+        <div class="actions"><button class="btn btn-ghost" id="copyCode" type="button">📋 העתקת הקוד</button></div>
+
+        <ol class="steps">
+          <li>פתחו <b>Google Sheet חדש</b> (אפשר להקליד <code>sheets.new</code> בדפדפן).</li>
+          <li>בתפריט: <b>Extensions → Apps Script</b> (הרחבות → Apps Script).</li>
+          <li>מחקו את הקוד שכבר נמצא שם, <b>הדביקו את הקוד שלמעלה</b>, ושמרו (💾).</li>
+          <li>למעלה בחרו את הפונקציה <code>setup</code> ולחצו <b>▷ Run</b>. אשרו הרשאות בפעם הראשונה. זה יוצר גיליון בשם <code>QR</code> עם כתובת היעד בתא <code>B1</code>.</li>
+          <li>לחצו <b>Deploy → New deployment</b> → סוג <b>Web app</b> → <b>Execute as: Me</b> → <b>Who has access: Anyone</b> → <b>Deploy</b>. העתיקו את כתובת ה-Web app (מסתיימת ב-<code>/exec</code>).</li>
+          <li>הדביקו אותה בשלב 2 למטה וצרו את ה-QR.</li>
+        </ol>
+        <div class="note">💡 <b>איך משנים יעד בעתיד:</b> פותחים את הגיליון, עוברים לגיליון <code>QR</code>, ומשנים את תא <code>B1</code>. זהו — ה-QR המודפס כבר מפנה למקום החדש.</div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="sheet">
+      <div class="step"><div class="num">2</div><h2>צרו את ה-QR</h2></div>
+      <div class="field">
+        <label for="exec">כתובת ה-Web app שקיבלתם <span class="hint">— מסתיימת ב-/exec</span></label>
+        <input type="text" id="exec" placeholder="https://script.google.com/macros/s/AKfy…/exec" />
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="makeQr" type="button">🔳 צרו QR</button>
+      </div>
+      <p class="err" id="qrErr"></p>
+
+      <div class="qresult" id="qresult">
+        <div class="qbox"><canvas id="qcanvas"></canvas></div>
+        <div class="dl">
+          <button class="btn btn-ghost" id="dlPng" type="button">⬇ הורדה PNG</button>
+          <button class="btn btn-ghost" id="dlSvg" type="button">⬇ הורדה SVG</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      ℹ️ הערה קטנה: גוגל Apps Script לא יודע לבצע הפניה "שקטה" לגמרי, אז בסריקה תיתכן הבזקה קצרה של "מעבירים אתכם…" לפני שמגיעים ליעד. זה נורמלי.
+    </div>
+
+    <footer>
+      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשרת שלי. ה-QR מפנה אל ה-Apps Script שלכם, שקורא את היעד מהגיליון שלכם.</p>
+      <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast">הועתק</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const isUrl = u => /^https?:\/\//i.test((u||'').trim());
+
+    function buildCode(initialUrl){
+      const INIT = JSON.stringify(initialUrl);   // safe JS string literal
+      return `/**
+ * QR דינמי — מפנה לכתובת שמופיעה בתא B1 של הגיליון "QR".
+ * כדי לשנות לאן ה-QR מפנה: ערכו את תא B1. אין צורך ליצור QR חדש.
+ * נוצר ב: https://tools.omri-iram.co.il/qr-dynamic/
+ */
+var SHEET_NAME = 'QR';
+var CELL = 'B1';
+var INITIAL_URL = ${INIT};
+
+function setup() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  sh.getRange('A1').setValue('כתובת היעד — ערכו את התא שמשמאל כדי לשנות לאן ה-QR מפנה:').setFontWeight('bold');
+  if (!String(sh.getRange(CELL).getValue()).trim()) sh.getRange(CELL).setValue(INITIAL_URL);
+  sh.setColumnWidth(2, 380);
+}
+
+function doGet() {
+  var dest = '';
+  try {
+    dest = String(SpreadsheetApp.getActiveSpreadsheet()
+      .getSheetByName(SHEET_NAME).getRange(CELL).getValue() || '').trim();
+  } catch (e) {}
+  if (!/^https?:\\/\\//i.test(dest)) dest = INITIAL_URL;
+  var attr = dest.replace(/"/g, '%22');
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<meta http-equiv="refresh" content="0;url=' + attr + '">'
+    + '<script>window.top.location.href=' + JSON.stringify(dest) + ';<\\/script>'
+    + '</head><body style="font-family:sans-serif;text-align:center;padding-top:48px;color:#333">'
+    + 'מעבירים אתכם…<br><a href="' + attr + '">להמשך לחצו כאן</a></body></html>';
+  return HtmlService.createHtmlOutput(html)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}`;
+    }
+
+    function toast(msg){ const t=$('toast'); t.textContent=msg||'הועתק'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600); }
+
+    $('gen').addEventListener('click', () => {
+      $('genErr').textContent='';
+      const url = $('dest').value.trim();
+      if(!isUrl(url)){ $('genErr').textContent='הזינו כתובת תקינה שמתחילה ב-http:// או https://'; return; }
+      $('code').textContent = buildCode(url);
+      $('codewrap').classList.add('show');
+      // prefill nothing for exec; scroll to code
+      $('codewrap').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+
+    $('copyCode').addEventListener('click', async () => {
+      const code = $('code').textContent;
+      try{ await navigator.clipboard.writeText(code); }
+      catch(_){ const r=document.createRange(); r.selectNodeContents($('code')); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand('copy'); getSelection().removeAllRanges(); }
+      toast('הקוד הועתק');
+    });
+
+    function qrColors(){ return { dark:'#000000', light:'#ffffff' }; }
+    const canvas = $('qcanvas');
+
+    $('makeQr').addEventListener('click', () => {
+      $('qrErr').textContent='';
+      const url = $('exec').value.trim();
+      if(!isUrl(url)){ $('qrErr').textContent='הדביקו את כתובת ה-Web app (שמסתיימת ב-/exec).'; return; }
+      if(typeof QRCode==='undefined'){ $('qrErr').textContent='טעינת ספריית ה-QR נכשלה. רעננו את הדף.'; return; }
+      if(!/\/exec$/.test(url)){ $('qrErr').textContent='שימו לב: הכתובת בדרך כלל מסתיימת ב-/exec. ממשיכים בכל זאת…'; }
+      QRCode.toCanvas(canvas, url, { width:300, margin:2, errorCorrectionLevel:'M', color:qrColors() }, err => {
+        if(err){ $('qrErr').textContent='שגיאה ביצירת ה-QR.'; return; }
+        $('qresult').classList.add('show');
+      });
+    });
+
+    function download(href,name){ const a=document.createElement('a'); a.href=href; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+    $('dlPng').addEventListener('click', () => { if(!$('qresult').classList.contains('show'))return; download(canvas.toDataURL('image/png'),'dynamic-qr.png'); });
+    $('dlSvg').addEventListener('click', () => {
+      const url=$('exec').value.trim();
+      if(!isUrl(url)||typeof QRCode==='undefined')return;
+      QRCode.toString(url,{type:'svg',margin:2,errorCorrectionLevel:'M',color:qrColors()},(err,svg)=>{
+        if(err)return; download('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg),'dynamic-qr.svg');
+      });
+    });
+  </script>
+</body>
+</html>
