@@ -112,6 +112,17 @@
     .reveal { margin-top: 13px; padding-inline-start: 27px; display: none; }
     .reveal.show { display: block; }
 
+    /* follow-up section */
+    .fu-lbl { font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 6px; color: var(--ink); }
+    .fu-block { background: rgba(255,255,255,0.025); border: 1px solid var(--line-soft); border-radius: 12px; padding: 16px; }
+    .fu-block textarea { min-height: 120px; }
+    .fu-tag { font-weight: 700; color: var(--accent); font-size: 0.9rem; margin-bottom: 12px; }
+
+    /* preview tabs */
+    .pv-tabs { display: none; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+    .pv-tab { padding: 7px 15px; font-size: 0.82rem; }
+    .pv-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(244,181,63,0.07); }
+
     /* buttons editor */
     .btn-rows { display: flex; flex-direction: column; gap: 10px; }
     .btn-item {
@@ -172,6 +183,29 @@
     .add-btn:hover { border-color: var(--accent); background: rgba(244,181,63,0.07); }
 
     .divider { border: none; border-top: 1px solid var(--line-soft); margin: 22px 0; }
+
+    /* foldable sections inside the form */
+    details.fold {
+      border: 1px solid var(--line); border-radius: 12px; margin-top: 14px;
+      background: rgba(255,255,255,0.015); overflow: hidden;
+    }
+    details.fold > summary {
+      cursor: pointer; list-style: none; padding: 15px 16px; font-weight: 600; font-size: 0.95rem;
+      color: var(--ink); display: flex; align-items: center; gap: 10px; user-select: none;
+    }
+    details.fold > summary::-webkit-details-marker { display: none; }
+    details.fold > summary::after {
+      content: "›"; margin-inline-start: auto; color: var(--accent); font-size: 1.4em; line-height: 1;
+      transition: transform .2s; transform: rotate(90deg);
+    }
+    details.fold[open] > summary::after { transform: rotate(270deg); }
+    details.fold > summary:hover { color: var(--accent); }
+    details.fold > summary .s-sub { font-weight: 400; font-size: 0.8rem; color: var(--ink-faint); }
+    details.fold[open] > summary { border-bottom: 1px solid var(--line-soft); }
+    details.fold .fold-body { padding: 6px 16px 18px; }
+    details.fold .fold-body .field:last-child { margin-bottom: 0; }
+    .summary-on { display: none; font-size: 0.72rem; font-weight: 700; color: #16130a; background: var(--accent); padding: 2px 9px; border-radius: 999px; }
+    details.fold.is-on > summary .summary-on { display: inline-block; }
 
     /* preview */
     .preview-desk {
@@ -301,16 +335,17 @@
           <button class="add-btn" id="addBtn" type="button">＋ הוסף כפתור</button>
         </div>
 
+        <details class="fold" id="foldDesign">
+        <summary>🎨 עיצוב ושולח <span class="s-sub">— צבע, גופן, לוגו, חתימה</span></summary>
+        <div class="fold-body">
+
         <div class="field">
           <label for="logo">תמונה / לוגו בראש המייל <span class="hint">— קישור לתמונה, אופציונלי</span></label>
           <input type="url" id="logo" dir="ltr" placeholder="https://example.com/logo.png" />
           <p class="hint" style="margin-top:7px;">העלו את התמונה לאתר או ל-Google Drive (קישור ישיר) והדביקו כאן. תופיע במרכז בראש המייל.</p>
         </div>
 
-        <hr class="divider">
-
         <div class="field">
-          <label>עיצוב המייל ושולח <span class="hint">— כך ייראה וירגיש המכתב</span></label>
           <div style="margin-bottom:13px;">
             <label for="style" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">סגנון מוכן <span class="hint">— צבע + גופן בלחיצה</span></label>
             <select id="style">
@@ -367,6 +402,13 @@
           </div>
         </div>
 
+        </div>
+        </details>
+
+        <details class="fold" id="foldAdvanced">
+        <summary>⚙️ אפשרויות מתקדמות <span class="summary-on">פעיל</span> <span class="s-sub">— פנייה בשם, מעקב קליקים</span></summary>
+        <div class="fold-body">
+
         <div class="field" style="margin-bottom:6px;">
           <div class="check">
             <input type="checkbox" id="personalize" />
@@ -414,6 +456,97 @@
             <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, ייכתב לגיליון בלשונית <code>Clicks</code> (נמען · קישור · זמן), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App — ההוראות יופיעו מתחת לקוד.</p>
           </div>
         </div>
+
+        </div>
+        </details>
+
+        <details class="fold" id="foldFollow">
+        <summary>📨 אימייל מעקב אוטומטי <span class="summary-on">פעיל</span> <span class="s-sub">— נשלח כמה ימים אחרי מילוי הטופס</span></summary>
+        <div class="fold-body">
+
+        <div class="field" style="margin-bottom:6px;">
+          <div class="check">
+            <input type="checkbox" id="followUp" />
+            <label for="followUp">הפעל אימייל מעקב אוטומטי <span class="hint">— נשלח אוטומטית כמה ימים אחרי מילוי הטופס</span></label>
+          </div>
+          <div class="reveal" id="followReveal">
+
+            <!-- Follow-up 1 -->
+            <div class="fu-block" id="fu1Block">
+              <div class="fu-tag">📨 מעקב ראשון</div>
+              <div class="two">
+                <div>
+                  <label class="fu-lbl" for="fu1Days">לשלוח אחרי כמה ימים?</label>
+                  <input type="text" id="fu1Days" inputmode="numeric" value="3" />
+                </div>
+                <div>
+                  <label class="fu-lbl" for="fu1Cond">למי לשלוח?</label>
+                  <select id="fu1Cond">
+                    <option value="noclick">רק למי שלא לחץ על אף כפתור</option>
+                    <option value="all">לכל מי שמילא את הטופס</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top:13px;">
+                <label class="fu-lbl" for="fu1Subject">נושא מייל המעקב</label>
+                <input type="text" id="fu1Subject" placeholder="לדוגמה: רק רציתי לוודא שקיבלת..." />
+              </div>
+              <div style="margin-top:13px;">
+                <label class="fu-lbl" for="fu1Body">גוף מייל המעקב <span class="hint">— <code>{שם}</code> יוחלף בשם</span></label>
+                <textarea id="fu1Body" placeholder="שלום {שם},
+
+שמתי לב שעדיין לא הצצת בחומרים ששלחתי לפני כמה ימים. ריכזתי לך אותם שוב כאן, כדי שיהיה לך נוח."></textarea>
+              </div>
+              <div style="margin-top:13px;">
+                <label class="fu-lbl">כפתורי קישור במייל המעקב</label>
+                <div class="btn-rows" id="fu1BtnRows"></div>
+                <button class="add-btn" id="fu1AddBtn" type="button">＋ הוסף כפתור</button>
+              </div>
+            </div>
+
+            <!-- Add second follow-up -->
+            <div class="check" style="margin-top:18px;">
+              <input type="checkbox" id="followUp2" />
+              <label for="followUp2">הוסף מעקב שני <span class="hint">— מייל נוסף, מאוחר יותר ברצף</span></label>
+            </div>
+            <div class="fu-block" id="fu2Block" style="display:none;margin-top:13px;">
+              <div class="fu-tag">📨 מעקב שני</div>
+              <div class="two">
+                <div>
+                  <label class="fu-lbl" for="fu2Days">לשלוח אחרי כמה ימים? <span class="hint">— מיום מילוי הטופס</span></label>
+                  <input type="text" id="fu2Days" inputmode="numeric" value="7" />
+                </div>
+                <div>
+                  <label class="fu-lbl" for="fu2Cond">למי לשלוח?</label>
+                  <select id="fu2Cond">
+                    <option value="noclick">רק למי שלא לחץ על אף כפתור</option>
+                    <option value="all">לכל מי שמילא את הטופס</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top:13px;">
+                <label class="fu-lbl" for="fu2Subject">נושא מייל המעקב</label>
+                <input type="text" id="fu2Subject" placeholder="לדוגמה: הזדמנות אחרונה..." />
+              </div>
+              <div style="margin-top:13px;">
+                <label class="fu-lbl" for="fu2Body">גוף מייל המעקב <span class="hint">— <code>{שם}</code> יוחלף בשם</span></label>
+                <textarea id="fu2Body" placeholder="שלום {שם},
+
+רק תזכורת אחרונה — הקישורים עדיין כאן וזמינים עבורך."></textarea>
+              </div>
+              <div style="margin-top:13px;">
+                <label class="fu-lbl">כפתורי קישור במייל המעקב</label>
+                <div class="btn-rows" id="fu2BtnRows"></div>
+                <button class="add-btn" id="fu2AddBtn" type="button">＋ הוסף כפתור</button>
+              </div>
+            </div>
+
+            <p class="hint" style="margin-top:15px;line-height:1.8;">⏰ מיילי המעקב חלים על מילויי טופס <strong>חדשים</strong> מרגע ההתקנה — מי שכבר מילא לא יקבל מעקב למפרע. צריך להוסיף טריגר יומי לפונקציה <code>sendFollowUps</code> (ההוראות יופיעו מתחת לקוד).</p>
+          </div>
+        </div>
+
+        </div>
+        </details>
       </div>
 
       <!-- ===== PREVIEW ===== -->
@@ -422,6 +555,11 @@
           <span class="sheet-num">ב.</span>
           <h2>כך ייראה המייל</h2>
           <button class="act act-ghost" id="fullPreview" type="button" style="margin-inline-start:auto;padding:7px 14px;font-size:0.82rem;">🔍 בדיקה בגודל מלא</button>
+        </div>
+        <div class="pv-tabs" id="previewTabs">
+          <button type="button" class="act act-ghost pv-tab active" data-pv="main">מייל ראשי</button>
+          <button type="button" class="act act-ghost pv-tab" data-pv="fu1">מעקב 1</button>
+          <button type="button" class="act act-ghost pv-tab" id="pvTabFu2" data-pv="fu2" style="display:none;">מעקב 2</button>
         </div>
         <div class="preview-desk">
           <div class="preview-tab" id="subjPreview">— נושא —</div>
@@ -458,6 +596,13 @@
         <code>Deploy</code> ← <code>New deployment</code> ← סוג <code>Web app</code> ← <code>Execute as: Me</code> ← <code>Who has access: Anyone</code> ← <code>Deploy</code>, ואשרו הרשאות.
         התוצאות ייכתבו אוטומטית בגיליון שלכם בלשונית <code>Clicks</code>: זמן · קמפיין · נמען · קישור.
       </p>
+
+      <p id="followUpNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
+        <strong style="color:var(--accent);">📨 אימייל מעקב מופעל.</strong> כדי שזה יעבוד, צריך עוד שני צעדים חד־פעמיים:<br>
+        1️⃣ הריצו פעם אחת את הפונקציה <code>sendFollowUps</code> (מאשר הרשאות + יוצר בסיס — מי שכבר מילא לא יקבל מעקב למפרע).<br>
+        2️⃣ הגדירו טריגר יומי: סמל השעון ⏰ ← <code>Add Trigger</code> ← פונקציה <code>sendFollowUps</code> ← מקור <code>Time-driven</code> ← <code>Day timer</code> ← שמרו.<br>
+        💡 לבדיקת התוכן לפני הכל, הריצו <code>sendFollowUpTest</code> — יישלח אליכם עותק של כל מייל מעקב.
+      </p>
     </div>
 
     <footer>
@@ -478,6 +623,10 @@
     const trackEl = $('trackClicks'), trackRevealEl = $('trackReveal'), campaignEl = $('campaign'), trackNoteEl = $('trackNote');
     const phoneEl = $('phone'), websiteEl = $('website'), mlSection = $('mlSection');
     const templateEl = $('template'), logoEl = $('logo'), styleEl = $('style');
+    const followUpEl = $('followUp'), followRevealEl = $('followReveal'), followUp2El = $('followUp2'), fu2Block = $('fu2Block');
+    const previewTabs = $('previewTabs');
+    const fu1 = { days: $('fu1Days'), cond: $('fu1Cond'), subject: $('fu1Subject'), body: $('fu1Body'), btnRows: $('fu1BtnRows') };
+    const fu2 = { days: $('fu2Days'), cond: $('fu2Cond'), subject: $('fu2Subject'), body: $('fu2Body'), btnRows: $('fu2BtnRows') };
     // Admin mode is shared site-wide via localStorage (unlocked on the hub or here).
     const ADMIN = (function(){ try { return localStorage.getItem('omri_admin') === '1'; } catch(_){ return false; } })();
 
@@ -550,7 +699,8 @@
       return [['filled','מלא'],['outline','מתאר'],['pill','גלולה']]
         .map(o => '<option value="' + o[0] + '"' + (o[0]===sel?' selected':'') + '>' + o[1] + '</option>').join('');
     }
-    function addButtonRow(text, url, color, icon, btnStyle){
+    function addButtonRow(text, url, color, icon, btnStyle, container){
+      container = container || btnRows;
       const div = document.createElement('div');
       div.className = 'btn-item';
       div.innerHTML =
@@ -567,10 +717,11 @@
       div.querySelectorAll('input,select').forEach(el => el.addEventListener('input', update));
       const trigger = div.querySelector('.icon-trigger'), hidden = div.querySelector('.b-icon');
       trigger.addEventListener('click', (ev) => { ev.stopPropagation(); openEmojiPicker(trigger, hidden); });
-      btnRows.appendChild(div);
+      container.appendChild(div);
     }
-    function readButtonsRaw(){
-      return [...btnRows.querySelectorAll('.btn-item')].map(row => ({
+    function readButtonsRaw(container){
+      container = container || btnRows;
+      return [...container.querySelectorAll('.btn-item')].map(row => ({
         icon: row.querySelector('.b-icon').value.trim(),
         text: row.querySelector('.b-text').value.trim(),
         url: row.querySelector('.b-url').value.trim(),
@@ -578,7 +729,7 @@
         style: row.querySelector('.b-style').value
       }));
     }
-    function readButtons(){ return readButtonsRaw().filter(b => b.text && b.url); }
+    function readButtons(container){ return readButtonsRaw(container).filter(b => b.text && b.url); }
 
     // ---------- emoji picker ----------
     const EMOJIS = ['📊','📈','🎬','🎥','▶️','📎','📄','📑','📅','🗓️','✅','☑️','🔗','📥','📤','🎓',
@@ -642,15 +793,30 @@
         eventDate: eventDateEl.value.trim(),
         trackClicks: trackEl.checked,
         campaign: campaignEl.value.trim(),
-        logo: logoEl.value.trim()
+        logo: logoEl.value.trim(),
+        followUp1: readFollowUp(fu1, followUpEl.checked),
+        followUp2: readFollowUp(fu2, followUpEl.checked && followUp2El.checked)
+      };
+    }
+    function readFollowUp(refs, enabled){
+      return {
+        enabled: enabled,
+        days: Math.max(1, parseInt(refs.days.value, 10) || 1),
+        cond: refs.cond.value,                 // 'noclick' | 'all'
+        subject: refs.subject.value.trim(),
+        body: refs.body.value,
+        buttons: readButtons(refs.btnRows)
       };
     }
 
     // ---------- preview ----------
-    function buildPreview(cfg){
-      const subject = cfg.subject || 'נושא המייל';
+    function buildPreview(cfg, mode){
+      let subject, bodySrc, buttons;
+      if (mode === 'fu1')      { subject = cfg.followUp1.subject || 'נושא מייל המעקב'; bodySrc = cfg.followUp1.body; buttons = cfg.followUp1.buttons; }
+      else if (mode === 'fu2') { subject = cfg.followUp2.subject || 'נושא מייל המעקב'; bodySrc = cfg.followUp2.body; buttons = cfg.followUp2.buttons; }
+      else                     { subject = cfg.subject || 'נושא המייל';                bodySrc = cfg.body;            buttons = cfg.buttons; }
       const sampleName = cfg.personalize ? 'ישראל' : '';
-      const previewBody = cfg.body.replace(/\{שם\}/g, sampleName);
+      const previewBody = bodySrc.replace(/\{שם\}/g, sampleName);
       const font = fontStack(cfg.emailFont);
       const accent = cfg.accent;
       const html = fontImport(cfg.emailFont) +
@@ -658,7 +824,7 @@
           (cfg.logo ? '<div style="text-align:center;margin-bottom:18px;"><img src="' + esc(cfg.logo) + '" alt="" style="max-width:100%;border-radius:8px;"></div>' : '') +
           '<h2 style="color: ' + accent + '; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
           (bodyToHtml(previewBody) || '<p style="color:#94a3b8;font-size:15px;">— כתבו את גוף המכתב כדי לראות תצוגה —</p>') +
-          '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(cfg.buttons, true) + '</div>' +
+          '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(buttons, true) + '</div>' +
           signatureHtml(cfg.senderName, accent, cfg.phone, cfg.website) +
         '</div>';
       emailPreview.innerHTML = html;
@@ -666,16 +832,22 @@
     }
 
     // ---------- code generation ----------
+    function buttonsLiteralFor(arr){
+      return arr.length
+        ? arr.map(b => '    { text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) + ', color: ' + JSON.stringify(b.color) + ', icon: ' + JSON.stringify(b.icon || '') + ', style: ' + JSON.stringify(b.style || 'filled') + ' }').join(',\n')
+        : '    // אין כפתורים';
+    }
     function generateScript(cfg){
       const buttons = cfg.buttons;
-      const buttonsLiteral = buttons.length
-        ? buttons.map(b => '    { text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) + ', color: ' + JSON.stringify(b.color) + ', icon: ' + JSON.stringify(b.icon || '') + ', style: ' + JSON.stringify(b.style || 'filled') + ' }').join(',\n')
-        : '    // הוסיפו כפתורים בכלי';
+      const buttonsLiteral = buttons.length ? buttonsLiteralFor(buttons) : '    // הוסיפו כפתורים בכלי';
       const bodyHtml = bodyToHtml(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
       const bodyText = bodyToText(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
       const nameColVal = cfg.personalize ? String(cfg.nameColumn) : 'null';
       const hasWebhook = ADMIN && !!cfg.webhook;
-      const trackOn = !!cfg.trackClicks;
+      const fu1c = cfg.followUp1, fu2c = cfg.followUp2;
+      const fuOn = fu1c.enabled;
+      const needsTrackForFU = (fu1c.enabled && fu1c.cond === 'noclick') || (fu2c.enabled && fu2c.cond === 'noclick');
+      const trackOn = !!cfg.trackClicks || needsTrackForFU;
 
       // When tracking is on, button links are wrapped through this script's own
       // web-app URL so each click is logged to a "Clicks" sheet, then forwarded.
@@ -746,9 +918,132 @@
           '        catch (mlErr) { Logger.log("MailerLite error: " + mlErr.toString()); }'
         : '';
 
+      // ----- follow-up code -----
+      const fu1Html = bodyToHtml(fu1c.body).replace(/\{שם\}/g, '{{NAME}}');
+      const fu1Text = bodyToText(fu1c.body).replace(/\{שם\}/g, '{{NAME}}');
+      const fu2Html = bodyToHtml(fu2c.body).replace(/\{שם\}/g, '{{NAME}}');
+      const fu2Text = bodyToText(fu2c.body).replace(/\{שם\}/g, '{{NAME}}');
+      const fuConfigItems = ['    { n: 1, days: ' + fu1c.days + ', cond: ' + JSON.stringify(fu1c.cond) + ' }'];
+      if (fu2c.enabled) fuConfigItems.push('    { n: 2, days: ' + fu2c.days + ', cond: ' + JSON.stringify(fu2c.cond) + ' }');
+
+      const followUpFns = !fuOn ? '' : (
+'\n\n\n' +
+'// ====================================================\n' +
+'//  אימייל מעקב אוטומטי (Follow-up)\n' +
+'//  הריצו פעם אחת ידנית את sendFollowUps כדי לאשר הרשאות\n' +
+'//  וליצור בסיס, ואז הגדירו טריגר יומי (Time-driven) לפונקציה זו.\n' +
+'// ====================================================\n' +
+'var FOLLOWUP_CONFIG = [\n' +
+fuConfigItems.join(',\n') + '\n' +
+'];\n' +
+'\n' +
+'function getFollowUpContent_(n, recipientName, recipientEmail) {\n' +
+'  var nm = recipientName || "";\n' +
+'  if (n === 1) {\n' +
+'    var B = [\n' + buttonsLiteralFor(fu1c.buttons) + '\n    ];\n' +
+'    var h = ' + JSON.stringify(fu1Html) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'    var t = ' + JSON.stringify(fu1Text) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'    return buildEmail_(' + JSON.stringify(fu1c.subject) + ', h, t, B, recipientEmail);\n' +
+'  }\n' +
+(fu2c.enabled ?
+'  if (n === 2) {\n' +
+'    var B2 = [\n' + buttonsLiteralFor(fu2c.buttons) + '\n    ];\n' +
+'    var h2 = ' + JSON.stringify(fu2Html) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'    var t2 = ' + JSON.stringify(fu2Text) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'    return buildEmail_(' + JSON.stringify(fu2c.subject) + ', h2, t2, B2, recipientEmail);\n' +
+'  }\n' : '') +
+'  return null;\n' +
+'}\n' +
+'\n' +
+'// מחזיר את גיליון תגובות הטופס (מדלג על Clicks ו-FollowUps)\n' +
+'function getResponsesSheet_(ss) {\n' +
+'  var sheets = ss.getSheets();\n' +
+'  for (var i = 0; i < sheets.length; i++) {\n' +
+'    var sn = sheets[i].getName();\n' +
+'    if (sn === "Clicks" || sn === "FollowUps") continue;\n' +
+'    return sheets[i];\n' +
+'  }\n' +
+'  return null;\n' +
+'}\n' +
+'\n' +
+'function sendFollowUps() {\n' +
+'  var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
+'  var resp = getResponsesSheet_(ss);\n' +
+'  if (!resp) return;\n' +
+'  var data = resp.getDataRange().getValues();\n' +
+'  if (data.length < 2) return;\n' +
+'\n' +
+'  var doneSheet = ss.getSheetByName("FollowUps");\n' +
+'  if (!doneSheet) {\n' +
+'    // ריצה ראשונה: מי שכבר מילא מסומן כ"טופל" — לא נשלח לו מעקב למפרע.\n' +
+'    doneSheet = ss.insertSheet("FollowUps");\n' +
+'    doneSheet.appendRow(["זמן", "נמען", "מעקב"]);\n' +
+'    for (var r = 1; r < data.length; r++) {\n' +
+'      var em0 = data[r][1];\n' +
+'      if (em0 && String(em0).indexOf("@") !== -1) {\n' +
+'        doneSheet.appendRow([new Date(), em0, "FU1"]);\n' +
+'        doneSheet.appendRow([new Date(), em0, "FU2"]);\n' +
+'      }\n' +
+'    }\n' +
+'    Logger.log("נוצר בסיס מעקב. מילויי טופס חדשים מעכשיו יקבלו אימיילי מעקב.");\n' +
+'    return;\n' +
+'  }\n' +
+'\n' +
+'  var sentRows = doneSheet.getDataRange().getValues();\n' +
+'  var sent = {};\n' +
+'  for (var s = 1; s < sentRows.length; s++) { sent[String(sentRows[s][1]).toLowerCase() + "|" + sentRows[s][2]] = true; }\n' +
+'\n' +
+'  var clicked = {};\n' +
+'  var clickSheet = ss.getSheetByName("Clicks");\n' +
+'  if (clickSheet) {\n' +
+'    var cv = clickSheet.getDataRange().getValues();\n' +
+'    for (var c = 1; c < cv.length; c++) { if (cv[c][2]) clicked[String(cv[c][2]).toLowerCase()] = true; }\n' +
+'  }\n' +
+'\n' +
+'  var now = new Date();\n' +
+'  for (var i = 1; i < data.length; i++) {\n' +
+'    var ts = data[i][0];\n' +
+'    var email = data[i][1];\n' +
+'    if (!email || String(email).indexOf("@") === -1) continue;\n' +
+'    if (!(ts instanceof Date)) ts = new Date(ts);\n' +
+'    var ageDays = (now.getTime() - ts.getTime()) / 86400000;\n' +
+'    var emKey = String(email).toLowerCase();\n' +
+'    var name = (NAME_COLUMN !== null && data[i][NAME_COLUMN]) ? data[i][NAME_COLUMN] : null;\n' +
+'    for (var f = 0; f < FOLLOWUP_CONFIG.length; f++) {\n' +
+'      var fu = FOLLOWUP_CONFIG[f];\n' +
+'      var key = emKey + "|FU" + fu.n;\n' +
+'      if (sent[key]) continue;\n' +
+'      if (ageDays < fu.days) continue;\n' +
+'      if (fu.cond === "noclick" && clicked[emKey]) {\n' +
+'        doneSheet.appendRow([new Date(), email, "FU" + fu.n]); sent[key] = true; continue;\n' +
+'      }\n' +
+'      try {\n' +
+'        var ed = getFollowUpContent_(fu.n, name, email);\n' +
+'        if (!ed) continue;\n' +
+'        MailApp.sendEmail({ to: email, name: SENDER_NAME, subject: ed.subject, body: ed.textBody, htmlBody: ed.htmlBody });\n' +
+'        doneSheet.appendRow([new Date(), email, "FU" + fu.n]); sent[key] = true;\n' +
+'        Logger.log("מעקב " + fu.n + " נשלח אל: " + email);\n' +
+'      } catch (err) { Logger.log("שגיאת מעקב ל-" + email + ": " + err.toString()); }\n' +
+'    }\n' +
+'  }\n' +
+'}\n' +
+'\n' +
+'// שולח אליכם עותק בדיקה של מיילי המעקב\n' +
+'function sendFollowUpTest() {\n' +
+'  var myEmail = Session.getActiveUser().getEmail();\n' +
+'  for (var f = 0; f < FOLLOWUP_CONFIG.length; f++) {\n' +
+'    var n = FOLLOWUP_CONFIG[f].n;\n' +
+'    var ed = getFollowUpContent_(n, null, myEmail);\n' +
+'    if (!ed) continue;\n' +
+'    MailApp.sendEmail({ to: myEmail, name: SENDER_NAME, subject: "[בדיקת מעקב " + n + "] " + ed.subject, body: ed.textBody, htmlBody: ed.htmlBody });\n' +
+'  }\n' +
+'  Logger.log("מייל בדיקת מעקב נשלח אל: " + myEmail);\n' +
+'}\n'
+      );
+
       return (
 '/**\n' +
-' * אימייל אוטומטי בעת מילוי טופס Google' + (hasWebhook ? ' + הוספה ל-MailerLite' : '') + '\n' +
+' * אימייל אוטומטי בעת מילוי טופס Google' + (hasWebhook ? ' + הוספה ל-MailerLite' : '') + (fuOn ? ' + אימייל מעקב' : '') + '\n' +
 ' * נוצר במחולל של עומרי אירם — https://tools.omri-iram.co.il/email-generator/\n' +
 ' *\n' +
 ' * התקנה: Extensions → Apps Script בגיליון המחובר לטופס, הדביקו קוד זה,\n' +
@@ -765,15 +1060,8 @@ eventBlock +
 trackHeader +
 '\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
 '\n\n' +
-'function getEmailContent(recipientName, recipientEmail) {\n' +
-'  var subject = ' + JSON.stringify(cfg.subject) + ';\n' +
-'  var nm = recipientName || "";\n' +
-'\n' +
-'  // כל שורה = כפתור אחד\n' +
-'  var BUTTONS = [\n' +
-buttonsLiteral + '\n' +
-'  ];\n' +
-'\n' +
+'// בונה משותף לכל המיילים (ראשי + מעקב)\n' +
+'function buildEmail_(subject, bodyHtml, bodyText, BUTTONS, recipientEmail) {\n' +
 '  var buttonsHtml = BUTTONS.map(function (b) {\n' +
 '    var label = (b.icon ? b.icon + " " : "") + b.text;\n' +
 '    var css;\n' +
@@ -786,9 +1074,6 @@ buttonsLiteral + '\n' +
 '\n' +
 '  var buttonsText = BUTTONS.map(function (b) { return (b.icon ? b.icon + " " : "") + b.text + ": " + b.url; }).join("\\n");\n' +
 '\n' +
-'  var bodyHtml = ' + JSON.stringify(bodyHtml) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'  var bodyText = ' + JSON.stringify(bodyText) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'\n' +
 '  var sigName = SENDER_NAME ? \'<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">\' + SENDER_NAME + \'</p>\' : "";\n' +
 '  var sigContact = "";\n' +
 '  if (SENDER_PHONE) sigContact += \'<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:\' + SENDER_PHONE.replace(/[^0-9+]/g, "") + \'" style="color: #334155; text-decoration: none;">\' + SENDER_PHONE + \'</a></p>\';\n' +
@@ -799,19 +1084,29 @@ buttonsLiteral + '\n' +
 '      (TOP_IMAGE ? \'<div style="text-align: center; margin-bottom: 18px;"><img src="\' + TOP_IMAGE + \'" alt="" style="max-width: 100%; border-radius: 8px;"></div>\' : "") +\n' +
 '      \'<h2 style="color: \' + ACCENT + \'; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
 '      bodyHtml +\n' +
-'      \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' +\n' +
+'      (buttonsHtml ? \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' : "") +\n' +
 '      \'<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">\' +\n' +
 '      \'<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>\' +\n' +
 '      sigName +\n' +
 '      sigContact +\n' +
 '    \'</div>\';\n' +
 '\n' +
-'  var textBody = bodyText + "\\n\\n" + buttonsText + "\\n\\nבברכה," +\n' +
+'  var textBody = bodyText + (buttonsText ? "\\n\\n" + buttonsText : "") + "\\n\\nבברכה," +\n' +
 '    (SENDER_NAME ? "\\n" + SENDER_NAME : "") +\n' +
 '    (SENDER_PHONE ? "\\nטלפון: " + SENDER_PHONE : "") +\n' +
 '    (SENDER_SITE ? "\\nאתר: " + SENDER_SITE : "");\n' +
 '\n' +
 '  return { subject: subject, htmlBody: htmlBody, textBody: textBody };\n' +
+'}\n' +
+'\n\n' +
+'function getEmailContent(recipientName, recipientEmail) {\n' +
+'  var nm = recipientName || "";\n' +
+'  var BUTTONS = [\n' +
+buttonsLiteral + '\n' +
+'  ];\n' +
+'  var bodyHtml = ' + JSON.stringify(bodyHtml) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'  var bodyText = ' + JSON.stringify(bodyText) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'  return buildEmail_(' + JSON.stringify(cfg.subject) + ', bodyHtml, bodyText, BUTTONS, recipientEmail);\n' +
 '}' +
 trackedFn +
 mlFunction +
@@ -877,18 +1172,35 @@ mlCallManual + '\n' +
 '    }\n' +
 '  }\n' +
 '  Logger.log("נשלח ל-" + successCount + " אנשים.");\n' +
-'}\n'
+'}\n' +
+followUpFns
       );
     }
 
     // ---------- master update ----------
-    let lastCode = '';
+    let lastCode = '', pvMode = 'main';
+    const followUpNoteEl = $('followUpNote');
+    function autoEnableTrackingForFU(){
+      const noclick = (followUpEl.checked && fu1.cond.value === 'noclick') ||
+                      (followUpEl.checked && followUp2El.checked && fu2.cond.value === 'noclick');
+      if (noclick && !trackEl.checked){ trackEl.checked = true; trackRevealEl.classList.add('show'); $('foldAdvanced').setAttribute('open',''); }
+    }
     function update(){
       const cfg = readConfig();
-      buildPreview(cfg);
+      const fuOn = cfg.followUp1.enabled;
+      previewTabs.style.display = fuOn ? 'flex' : 'none';
+      $('pvTabFu2').style.display = cfg.followUp2.enabled ? '' : 'none';
+      if (!fuOn) pvMode = 'main';
+      if (pvMode === 'fu2' && !cfg.followUp2.enabled) pvMode = 'fu1';
+      previewTabs.querySelectorAll('.pv-tab').forEach(t => t.classList.toggle('active', t.dataset.pv === pvMode));
+      buildPreview(cfg, pvMode);
       lastCode = generateScript(cfg);
       codeOut.textContent = lastCode;
-      trackNoteEl.style.display = cfg.trackClicks ? 'block' : 'none';
+      const noclickFU = fuOn && (cfg.followUp1.cond === 'noclick' || (cfg.followUp2.enabled && cfg.followUp2.cond === 'noclick'));
+      trackNoteEl.style.display = (cfg.trackClicks || noclickFU) ? 'block' : 'none';
+      followUpNoteEl.style.display = fuOn ? 'block' : 'none';
+      $('foldFollow').classList.toggle('is-on', fuOn);
+      $('foldAdvanced').classList.toggle('is-on', cfg.personalize || cfg.trackClicks);
     }
 
     // ---------- events ----------
@@ -908,6 +1220,19 @@ mlCallManual + '\n' +
     });
     $('addBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8'); update(); });
     logoEl.addEventListener('input', update);
+
+    // ---------- follow-up events ----------
+    [followUpEl, followUp2El].forEach(el => el.addEventListener('change', () => {
+      followRevealEl.classList.toggle('show', followUpEl.checked);
+      fu2Block.style.display = (followUpEl.checked && followUp2El.checked) ? 'block' : 'none';
+      autoEnableTrackingForFU();
+      update();
+    }));
+    [fu1.days, fu1.subject, fu1.body, fu2.days, fu2.subject, fu2.body].forEach(el => el.addEventListener('input', update));
+    [fu1.cond, fu2.cond].forEach(el => el.addEventListener('change', () => { autoEnableTrackingForFU(); update(); }));
+    previewTabs.querySelectorAll('.pv-tab').forEach(t => t.addEventListener('click', () => { pvMode = t.dataset.pv; update(); }));
+    $('fu1AddBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8', '', 'filled', fu1.btnRows); update(); });
+    $('fu2AddBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8', '', 'filled', fu2.btnRows); update(); });
 
     // ---------- templates ----------
     const TEMPLATES = {
@@ -981,6 +1306,12 @@ mlCallManual + '\n' +
       personalizeEl.checked = false; nameRevealEl.classList.remove('show'); nameColEl.value = '2';
       webhookEl.value = ''; eventNameEl.value = ''; eventDateEl.value = ''; eventRevealEl.style.display = 'none';
       trackEl.checked = false; trackRevealEl.classList.remove('show'); campaignEl.value = '';
+      followUpEl.checked = false; followUp2El.checked = false;
+      followRevealEl.classList.remove('show'); fu2Block.style.display = 'none';
+      fu1.days.value = '3'; fu1.cond.value = 'noclick'; fu1.subject.value = ''; fu1.body.value = '';
+      fu2.days.value = '7'; fu2.cond.value = 'noclick'; fu2.subject.value = ''; fu2.body.value = '';
+      fu1.btnRows.innerHTML = ''; fu2.btnRows.innerHTML = '';
+      pvMode = 'main';
       btnRows.innerHTML = '';
       addButtonRow('📊 כפתור 1', '', '#1a73e8');
       addButtonRow('🎬 כפתור 2', '', '#ea4335');
