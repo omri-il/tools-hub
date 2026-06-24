@@ -15,17 +15,18 @@
   <style>
     /* Admin-only tools: hidden until admin mode is unlocked, then shown in a distinct purple identity */
     body:not(.admin) .admin-only { display: none !important; }
+    /* admin / private tools get a distinct light-orange identity */
     .tool-card.admin-only {
-      border-color: rgba(167,139,250,0.55);
-      background: linear-gradient(180deg, rgba(167,139,250,0.12), rgba(167,139,250,0.02));
+      border-color: rgba(251,146,60,0.55);
+      background: linear-gradient(180deg, rgba(251,146,60,0.13), rgba(251,146,60,0.02));
     }
-    .tool-card.admin-only:hover { border-color: #a78bfa; }
-    .tool-card.admin-only .tag { border-color: rgba(167,139,250,0.55); color: #c4b5fd; }
+    .tool-card.admin-only:hover { border-color: #fb923c; }
+    .tool-card.admin-only .tag { border-color: rgba(251,146,60,0.55); color: #fdba74; }
     #adminChip {
       position: fixed; inset-block-end: 16px; inset-inline-start: 16px; z-index: 60;
       display: none; align-items: center; gap: 10px;
-      background: rgba(167,139,250,0.16); border: 1px solid rgba(167,139,250,0.55);
-      color: #c4b5fd; padding: 8px 14px; border-radius: 999px;
+      background: rgba(251,146,60,0.18); border: 1px solid rgba(251,146,60,0.6);
+      color: #fdba74; padding: 8px 14px; border-radius: 999px;
       font-family: 'Heebo', sans-serif; font-size: 0.82rem; font-weight: 600;
     }
     body.admin #adminChip { display: flex; }
