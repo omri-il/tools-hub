@@ -343,6 +343,10 @@
           <label for="logo">תמונה / לוגו בראש המייל <span class="hint">— קישור לתמונה, אופציונלי</span></label>
           <input type="url" id="logo" dir="ltr" placeholder="https://example.com/logo.png" />
           <p class="hint" style="margin-top:7px;">העלו את התמונה לאתר או ל-Google Drive (קישור ישיר) והדביקו כאן. תופיע במרכז בראש המייל.</p>
+
+          <label for="attachLink" style="margin-top:16px;">צירוף קובץ מ-Google Drive <span class="hint">— קישור, אופציונלי</span></label>
+          <input type="url" id="attachLink" dir="ltr" placeholder="https://drive.google.com/file/d/.../view" />
+          <p class="hint" style="margin-top:7px;">הדביקו קישור לקובץ ב-Drive (PDF / מצגת / תמונה). שתפו אותו כ"כל מי שיש לו הקישור — צופה". הקובץ יצורף לכל מייל. <strong>הקוד ישתמש ב-DriveApp ולכן יבקש הרשאת Drive בפעם הראשונה.</strong></p>
         </div>
 
         <div class="field">
@@ -622,7 +626,7 @@
     const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
     const trackEl = $('trackClicks'), trackRevealEl = $('trackReveal'), campaignEl = $('campaign'), trackNoteEl = $('trackNote');
     const phoneEl = $('phone'), websiteEl = $('website'), mlSection = $('mlSection');
-    const templateEl = $('template'), logoEl = $('logo'), styleEl = $('style');
+    const templateEl = $('template'), logoEl = $('logo'), styleEl = $('style'), attachLinkEl = $('attachLink');
     const followUpEl = $('followUp'), followRevealEl = $('followReveal'), followUp2El = $('followUp2'), fu2Block = $('fu2Block');
     const previewTabs = $('previewTabs');
     const fu1 = { days: $('fu1Days'), cond: $('fu1Cond'), subject: $('fu1Subject'), body: $('fu1Body'), btnRows: $('fu1BtnRows') };
@@ -664,6 +668,15 @@
 
     // ---------- helpers ----------
     function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    // Pull the file ID out of a Google Drive share link (/d/ID, ?id=ID, or a bare ID).
+    function driveFileId(link){
+      link = (link || '').trim();
+      if (!link) return '';
+      const m = link.match(/\/d\/([-\w]{20,})/) || link.match(/[?&]id=([-\w]{20,})/);
+      if (m) return m[1];
+      if (/^[-\w]{20,}$/.test(link)) return link;
+      return '';
+    }
     function boldHtml(s){ return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
 
     function bodyToHtml(text){
@@ -794,6 +807,7 @@
         trackClicks: trackEl.checked,
         campaign: campaignEl.value.trim(),
         logo: logoEl.value.trim(),
+        attach: attachLinkEl.value.trim(),
         followUp1: readFollowUp(fu1, followUpEl.checked),
         followUp2: readFollowUp(fu2, followUpEl.checked && followUp2El.checked)
       };
@@ -1056,6 +1070,7 @@ fuConfigItems.join(',\n') + '\n' +
 'var SENDER_PHONE = ' + JSON.stringify(cfg.phone) + ';  // טלפון בחתימה (ריק = לא מוצג)\n' +
 'var SENDER_SITE  = ' + JSON.stringify(cfg.website) + ';  // אתר בחתימה (ריק = לא מוצג)\n' +
 'var TOP_IMAGE   = ' + JSON.stringify(cfg.logo || '') + ';  // תמונה/לוגו בראש המייל (קישור; ריק = אין)\n' +
+'var ATTACH_FILE_ID = ' + JSON.stringify(driveFileId(cfg.attach || '')) + ';  // קובץ מצורף מ-Drive (ריק = אין)\n' +
 eventBlock +
 trackHeader +
 '\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
@@ -1111,6 +1126,13 @@ buttonsLiteral + '\n' +
 trackedFn +
 mlFunction +
 '\n\n\n' +
+'// מחזיר את הקובץ המצורף מ-Drive (אם הוגדר). דורש הרשאת DriveApp בהרצה הראשונה.\n' +
+'function _attachments_() {\n' +
+'  if (!ATTACH_FILE_ID) return [];\n' +
+'  try { return [DriveApp.getFileById(ATTACH_FILE_ID).getBlob()]; }\n' +
+'  catch (e) { Logger.log("צירוף הקובץ נכשל — בדקו שהקובץ קיים ומשותף: " + e); return []; }\n' +
+'}\n' +
+'\n\n' +
 'function sendEmailOnFormSubmit(e) {\n' +
 '  try {\n' +
 '    if (!e || !e.values) return;\n' +
@@ -1125,7 +1147,8 @@ mlFunction +
 '      name: SENDER_NAME,\n' +
 '      subject: emailData.subject,\n' +
 '      body: emailData.textBody,\n' +
-'      htmlBody: emailData.htmlBody\n' +
+'      htmlBody: emailData.htmlBody,\n' +
+'      attachments: _attachments_()\n' +
 '    });\n' +
 '    Logger.log("אימייל נשלח אל: " + emailAddress);' +
 mlCallSubmit + '\n' +
@@ -1142,7 +1165,8 @@ mlCallSubmit + '\n' +
 '    name: SENDER_NAME,\n' +
 '    subject: "[בדיקה] " + emailData.subject,\n' +
 '    body: emailData.textBody,\n' +
-'    htmlBody: emailData.htmlBody\n' +
+'    htmlBody: emailData.htmlBody,\n' +
+'    attachments: _attachments_()\n' +
 '  });\n' +
 '  Logger.log("מייל בדיקה נשלח אל: " + myEmail);\n' +
 '}\n' +
@@ -1162,7 +1186,8 @@ mlCallSubmit + '\n' +
 '          name: SENDER_NAME,\n' +
 '          subject: emailData.subject,\n' +
 '          body: emailData.textBody,\n' +
-'          htmlBody: emailData.htmlBody\n' +
+'          htmlBody: emailData.htmlBody,\n' +
+'          attachments: _attachments_()\n' +
 '        });\n' +
 '        successCount++;' +
 mlCallManual + '\n' +
@@ -1220,6 +1245,7 @@ followUpFns
     });
     $('addBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8'); update(); });
     logoEl.addEventListener('input', update);
+    attachLinkEl.addEventListener('input', update);
 
     // ---------- follow-up events ----------
     [followUpEl, followUp2El].forEach(el => el.addEventListener('change', () => {
@@ -1254,6 +1280,7 @@ followUpFns
       subjectEl.value = cfg.subject || ''; bodyEl.value = cfg.body || '';
       senderEl.value = cfg.senderName || ''; phoneEl.value = cfg.phone || '';
       websiteEl.value = cfg.website || ''; logoEl.value = cfg.logo || '';
+      attachLinkEl.value = cfg.attach || '';
       if (cfg.emailFont) fontEl.value = cfg.emailFont;
       if (cfg.accent) accentEl.value = cfg.accent;
       btnRows.innerHTML = '';
@@ -1273,7 +1300,7 @@ followUpFns
       const o = getMyTpls();
       o[name] = { subject: subjectEl.value, body: bodyEl.value, buttons: readButtonsRaw(),
                   senderName: senderEl.value, phone: phoneEl.value, website: websiteEl.value, logo: logoEl.value,
-                  emailFont: fontEl.value, accent: accentEl.value };
+                  attach: attachLinkEl.value, emailFont: fontEl.value, accent: accentEl.value };
       setMyTpls(o); refreshMyTpls(); templateEl.value = 'saved:' + name; alert('התבנית נשמרה ✓');
     });
     $('delTpl').addEventListener('click', () => {
@@ -1300,7 +1327,7 @@ followUpFns
     $('resetAll').addEventListener('click', () => {
       if (!confirm('לאפס את כל השדות לברירת המחדל?')) return;
       subjectEl.value = ''; bodyEl.value = '';
-      senderEl.value = ''; phoneEl.value = ''; websiteEl.value = ''; logoEl.value = '';
+      senderEl.value = ''; phoneEl.value = ''; websiteEl.value = ''; logoEl.value = ''; attachLinkEl.value = '';
       fontEl.value = 'arial'; accentEl.value = '#1a73e8';
       templateEl.value = ''; styleEl.value = '';
       personalizeEl.checked = false; nameRevealEl.classList.remove('show'); nameColEl.value = '2';
