@@ -44,6 +44,15 @@
     footer a{color:var(--muted)}
     .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#04261a;font-weight:700;padding:12px 22px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    body:not(.admin) .admin-only{display:none}
+    .short-result{margin-top:14px;display:none;align-items:center;gap:12px;flex-wrap:wrap;direction:ltr}
+    .short-link{font-family:'Consolas',monospace;color:#bfe9d6;font-size:.95rem}
+    .cmp-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.86rem}
+    .cmp-table th,.cmp-table td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+    .cmp-table th{color:var(--muted);font-weight:600;font-size:.78rem}
+    .cmp-table a{color:var(--accent);text-decoration:none;direction:ltr;display:inline-block}
+    .cmp-bar{height:8px;background:var(--accent);border-radius:5px;min-width:2px}
+    .cmp-clicks{font-variant-numeric:tabular-nums;font-weight:700;text-align:center}
   </style>
 </head>
 <body>
@@ -95,8 +104,32 @@
       </div>
     </div>
 
+    <div class="sheet admin-only" style="margin-top:18px">
+      <h2 style="font-size:1.12rem;margin-bottom:6px">🔗 קצר ועקוב</h2>
+      <p class="hint" style="margin-bottom:14px">קצרו את קישור ה-UTM עם הדומיין שלכם (go.omri-iram.co.il) כדי לספור כמה לחצו על כל ערוץ.</p>
+      <div class="field">
+        <label for="alias">כינוי <span class="hint">— אופציונלי, למשל fb_pesach</span></label>
+        <input type="text" id="alias" placeholder="fb_pesach" />
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="shorten" type="button">🔗 קצר ועקוב</button>
+      </div>
+      <div class="short-result" id="shortResult">
+        <span class="short-link" id="shortLink"></span>
+        <button class="btn btn-ghost" id="copyShort" type="button">📋 העתק</button>
+      </div>
+      <p class="hint" id="shortErr" style="color:#f87171;margin-top:8px"></p>
+    </div>
+
+    <div class="sheet admin-only" style="margin-top:18px">
+      <h2 style="font-size:1.12rem;margin-bottom:6px">📊 השוואת קליקים</h2>
+      <p class="hint" style="margin-bottom:12px">כל קישורי ה-UTM שקיצרתם, ממוינים לפי מספר הקליקים — כך תדעו איזה ערוץ עובד.</p>
+      <div class="actions"><button class="btn btn-ghost" id="loadCompare" type="button">↻ טען / רענן השוואה</button></div>
+      <div id="cmpWrap"></div>
+    </div>
+
     <div class="note">
-      💡 רוצים גם <strong>לדעת על איזה קישור לחצו יותר</strong>? בקרוב — קיצור כל קישור UTM דרך מקצר הקישורים, והשוואת מספר הקליקים ביניהם.
+      💡 הקיצור והשוואת הקליקים זמינים במצב אדמין — שלוש לחיצות על הכותרת "הכלים של עומרי אירם" למעלה, ואז קוד מ-Google Authenticator.
     </div>
 
     <footer>
@@ -142,6 +175,82 @@
     $('clear').addEventListener('click', () => { fields.forEach(el=>{ if(el.id!=='base') el.value=''; }); build(); });
 
     build();
+
+    // ---------- admin: shorten via go-shortener + click comparison ----------
+    function isAdmin(){ try{ return localStorage.getItem('omri_admin')==='1'; }catch(_){ return false; } }
+    if(isAdmin()) document.body.classList.add('admin');
+    // triple-click the kicker to unlock admin (same model as the hub)
+    (function(){ const k=document.querySelector('.kicker'); if(!k) return; let c=0,t=null;
+      k.addEventListener('click',()=>{ c++; clearTimeout(t); t=setTimeout(()=>c=0,1200);
+        if(c>=3){ c=0; if(isAdmin())return; const v=prompt('קוד אדמין:');
+          if(v==='9464'){ try{localStorage.setItem('omri_admin','1');}catch(_){} document.body.classList.add('admin'); }
+          else if(v!==null){ alert('קוד שגוי'); } } });
+    })();
+
+    const API='https://go.omri-iram.co.il/api';
+    const SESS_KEY='omri_session';           // shared TOTP session token across the private tools
+    function tokGet(){ try{ return localStorage.getItem(SESS_KEY)||''; }catch(_){ return ''; } }
+    function tokSet(t){ try{ localStorage.setItem(SESS_KEY,t); }catch(_){ } }
+    function tokClear(){ try{ localStorage.removeItem(SESS_KEY); }catch(_){ } }
+    async function authWithCode(code){
+      try{ const res=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+        if(!res.ok) return false; const d=await res.json().catch(()=>({})); if(d.token){ tokSet(d.token); return true; } }catch(_){}
+      return false;
+    }
+    async function apiFetch(path, opts){
+      opts=opts||{};
+      const mk=t=>Object.assign({},opts,{headers:Object.assign({},opts.headers||{},{'X-Session':t})});
+      let t=tokGet();
+      if(!t){ const v=prompt('קוד מ-Google Authenticator (6 ספרות):')||''; if(v&&await authWithCode(v.trim())) t=tokGet(); }
+      let r=await fetch(API+path, mk(t));
+      if(r.status===401){ tokClear(); const v2=prompt('צריך להתחבר — קוד מ-Google Authenticator (6 ספרות):')||''; if(v2&&await authWithCode(v2.trim())) r=await fetch(API+path, mk(tokGet())); }
+      return r;
+    }
+    function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function utmOf(u){ try{ const q=new URL(u).searchParams;
+      return { s:q.get('utm_source')||'—', m:q.get('utm_medium')||'—', c:q.get('utm_campaign')||'—' };
+    }catch(_){ return {s:'—',m:'—',c:'—'}; } }
+
+    $('shorten').addEventListener('click', async () => {
+      const url = build(); if(!url){ $('shortErr').textContent='קודם מלאו כתובת יעד'; return; }
+      $('shortErr').textContent=''; $('shorten').disabled=true;
+      try{
+        const alias = $('alias').value.trim();
+        const r = await apiFetch('/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(alias?{url,alias}:{url})});
+        const d = await r.json().catch(()=>({}));
+        if(!r.ok){ $('shortErr').textContent = d.error || ('שגיאה '+r.status); return; }
+        $('shortLink').textContent = d.short;
+        $('shortResult').style.display='flex';
+        loadCompare();
+      }catch(_){ $('shortErr').textContent='שגיאת רשת — נסו שוב'; }
+      finally{ $('shorten').disabled=false; }
+    });
+    $('copyShort').addEventListener('click', async () => {
+      try{ await navigator.clipboard.writeText($('shortLink').textContent); }catch(_){}
+      const t=$('toast'); t.textContent='הקישור הקצר הועתק'; t.classList.add('show');
+      setTimeout(()=>{ t.classList.remove('show'); t.textContent='הועתק'; },1600);
+    });
+
+    async function loadCompare(){
+      const wrap = $('cmpWrap');
+      wrap.innerHTML = '<p class="hint">טוען…</p>';
+      let r; try{ r = await apiFetch('/list'); }catch(_){ wrap.innerHTML='<p class="hint">שגיאת רשת</p>'; return; }
+      const all = await r.json().catch(()=>[]);
+      if(!r.ok){ wrap.innerHTML='<p class="hint">'+esc(all.error||'שגיאה')+'</p>'; return; }
+      const utm = (Array.isArray(all)?all:[]).filter(x=>/[?&]utm_/i.test(x.url||'')).sort((a,b)=>(b.clicks||0)-(a.clicks||0));
+      if(!utm.length){ wrap.innerHTML='<p class="hint">עדיין אין קישורי UTM מקוצרים. קצרו קישור למעלה כדי להתחיל לעקוב.</p>'; return; }
+      const max = Math.max(1, ...utm.map(x=>x.clicks||0));
+      const rows = utm.map(x=>{ const u=utmOf(x.url); const w=Math.round((x.clicks||0)/max*100);
+        return `<tr>
+          <td><a href="${esc(x.short)}" target="_blank" rel="noopener">${esc((x.short||'').replace(/^https?:\/\//,''))}</a></td>
+          <td>${esc(u.s)}</td><td>${esc(u.m)}</td><td>${esc(u.c)}</td>
+          <td style="min-width:110px"><div class="cmp-bar" style="width:${w}%"></div></td>
+          <td class="cmp-clicks">${x.clicks||0}</td></tr>`; }).join('');
+      wrap.innerHTML = `<table class="cmp-table"><thead><tr>
+        <th>קישור</th><th>מקור</th><th>מדיום</th><th>קמפיין</th><th></th><th>קליקים</th>
+      </tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    $('loadCompare').addEventListener('click', loadCompare);
   </script>
 </body>
 </html>
