@@ -18,18 +18,23 @@ Edit `index.html` and append a new `<a class="tool-card">` block inside `.tools-
 
 That's it — the grid auto-flows.
 
-## Public vs private (always ask when adding a tool)
+## Public vs private — ONE link + hidden admin unlock
 
-When building a new tool, **ask Omri: ציבורי / פרטי / שניהם** (public / private / both), then place the card:
+There is **one link only**: `tools.omri-iram.co.il`. No separate private URL. Private tools live on the *same* page but are hidden until **admin mode** is unlocked.
 
-- **Public** → card in `index.html` here (visible to everyone on `tools.omri-iram.co.il`).
-- **Private** → card only on the **private hub**, NOT here. The private hub is a separate page listing *all* tools (public + private); it is **password-protected** and never on GitHub Pages.
-  - Source: `davinci-automation` repo → `control/private-hub/index.html` (self-contained HTML).
-  - Served at **`https://go.omri-iram.co.il/my/`** behind HTTP Basic auth (user `omri`, `/etc/nginx/.davinci_htpasswd`), deployed to the VPS at `/var/www/private-hub/`. To update it: edit the source, `scp` to the VPS path.
-- **Both** → add a card in both places.
-- A tool that runs on Omri's machine or touches his data (e.g. DaVinci control, shortener admin) also gets its **own** password regardless of where it's listed.
+**Admin unlock (client-side, same-origin, shared across all tool pages):**
+- Trigger: **triple-click the "OI" brand logo** (on the hub) or the **"הכלים של עומרי אירם" kicker** (on a tool page) within ~1.2s → PIN prompt → code **`9464`** → sets `localStorage['omri_admin']='1'` → `document.body.classList.add('admin')`. A "🔓 מצב אדמין · יציאה" chip lets you exit.
+- This is **obscurity, not security** (the flag is client-side). It only controls *visibility*. Truly sensitive tools (DaVinci control, shortener) are still password-protected at their own endpoints.
 
-Note: GitHub Pages can't password-protect the hub itself, so "private" here means the card lives only on the auth-gated private hub — the public page never reveals the tool exists. (Tool pages no longer show a "חזרה לכל הכלים" back-link, so a shared tool URL doesn't expose the hub.)
+**When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
+- **Public** → normal `<a class="tool-card">` in `index.html`.
+- **Private** → `<a class="tool-card admin-only">` in `index.html` — hidden by `body:not(.admin) .admin-only{display:none}`, shown in a **distinct purple identity** when admin. Add the `אדמין` tag.
+- **Both** → just public (everyone sees it).
+- A tool that touches Omri's machine/data also gets its **own** password at its endpoint.
+
+Per-tool admin behaviour inside a tool (not just the card): read the same flag — `const ADMIN = localStorage.getItem('omri_admin')==='1'` (wrap in try/catch) — and reveal admin-only features. Example: the email-generator hides the MailerLite section and leaves sender/contact blank for the public, but in admin shows MailerLite + prefills Omri's details.
+
+(Superseded: an earlier separate `go.omri-iram.co.il/my/` private hub. The VPS page/route may still exist but is **not** the model — the single link + admin unlock is. Tool pages also no longer show a "חזרה לכל הכלים" back-link, so sharing a tool URL doesn't expose the hub.)
 
 ## Current tools
 

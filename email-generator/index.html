@@ -254,7 +254,7 @@
           <div class="two">
             <div>
               <label for="senderName" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">שם השולח</label>
-              <input type="text" id="senderName" value="עומרי אירם" placeholder="עומרי אירם" />
+              <input type="text" id="senderName" placeholder="השם שלכם" />
             </div>
             <div>
               <label for="emailFont" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">גופן המייל</label>
@@ -283,6 +283,20 @@
           </div>
         </div>
 
+        <div class="field">
+          <label>פרטי קשר בחתימה <span class="hint">— יופיעו בתחתית המכתב; השאירו ריק כדי לא להציג</span></label>
+          <div class="two">
+            <div>
+              <label for="phone" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">טלפון</label>
+              <input type="text" id="phone" dir="ltr" placeholder="052-000-0000" />
+            </div>
+            <div>
+              <label for="website" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">אתר / קישור</label>
+              <input type="text" id="website" dir="ltr" placeholder="example.com" />
+            </div>
+          </div>
+        </div>
+
         <div class="field" style="margin-bottom:6px;">
           <div class="check">
             <input type="checkbox" id="personalize" />
@@ -300,10 +314,11 @@
           </div>
         </div>
 
+        <div id="mlSection" style="display:none;">
         <hr class="divider">
 
         <div class="field" style="margin-bottom:4px;">
-          <label for="webhook">חיבור ל-MailerLite <span class="hint">— אישי, אופציונלי</span></label>
+          <label for="webhook">חיבור ל-MailerLite <span class="hint">— אישי, רק במצב אדמין</span></label>
           <input type="url" id="webhook" placeholder="כתובת ה-webhook (נשמרת רק בדפדפן שלך)" dir="ltr" />
           <p class="hint" style="margin-top:7px;">🔒 אם תמלא — הקוד יוסיף משתתפים אוטומטית למעקב 5 הימים. הכתובת נשמרת רק במחשב שלך ולא מתפרסמת בדף.</p>
           <div class="reveal" id="eventReveal" style="padding-inline-start:0;margin-top:13px;display:none;">
@@ -314,6 +329,7 @@
                 <input type="date" id="eventDate" /></div>
             </div>
           </div>
+        </div>
         </div>
         <hr class="divider">
 
@@ -389,6 +405,9 @@
     const senderEl = $('senderName'), fontEl = $('emailFont'), accentEl = $('accent');
     const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
     const trackEl = $('trackClicks'), trackRevealEl = $('trackReveal'), campaignEl = $('campaign'), trackNoteEl = $('trackNote');
+    const phoneEl = $('phone'), websiteEl = $('website'), mlSection = $('mlSection');
+    // Admin mode is shared site-wide via localStorage (unlocked on the hub or here).
+    const ADMIN = (function(){ try { return localStorage.getItem('omri_admin') === '1'; } catch(_){ return false; } })();
 
     // email fonts: web-safe stacks + optional Google webfont (loaded via @import, graceful fallback)
     const FONTS = {
@@ -407,12 +426,13 @@
         ? "<style>@import url('https://fonts.googleapis.com/css2?family=" + f.family + "&display=swap');</style>"
         : "";
     }
-    function signatureHtml(sender, accent){
-      return '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">' +
-        '<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>' +
-        '<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">' + esc(sender) + '</p>' +
-        '<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:+972525121007" style="color: #334155; text-decoration: none;">052-512-1007</a></p>' +
-        '<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: ' + accent + '; text-decoration: none;">omri-iram.co.il</a></p>';
+    function signatureHtml(sender, accent, phone, website){
+      var out = '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">' +
+        '<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>';
+      if (sender)  out += '<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">' + esc(sender) + '</p>';
+      if (phone)   out += '<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:' + esc(phone.replace(/[^0-9+]/g,'')) + '" style="color: #334155; text-decoration: none;">' + esc(phone) + '</a></p>';
+      if (website) { var url = /^https?:\/\//i.test(website) ? website : 'https://' + website; out += '<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="' + esc(url) + '" target="_blank" style="color: ' + accent + '; text-decoration: none;">' + esc(website) + '</a></p>'; }
+      return out;
     }
 
     const PALETTE = [
@@ -475,7 +495,9 @@
         subject: subjectEl.value.trim(),
         body: bodyEl.value,
         buttons: readButtons(),
-        senderName: senderEl.value.trim() || 'עומרי אירם',
+        senderName: senderEl.value.trim(),
+        phone: phoneEl.value.trim(),
+        website: websiteEl.value.trim(),
         emailFont: fontEl.value,
         accent: accentEl.value,
         personalize: personalizeEl.checked,
@@ -500,7 +522,7 @@
           '<h2 style="color: ' + accent + '; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
           (bodyToHtml(previewBody) || '<p style="color:#94a3b8;font-size:15px;">— כתבו את גוף המכתב כדי לראות תצוגה —</p>') +
           '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(cfg.buttons, true) + '</div>' +
-          signatureHtml(cfg.senderName, accent) +
+          signatureHtml(cfg.senderName, accent, cfg.phone, cfg.website) +
         '</div>';
       emailPreview.innerHTML = html;
       subjPreview.innerHTML = 'נושא: <strong>' + esc(subject) + '</strong>' + (cfg.personalize ? '  ·  פנייה בשם' : '');
@@ -515,7 +537,7 @@
       const bodyHtml = bodyToHtml(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
       const bodyText = bodyToText(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
       const nameColVal = cfg.personalize ? String(cfg.nameColumn) : 'null';
-      const hasWebhook = !!cfg.webhook;
+      const hasWebhook = ADMIN && !!cfg.webhook;
       const trackOn = !!cfg.trackClicks;
 
       // When tracking is on, button links are wrapped through this script's own
@@ -598,6 +620,8 @@
 'var EMAIL_FONT  = ' + JSON.stringify(fontStack(cfg.emailFont)) + ';  // גופן המייל\n' +
 'var ACCENT      = ' + JSON.stringify(cfg.accent) + ';  // צבע ראשי (כותרת + קישורים)\n' +
 'var FONT_IMPORT = ' + JSON.stringify(fontImport(cfg.emailFont)) + ';\n' +
+'var SENDER_PHONE = ' + JSON.stringify(cfg.phone) + ';  // טלפון בחתימה (ריק = לא מוצג)\n' +
+'var SENDER_SITE  = ' + JSON.stringify(cfg.website) + ';  // אתר בחתימה (ריק = לא מוצג)\n' +
 eventBlock +
 trackHeader +
 '\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
@@ -623,6 +647,11 @@ buttonsLiteral + '\n' +
 '  var bodyHtml = ' + JSON.stringify(bodyHtml) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
 '  var bodyText = ' + JSON.stringify(bodyText) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
 '\n' +
+'  var sigName = SENDER_NAME ? \'<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">\' + SENDER_NAME + \'</p>\' : "";\n' +
+'  var sigContact = "";\n' +
+'  if (SENDER_PHONE) sigContact += \'<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:\' + SENDER_PHONE.replace(/[^0-9+]/g, "") + \'" style="color: #334155; text-decoration: none;">\' + SENDER_PHONE + \'</a></p>\';\n' +
+'  if (SENDER_SITE) { var siteUrl = /^https?:\\/\\//i.test(SENDER_SITE) ? SENDER_SITE : "https://" + SENDER_SITE; sigContact += \'<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="\' + siteUrl + \'" target="_blank" style="color: \' + ACCENT + \'; text-decoration: none;">\' + SENDER_SITE + \'</a></p>\'; }\n' +
+'\n' +
 '  var htmlBody = FONT_IMPORT +\n' +
 '    \'<div style="direction: rtl; text-align: right; font-family: \' + EMAIL_FONT + \'; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">\' +\n' +
 '      \'<h2 style="color: \' + ACCENT + \'; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
@@ -630,13 +659,14 @@ buttonsLiteral + '\n' +
 '      \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' +\n' +
 '      \'<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">\' +\n' +
 '      \'<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>\' +\n' +
-'      \'<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">\' + SENDER_NAME + \'</p>\' +\n' +
-'      \'<p style="margin: 8px 0 0 0; color: #334155; font-size: 14px;">📞 <a href="tel:+972525121007" style="color: #334155; text-decoration: none;">052-512-1007</a></p>\' +\n' +
-'      \'<p style="margin: 4px 0 0 0; color: #334155; font-size: 14px;">🌐 <a href="https://omri-iram.co.il" target="_blank" style="color: \' + ACCENT + \'; text-decoration: none;">omri-iram.co.il</a></p>\' +\n' +
+'      sigName +\n' +
+'      sigContact +\n' +
 '    \'</div>\';\n' +
 '\n' +
-'  var textBody = bodyText + "\\n\\n" + buttonsText +\n' +
-'    "\\n\\nבברכה,\\n" + SENDER_NAME + "\\nטלפון: 052-512-1007\\nאתר: https://omri-iram.co.il";\n' +
+'  var textBody = bodyText + "\\n\\n" + buttonsText + "\\n\\nבברכה," +\n' +
+'    (SENDER_NAME ? "\\n" + SENDER_NAME : "") +\n' +
+'    (SENDER_PHONE ? "\\nטלפון: " + SENDER_PHONE : "") +\n' +
+'    (SENDER_SITE ? "\\nאתר: " + SENDER_SITE : "");\n' +
 '\n' +
 '  return { subject: subject, htmlBody: htmlBody, textBody: textBody };\n' +
 '}' +
@@ -722,6 +752,8 @@ mlCallManual + '\n' +
     [subjectEl, bodyEl, eventNameEl, eventDateEl, senderEl].forEach(el => el.addEventListener('input', update));
     [fontEl, accentEl].forEach(el => el.addEventListener('change', update));
     senderEl.addEventListener('input', () => { try { localStorage.setItem('senderName', senderEl.value.trim()); } catch(_){} });
+    phoneEl.addEventListener('input', () => { try { localStorage.setItem('sig_phone', phoneEl.value.trim()); } catch(_){} update(); });
+    websiteEl.addEventListener('input', () => { try { localStorage.setItem('sig_website', websiteEl.value.trim()); } catch(_){} update(); });
     personalizeEl.addEventListener('change', () => { nameRevealEl.classList.toggle('show', personalizeEl.checked); update(); });
     nameColEl.addEventListener('change', update);
     trackEl.addEventListener('change', () => { trackRevealEl.classList.toggle('show', trackEl.checked); update(); });
@@ -761,11 +793,31 @@ mlCallManual + '\n' +
     addButtonRow('לצפייה במצגת המפגש', '', '#1a73e8');
     addButtonRow('לצפייה בסרטון ההסבר', '', '#ea4335');
     try {
+      const savedSender = localStorage.getItem('senderName'); if (savedSender) senderEl.value = savedSender;
+      const sp = localStorage.getItem('sig_phone'); if (sp) phoneEl.value = sp;
+      const sw = localStorage.getItem('sig_website'); if (sw) websiteEl.value = sw;
       const saved = localStorage.getItem('mlWebhook');
       if (saved) { webhookEl.value = saved; eventRevealEl.style.display = 'block'; }
-      const savedSender = localStorage.getItem('senderName');
-      if (savedSender) senderEl.value = savedSender;
     } catch(_){}
+    if (ADMIN) {
+      mlSection.style.display = 'block';
+      if (!senderEl.value)  senderEl.value  = 'עומרי אירם';
+      if (!phoneEl.value)   phoneEl.value   = '052-512-1007';
+      if (!websiteEl.value) websiteEl.value = 'omri-iram.co.il';
+    }
+    // hidden admin unlock here too (triple-click the "הכלים של עומרי אירם" kicker)
+    (function(){
+      const k = document.querySelector('.kicker'); if (!k) return;
+      let c = 0, t = null;
+      k.addEventListener('click', () => {
+        c++; clearTimeout(t); t = setTimeout(() => c = 0, 1200);
+        if (c >= 3) { c = 0; if (ADMIN) return;
+          const v = prompt('קוד אדמין:');
+          if (v === '9464') { try { localStorage.setItem('omri_admin', '1'); } catch(_){} location.reload(); }
+          else if (v !== null) { alert('קוד שגוי'); }
+        }
+      });
+    })();
     update();
   </script>
 </body>

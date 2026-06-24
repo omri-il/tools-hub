@@ -12,6 +12,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=1" />
+  <style>
+    /* Admin-only tools: hidden until admin mode is unlocked, then shown in a distinct purple identity */
+    body:not(.admin) .admin-only { display: none !important; }
+    .tool-card.admin-only {
+      border-color: rgba(167,139,250,0.55);
+      background: linear-gradient(180deg, rgba(167,139,250,0.12), rgba(167,139,250,0.02));
+    }
+    .tool-card.admin-only:hover { border-color: #a78bfa; }
+    .tool-card.admin-only .tag { border-color: rgba(167,139,250,0.55); color: #c4b5fd; }
+    #adminChip {
+      position: fixed; inset-block-end: 16px; inset-inline-start: 16px; z-index: 60;
+      display: none; align-items: center; gap: 10px;
+      background: rgba(167,139,250,0.16); border: 1px solid rgba(167,139,250,0.55);
+      color: #c4b5fd; padding: 8px 14px; border-radius: 999px;
+      font-family: 'Heebo', sans-serif; font-size: 0.82rem; font-weight: 600;
+    }
+    body.admin #adminChip { display: flex; }
+    #adminChip button { background: none; border: none; color: #fff; cursor: pointer; font-weight: 700; font-size: 0.82rem; }
+  </style>
 </head>
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
@@ -87,11 +106,66 @@
       <span class="tool-cta">פתח את הכלי ←</span>
     </a>
 
+    <!-- ===== admin-only tools (revealed after unlocking admin mode) ===== -->
+    <a class="tool-card admin-only" href="shortener/" rel="noopener">
+      <div class="tool-icon" aria-hidden="true">🔗</div>
+      <h2 class="tool-title">מקצר קישורים</h2>
+      <p class="tool-desc">הופך קישורים ארוכים לקישורים קצרים עם דומיין משלי (go.omri-iram.co.il) — אפשר לבחור כינוי אישי ולספור כמה לחצו על כל קישור.</p>
+      <span class="tool-tags">
+        <span class="tag">אדמין</span>
+        <span class="tag">דומיין משלי</span>
+      </span>
+      <span class="tool-cta">פתח את הכלי ←</span>
+    </a>
+
+    <a class="tool-card admin-only" href="https://go.omri-iram.co.il/davinci/" target="_blank" rel="noopener">
+      <div class="tool-icon" aria-hidden="true">🎛️</div>
+      <h2 class="tool-title">מרכז השליטה של DaVinci</h2>
+      <p class="tool-desc">לוח בקרה אישי להפעלת אוטומציות עריכה ב-DaVinci Resolve שעל המחשב הביתי — ייצוא, הסרת שקט, תמלול, הקמת פרויקט. דורש סיסמה.</p>
+      <span class="tool-tags">
+        <span class="tag">אדמין</span>
+        <span class="tag">אוטומציה</span>
+      </span>
+      <span class="tool-cta">פתח את הכלי ←</span>
+    </a>
+
   </main>
 
   <footer class="site-footer">
     <p>בנוי בעברית, בשבילכם · <a href="mailto:hello@omri-iram.co.il">hello@omri-iram.co.il</a></p>
   </footer>
+
+  <div id="adminChip">🔓 מצב אדמין <button id="adminExit" type="button">יציאה</button></div>
+
+  <script>
+    // Hidden admin unlock: triple-click the "OI" logo within ~1.2s → PIN → reveals admin tools.
+    // Client-side obscurity only; the private tools themselves are password-protected at their own endpoints.
+    (function () {
+      var KEY = 'omri_admin', CODE = '9464';
+      function lsGet(k){ try { return localStorage.getItem(k); } catch (_) { return null; } }
+      function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (_) {} }
+      function lsDel(k){ try { localStorage.removeItem(k); } catch (_) {} }
+      if (lsGet(KEY) === '1') document.body.classList.add('admin');
+      var mark = document.querySelector('.brand-mark');
+      var clicks = 0, timer = null;
+      if (mark) {
+        mark.addEventListener('click', function () {
+          clicks++; clearTimeout(timer); timer = setTimeout(function () { clicks = 0; }, 1200);
+          if (clicks >= 3) {
+            clicks = 0;
+            if (document.body.classList.contains('admin')) return;
+            var c = prompt('קוד אדמין:');
+            if (c === CODE) { lsSet(KEY, '1'); document.body.classList.add('admin'); }
+            else if (c !== null) { alert('קוד שגוי'); }
+          }
+        });
+      }
+      var exit = document.getElementById('adminExit');
+      if (exit) exit.addEventListener('click', function () {
+        lsDel(KEY); document.body.classList.remove('admin');
+      });
+    })();
+  </script>
 
 </body>
 </html>
