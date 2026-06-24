@@ -120,8 +120,41 @@
     }
     .btn-item input { padding: 9px 11px; font-size: 0.88rem; }
     .btn-item select { padding: 9px; font-size: 0.84rem; }
-    .btn-item .b-icon { flex: 0 0 52px; text-align: center; }
+    .btn-item .b-icon-cell { flex: 0 0 auto; }
     .btn-item .b-text { flex: 1 1 130px; }
+
+    /* emoji picker */
+    .icon-trigger {
+      width: 48px; height: 38px; background: #0f1115; border: 1px solid var(--line);
+      border-radius: 9px; cursor: pointer; font-size: 1.15rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .18s, background .18s;
+    }
+    .icon-trigger:hover { border-color: var(--accent); background: #14171d; }
+    .icon-trigger.empty { color: var(--ink-faint); font-size: 0.95rem; }
+    .icon-trigger:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(244,181,63,0.16); }
+
+    .emoji-pop {
+      position: fixed; z-index: 200; width: 290px; max-width: calc(100vw - 24px);
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 12px; box-shadow: 0 22px 50px -18px rgba(0,0,0,0.85);
+      display: none;
+    }
+    .emoji-pop.show { display: block; }
+    .emoji-pop .ep-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+    .emoji-pop .ep-title { font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); }
+    .emoji-pop .ep-clear {
+      background: transparent; border: 1px solid var(--line); color: var(--ink-soft);
+      border-radius: 8px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer; font-family: var(--sans);
+      transition: border-color .18s, color .18s;
+    }
+    .emoji-pop .ep-clear:hover { border-color: var(--danger); color: var(--danger); }
+    .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; max-height: 240px; overflow-y: auto; }
+    .emoji-grid button {
+      background: transparent; border: none; border-radius: 8px; cursor: pointer;
+      font-size: 1.25rem; line-height: 1; padding: 6px 0; transition: background .12s;
+    }
+    .emoji-grid button:hover { background: rgba(244,181,63,0.16); }
     .btn-item .b-url  { flex: 1 1 150px; }
     .btn-item .b-color, .btn-item .b-style { flex: 0 0 auto; }
     .btn-remove {
@@ -521,7 +554,10 @@
       const div = document.createElement('div');
       div.className = 'btn-item';
       div.innerHTML =
-        '<input type="text" class="b-icon" placeholder="🙂" maxlength="4" value="' + esc(icon||'') + '" title="אייקון / אימוג׳י (לא חובה)">' +
+        '<div class="b-icon-cell">' +
+          '<button type="button" class="icon-trigger' + (icon ? '' : ' empty') + '" title="בחרו אייקון / אימוג׳י">' + (icon ? esc(icon) : '＋') + '</button>' +
+          '<input type="hidden" class="b-icon" value="' + esc(icon||'') + '">' +
+        '</div>' +
         '<input type="text" class="b-text" placeholder="טקסט הכפתור" value="' + esc(text||'') + '">' +
         '<input type="url" class="b-url" dir="ltr" placeholder="https://..." value="' + esc(url||'') + '">' +
         '<select class="b-color">' + colorOptions(color||'#1a73e8') + '</select>' +
@@ -529,6 +565,8 @@
         '<button type="button" class="btn-remove" title="הסר">✕</button>';
       div.querySelector('.btn-remove').addEventListener('click', () => { div.remove(); update(); });
       div.querySelectorAll('input,select').forEach(el => el.addEventListener('input', update));
+      const trigger = div.querySelector('.icon-trigger'), hidden = div.querySelector('.b-icon');
+      trigger.addEventListener('click', (ev) => { ev.stopPropagation(); openEmojiPicker(trigger, hidden); });
       btnRows.appendChild(div);
     }
     function readButtonsRaw(){
@@ -541,6 +579,50 @@
       }));
     }
     function readButtons(){ return readButtonsRaw().filter(b => b.text && b.url); }
+
+    // ---------- emoji picker ----------
+    const EMOJIS = ['📊','📈','🎬','🎥','▶️','📎','📄','📑','📅','🗓️','✅','☑️','🔗','📥','📤','🎓',
+      '💡','✨','⭐','🌟','📝','✏️','🎁','📚','📖','🖥️','💻','🎧','🎵','📞','📱','🌐',
+      '🔔','❤️','👍','👏','🙏','🚀','🔥','🎯','🏆','💬','📣','📢','🤝','😊','🙂','🎉',
+      '🥳','⏰','📍','🗺️','💰','🛒','🎟️','🔑','📨','✉️','💼','🧩','🎨','🔍','⬇️','➡️'];
+    let emojiPop = null, emojiTarget = null;
+    function buildEmojiPop(){
+      const pop = document.createElement('div');
+      pop.className = 'emoji-pop';
+      pop.innerHTML =
+        '<div class="ep-head"><span class="ep-title">בחרו אייקון</span>' +
+        '<button type="button" class="ep-clear">✕ ללא אייקון</button></div>' +
+        '<div class="emoji-grid">' + EMOJIS.map(e => '<button type="button" data-e="' + e + '">' + e + '</button>').join('') + '</div>';
+      pop.querySelector('.ep-clear').addEventListener('click', () => setEmoji(''));
+      pop.querySelectorAll('.emoji-grid button').forEach(b =>
+        b.addEventListener('click', () => setEmoji(b.dataset.e)));
+      pop.addEventListener('click', ev => ev.stopPropagation());
+      document.body.appendChild(pop);
+      return pop;
+    }
+    function setEmoji(e){
+      if (!emojiTarget) return;
+      emojiTarget.hidden.value = e;
+      emojiTarget.trigger.textContent = e || '＋';
+      emojiTarget.trigger.classList.toggle('empty', !e);
+      closeEmojiPicker(); update();
+    }
+    function openEmojiPicker(trigger, hidden){
+      if (!emojiPop) emojiPop = buildEmojiPop();
+      emojiTarget = { trigger, hidden };
+      emojiPop.classList.add('show');
+      const r = trigger.getBoundingClientRect();
+      const w = emojiPop.offsetWidth, h = emojiPop.offsetHeight;
+      let left = Math.min(r.left, window.innerWidth - w - 10);
+      left = Math.max(10, left);
+      let top = r.bottom + 6;
+      if (top + h > window.innerHeight - 10) top = Math.max(10, r.top - h - 6);
+      emojiPop.style.left = left + 'px';
+      emojiPop.style.top = top + 'px';
+    }
+    function closeEmojiPicker(){ if (emojiPop) emojiPop.classList.remove('show'); emojiTarget = null; }
+    document.addEventListener('click', closeEmojiPicker);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEmojiPicker(); });
 
     // ---------- read config ----------
     function readConfig(){
