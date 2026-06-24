@@ -144,8 +144,20 @@
       </div>
     </div>
 
+    <div class="sheet" id="dynSection" style="display:none;border-color:rgba(251,146,60,0.45);margin-top:20px">
+      <div class="sec-title" style="color:#fdba74;border-color:rgba(251,146,60,0.35)">🔓 QR דינמי (אדמין) — קישור שאפשר לשנות ולעקוב</div>
+      <p class="hint" style="margin-bottom:16px">יוצרים QR שמצביע על קישור קצר משלכם (<span dir="ltr">go.omri-iram.co.il</span>). ה-QR המודפס לעולם לא משתנה — אבל אפשר לשנות בכל רגע לאן הוא מוביל, ולראות כמה סרקו אותו. מושלם לשלטים ומדבקות.</p>
+      <div class="field row">
+        <div><label for="dynUrl">יעד — לאן ה-QR יוביל</label><input type="text" id="dynUrl" dir="ltr" placeholder="https://..." /></div>
+        <div><label for="dynAlias">כינוי <span class="hint">— אופציונלי</span></label><input type="text" id="dynAlias" dir="ltr" placeholder="myqr" /></div>
+      </div>
+      <button class="btn btn-primary" id="dynCreate" type="button">צור QR דינמי</button>
+      <div class="hint" id="dynMsg" style="margin-top:12px"></div>
+      <div id="dynList" style="margin-top:18px"></div>
+    </div>
+
     <div class="note">
-      💡 רוצים <strong>QR דינמי</strong> — אחד שאפשר להדפיס ולשנות אחר כך לאן הוא מוביל, ולעקוב אחרי סריקות? זה בדרך, במצב אדמין, מבוסס על מקצר הקישורים.
+      💡 ה-QR הדינמי (לשנות יעד אחרי הדפסה + מעקב סריקות) זמין למעלה <strong>במצב אדמין</strong>. שלוש לחיצות על "הכלים של עומרי אירם" כדי להיכנס.
     </div>
 
     <footer>
@@ -246,6 +258,74 @@
         download('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg), fileBase()+'.svg');
       });
     });
+
+    // ---- admin unlock (triple-click the kicker) ----
+    function isAdmin(){ try { return localStorage.getItem('omri_admin')==='1'; } catch(_){ return false; } }
+    (function(){
+      const k=document.querySelector('.kicker'); if(!k) return;
+      let c=0,t=null;
+      k.addEventListener('click',()=>{ c++; clearTimeout(t); t=setTimeout(()=>c=0,1200);
+        if(c>=3){ c=0; if(isAdmin())return; const v=prompt('קוד אדמין:');
+          if(v==='9464'){ try{localStorage.setItem('omri_admin','1');}catch(_){} location.reload(); }
+          else if(v!==null){ alert('קוד שגוי'); } }
+      });
+    })();
+
+    // ---- dynamic QR (admin) — talks to the go-shortener API ----
+    const API='https://go.omri-iram.co.il/api';
+    function shortenerPw(){ try{ let p=localStorage.getItem('go_shortener_pw'); if(!p){ p=prompt('סיסמת מקצר הקישורים:'); if(p) localStorage.setItem('go_shortener_pw',p); } return p||''; }catch(_){ return ''; } }
+    function codeOf(short){ return short.split('/').pop(); }
+    function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    async function dynList(){
+      const box=$('dynList'); box.innerHTML='<span class="hint">טוען…</span>';
+      try{
+        const r=await fetch(API+'/list',{headers:{'X-Admin-Password':shortenerPw()}});
+        if(r.status===401){ box.innerHTML='<span class="hint">סיסמה שגויה — רעננו והזינו שוב.</span>'; try{localStorage.removeItem('go_shortener_pw');}catch(_){} return; }
+        const links=await r.json();
+        if(!Array.isArray(links)||!links.length){ box.innerHTML='<span class="hint">אין עדיין קישורים. צרו אחד למעלה.</span>'; return; }
+        box.innerHTML='';
+        links.forEach(l=>{
+          const code=codeOf(l.short);
+          const row=document.createElement('div');
+          row.style.cssText='border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px';
+          row.innerHTML=
+            '<div style="direction:ltr;text-align:left;font-weight:700;color:var(--accent)">'+esc(l.short)+
+              ' <span style="color:var(--faint);font-weight:400">· '+l.clicks+' סריקות</span></div>'+
+            '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
+              '<input type="text" dir="ltr" value="'+esc(l.url)+'" data-code="'+esc(code)+'" style="flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:.85rem">'+
+              '<button class="btn btn-ghost dyn-save" type="button" data-code="'+esc(code)+'" style="padding:8px 12px;font-size:.8rem">שמור יעד</button>'+
+              '<button class="btn btn-ghost dyn-use" type="button" data-short="'+esc(l.short)+'" style="padding:8px 12px;font-size:.8rem">טען ל-QR</button>'+
+            '</div>';
+          box.appendChild(row);
+        });
+        box.querySelectorAll('.dyn-save').forEach(b=>b.addEventListener('click',async()=>{
+          const code=b.dataset.code, inp=box.querySelector('input[data-code="'+code+'"]'), url=inp.value.trim();
+          const r=await fetch(API+'/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,url,password:shortenerPw()})});
+          const j=await r.json().catch(()=>({})); $('dynMsg').textContent = r.ok ? ('היעד של '+code+' עודכן ✓') : ('שגיאה: '+(j.error||r.status));
+        }));
+        box.querySelectorAll('.dyn-use').forEach(b=>b.addEventListener('click',()=>{ contentEl.value=b.dataset.short; render(); window.scrollTo({top:0,behavior:'smooth'}); }));
+      }catch(e){ box.innerHTML='<span class="hint">שגיאת רשת מול מקצר הקישורים.</span>'; }
+    }
+    async function dynCreate(){
+      const url=$('dynUrl').value.trim(), alias=$('dynAlias').value.trim(), msg=$('dynMsg');
+      if(!url){ msg.textContent='הזינו יעד.'; return; }
+      msg.textContent='יוצר…';
+      try{
+        const body={url,password:shortenerPw()}; if(alias) body.alias=alias;
+        const r=await fetch(API+'/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const j=await r.json().catch(()=>({}));
+        if(!r.ok){ msg.textContent='שגיאה: '+(j.error||r.status); return; }
+        msg.textContent='נוצר! ה-QR למעלה מצביע כעת על '+j.short;
+        contentEl.value=j.short; render(); $('dynUrl').value=''; $('dynAlias').value='';
+        dynList();
+      }catch(e){ msg.textContent='שגיאת רשת.'; }
+    }
+    if(isAdmin()){
+      $('dynSection').style.display='block';
+      $('dynCreate').addEventListener('click',dynCreate);
+      dynList();
+    }
 
     function boot(){ render(); try { document.fonts.ready.then(render); } catch(_){} }
     if(typeof QRCode==='undefined'){ window.addEventListener('load', boot); } else { boot(); }
