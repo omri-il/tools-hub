@@ -115,12 +115,15 @@
     /* buttons editor */
     .btn-rows { display: flex; flex-direction: column; gap: 10px; }
     .btn-item {
-      display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; align-items: center;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
       background: rgba(255,255,255,0.025); border: 1px solid var(--line-soft); border-radius: 11px; padding: 9px;
     }
-    @media (max-width: 560px) { .btn-item { grid-template-columns: 1fr 1fr; } }
     .btn-item input { padding: 9px 11px; font-size: 0.88rem; }
     .btn-item select { padding: 9px; font-size: 0.84rem; }
+    .btn-item .b-icon { flex: 0 0 52px; text-align: center; }
+    .btn-item .b-text { flex: 1 1 130px; }
+    .btn-item .b-url  { flex: 1 1 150px; }
+    .btn-item .b-color, .btn-item .b-style { flex: 0 0 auto; }
     .btn-remove {
       background: transparent; color: var(--danger); border: 1px solid var(--line);
       border-radius: 9px; width: 36px; height: 36px; font-size: 0.95rem; cursor: pointer; font-weight: 700;
@@ -227,13 +230,18 @@
 
         <div class="field">
           <label for="template">התחל מתבנית <span class="hint">— ממלא נושא, גוף וכפתורים</span></label>
-          <select id="template">
-            <option value="">— בחרו תבנית (לא חובה) —</option>
-            <option value="materials">חומרים מהמפגש</option>
-            <option value="thanks">תודה על ההרשמה</option>
-            <option value="webinar">הזמנה לוובינר</option>
-            <option value="update">עדכון / ניוזלטר קצר</option>
-          </select>
+          <div style="display:flex;gap:8px;align-items:stretch;">
+            <select id="template" style="flex:1;">
+              <option value="">— בחרו תבנית (לא חובה) —</option>
+              <option value="materials">חומרים מהמפגש</option>
+              <option value="thanks">תודה על ההרשמה</option>
+              <option value="webinar">הזמנה לוובינר</option>
+              <option value="update">עדכון / ניוזלטר קצר</option>
+              <optgroup label="התבניות שלי" id="myTemplates" style="display:none;"></optgroup>
+            </select>
+            <button id="saveTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 14px;font-size:0.82rem;">💾 שמור</button>
+            <button id="delTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 12px;font-size:0.82rem;" title="מחק את התבנית הנבחרת">🗑</button>
+          </div>
         </div>
 
         <div class="field">
@@ -486,13 +494,18 @@
       return text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
         .map(p => p.replace(/\*\*(.+?)\*\*/g, '*$1*')).join('\n\n');
     }
+    function buttonCss(color, style){
+      if (style === 'outline') return 'background-color: transparent; color: ' + color + '; border: 2px solid ' + color + '; padding: 10px 22px; border-radius: 6px;';
+      if (style === 'pill')    return 'background-color: ' + color + '; color: white; padding: 12px 26px; border-radius: 999px;';
+      return 'background-color: ' + color + '; color: white; padding: 12px 24px; border-radius: 6px;';
+    }
+    function buttonLabel(b){ return (b.icon ? b.icon + ' ' : '') + b.text; }
     function buttonsHtmlFrom(buttons, escapeIt){
       const f = escapeIt ? esc : (x => x);
       return buttons.map(b =>
-        '<a href="' + f(b.url) + '" target="_blank" style="background-color: ' + b.color +
-        '; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; ' +
-        'font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; ' +
-        'box-shadow: 0 2px 4px rgba(0,0,0,0.15);">' + f(b.text) + '</a>'
+        '<a href="' + f(b.url) + '" target="_blank" style="' + buttonCss(b.color, b.style) +
+        ' text-decoration: none; font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; ' +
+        'box-shadow: 0 2px 4px rgba(0,0,0,0.15);">' + f(buttonLabel(b)) + '</a>'
       ).join('');
     }
 
@@ -500,25 +513,34 @@
     function colorOptions(selected){
       return PALETTE.map(c => '<option value="' + c.hex + '"' + (c.hex===selected?' selected':'') + '>' + c.name + '</option>').join('');
     }
-    function addButtonRow(text, url, color){
+    function styleOptions(sel){
+      return [['filled','מלא'],['outline','מתאר'],['pill','גלולה']]
+        .map(o => '<option value="' + o[0] + '"' + (o[0]===sel?' selected':'') + '>' + o[1] + '</option>').join('');
+    }
+    function addButtonRow(text, url, color, icon, btnStyle){
       const div = document.createElement('div');
       div.className = 'btn-item';
       div.innerHTML =
-        '<input type="text" class="b-text" placeholder="טקסט הכפתור — אפשר להוסיף אימוג׳י 🙂" value="' + esc(text||'') + '">' +
+        '<input type="text" class="b-icon" placeholder="🙂" maxlength="4" value="' + esc(icon||'') + '" title="אייקון / אימוג׳י (לא חובה)">' +
+        '<input type="text" class="b-text" placeholder="טקסט הכפתור" value="' + esc(text||'') + '">' +
         '<input type="url" class="b-url" dir="ltr" placeholder="https://..." value="' + esc(url||'') + '">' +
         '<select class="b-color">' + colorOptions(color||'#1a73e8') + '</select>' +
+        '<select class="b-style">' + styleOptions(btnStyle||'filled') + '</select>' +
         '<button type="button" class="btn-remove" title="הסר">✕</button>';
       div.querySelector('.btn-remove').addEventListener('click', () => { div.remove(); update(); });
       div.querySelectorAll('input,select').forEach(el => el.addEventListener('input', update));
       btnRows.appendChild(div);
     }
-    function readButtons(){
+    function readButtonsRaw(){
       return [...btnRows.querySelectorAll('.btn-item')].map(row => ({
+        icon: row.querySelector('.b-icon').value.trim(),
         text: row.querySelector('.b-text').value.trim(),
         url: row.querySelector('.b-url').value.trim(),
-        color: row.querySelector('.b-color').value
-      })).filter(b => b.text && b.url);
+        color: row.querySelector('.b-color').value,
+        style: row.querySelector('.b-style').value
+      }));
     }
+    function readButtons(){ return readButtonsRaw().filter(b => b.text && b.url); }
 
     // ---------- read config ----------
     function readConfig(){
@@ -565,7 +587,7 @@
     function generateScript(cfg){
       const buttons = cfg.buttons;
       const buttonsLiteral = buttons.length
-        ? buttons.map(b => '    { text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) + ', color: ' + JSON.stringify(b.color) + ' }').join(',\n')
+        ? buttons.map(b => '    { text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) + ', color: ' + JSON.stringify(b.color) + ', icon: ' + JSON.stringify(b.icon || '') + ', style: ' + JSON.stringify(b.style || 'filled') + ' }').join(',\n')
         : '    // הוסיפו כפתורים בכלי';
       const bodyHtml = bodyToHtml(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
       const bodyText = bodyToText(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
@@ -575,7 +597,7 @@
 
       // When tracking is on, button links are wrapped through this script's own
       // web-app URL so each click is logged to a "Clicks" sheet, then forwarded.
-      const hrefJs = trackOn ? 'trackedLink_(b.url, recipientEmail)' : 'b.url';
+      const hrefJs = trackOn ? 'trackedLink_(b.url, recipientEmail, label)' : 'b.url';
 
       const trackHeader = trackOn
         ? '\n// ===== מעקב קליקים =====\n' +
@@ -584,23 +606,24 @@
         : '';
 
       const trackedFn = trackOn
-        ? '\n\nfunction trackedLink_(url, recipient) {\n' +
+        ? '\n\nfunction trackedLink_(url, recipient, label) {\n' +
           '  try {\n' +
           '    var base = ScriptApp.getService().getUrl();  // כתובת ה-Web App של הסקריפט הזה\n' +
           '    if (!base) return url;  // עוד לא פורסם כ-Web App\n' +
           '    return base + "?c=" + encodeURIComponent(CAMPAIGN) +\n' +
-          '      "&r=" + encodeURIComponent(recipient || "") + "&u=" + encodeURIComponent(url);\n' +
+          '      "&r=" + encodeURIComponent(recipient || "") + "&l=" + encodeURIComponent(label || "") + "&u=" + encodeURIComponent(url);\n' +
           '  } catch (e) { return url; }\n' +
           '}\n' +
           '\n' +
-          '// נקרא כשנמען לוחץ על קישור: רושם שורה בגיליון Clicks ומעביר ליעד.\n' +
+          '// נקרא כשנמען לוחץ על קישור: רושם שורה בגיליון Clicks (כולל שם הכפתור) ומעביר ליעד.\n' +
           'function doGet(e) {\n' +
-          '  var url = (e && e.parameter && e.parameter.u) ? e.parameter.u : "";\n' +
+          '  var p = (e && e.parameter) || {};\n' +
+          '  var url = p.u || "";\n' +
           '  try {\n' +
           '    var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
           '    var sheet = ss.getSheetByName("Clicks") || ss.insertSheet("Clicks");\n' +
-          '    if (sheet.getLastRow() === 0) sheet.appendRow(["זמן", "קמפיין", "נמען", "קישור"]);\n' +
-          '    sheet.appendRow([new Date(), e.parameter.c || "", e.parameter.r || "", url]);\n' +
+          '    if (sheet.getLastRow() === 0) sheet.appendRow(["זמן", "קמפיין", "נמען", "כפתור", "קישור"]);\n' +
+          '    sheet.appendRow([new Date(), p.c || "", p.r || "", p.l || "", url]);\n' +
           '  } catch (err) {}\n' +
           '  var safe = /^https?:\\/\\//i.test(url) ? url : "https://omri-iram.co.il";\n' +
           '  return HtmlService.createHtmlOutput(\n' +
@@ -670,13 +693,16 @@ buttonsLiteral + '\n' +
 '  ];\n' +
 '\n' +
 '  var buttonsHtml = BUTTONS.map(function (b) {\n' +
-'    return \'<a href="\' + ' + hrefJs + ' + \'" target="_blank" style="background-color: \' + b.color +\n' +
-'      \'; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; \' +\n' +
-'      \'font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; \' +\n' +
-'      \'box-shadow: 0 2px 4px rgba(0,0,0,0.15);">\' + b.text + \'</a>\';\n' +
+'    var label = (b.icon ? b.icon + " " : "") + b.text;\n' +
+'    var css;\n' +
+'    if (b.style === "outline") css = "background-color: transparent; color: " + b.color + "; border: 2px solid " + b.color + "; padding: 10px 22px; border-radius: 6px;";\n' +
+'    else if (b.style === "pill") css = "background-color: " + b.color + "; color: white; padding: 12px 26px; border-radius: 999px;";\n' +
+'    else css = "background-color: " + b.color + "; color: white; padding: 12px 24px; border-radius: 6px;";\n' +
+'    return \'<a href="\' + ' + hrefJs + ' + \'" target="_blank" style="\' + css +\n' +
+'      \' text-decoration: none; font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">\' + label + \'</a>\';\n' +
 '  }).join(\'\');\n' +
 '\n' +
-'  var buttonsText = BUTTONS.map(function (b) { return b.text + ": " + b.url; }).join("\\n");\n' +
+'  var buttonsText = BUTTONS.map(function (b) { return (b.icon ? b.icon + " " : "") + b.text + ": " + b.url; }).join("\\n");\n' +
 '\n' +
 '  var bodyHtml = ' + JSON.stringify(bodyHtml) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
 '  var bodyText = ' + JSON.stringify(bodyText) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
@@ -808,15 +834,48 @@ mlCallManual + '\n' +
       webinar:   { subject: 'הזמנה לוובינר 📅', body: 'שלום {שם},\n\nאני מזמין אותך לוובינר חינמי.\n\nשמרו את המקום ביומן, וביום האירוע לחצו על הקישור להצטרפות.', buttons: [['להצטרפות לוובינר', '', '#34a853'], ['הוספה ליומן', '', '#f59e0b']] },
       update:    { subject: 'עדכון קצר ✨', body: 'שלום {שם},\n\nרציתי לעדכן אותך בכמה דברים חדשים.\n\n**הנה העיקר** — קראו ולחצו לפרטים.', buttons: [['קראו עוד', '', '#9334e8']] },
     };
-    templateEl.addEventListener('change', () => {
-      const t = TEMPLATES[templateEl.value];
-      if (!t) return;
-      subjectEl.value = t.subject;
-      bodyEl.value = t.body;
+    // built-in templates + the user's own saved templates (localStorage)
+    const TPL_KEY = 'eg_my_templates';
+    function getMyTpls(){ try { return JSON.parse(localStorage.getItem(TPL_KEY) || '{}'); } catch(_){ return {}; } }
+    function setMyTpls(o){ try { localStorage.setItem(TPL_KEY, JSON.stringify(o)); } catch(_){ } }
+    function refreshMyTpls(){
+      const og = $('myTemplates'), o = getMyTpls(), names = Object.keys(o);
+      og.innerHTML = names.map(n => '<option value="saved:' + esc(n) + '">' + esc(n) + '</option>').join('');
+      og.style.display = names.length ? '' : 'none';
+    }
+    function applyConfig(cfg){
+      subjectEl.value = cfg.subject || ''; bodyEl.value = cfg.body || '';
+      senderEl.value = cfg.senderName || ''; phoneEl.value = cfg.phone || '';
+      websiteEl.value = cfg.website || ''; logoEl.value = cfg.logo || '';
+      if (cfg.emailFont) fontEl.value = cfg.emailFont;
+      if (cfg.accent) accentEl.value = cfg.accent;
       btnRows.innerHTML = '';
-      t.buttons.forEach(b => addButtonRow(b[0], b[1], b[2]));
+      (cfg.buttons || []).forEach(b => addButtonRow(b.text, b.url, b.color, b.icon, b.style));
+      if (!btnRows.children.length) addButtonRow('', '', '#1a73e8');
       update();
+    }
+    templateEl.addEventListener('change', () => {
+      const v = templateEl.value;
+      if (v.indexOf('saved:') === 0) { const cfg = getMyTpls()[v.slice(6)]; if (cfg) applyConfig(cfg); return; }
+      const t = TEMPLATES[v]; if (!t) return;
+      subjectEl.value = t.subject; bodyEl.value = t.body;
+      btnRows.innerHTML = ''; t.buttons.forEach(b => addButtonRow(b[0], b[1], b[2])); update();
     });
+    $('saveTpl').addEventListener('click', () => {
+      const name = (prompt('שם לתבנית שלך:') || '').trim(); if (!name) return;
+      const o = getMyTpls();
+      o[name] = { subject: subjectEl.value, body: bodyEl.value, buttons: readButtonsRaw(),
+                  senderName: senderEl.value, phone: phoneEl.value, website: websiteEl.value, logo: logoEl.value,
+                  emailFont: fontEl.value, accent: accentEl.value };
+      setMyTpls(o); refreshMyTpls(); templateEl.value = 'saved:' + name; alert('התבנית נשמרה ✓');
+    });
+    $('delTpl').addEventListener('click', () => {
+      const v = templateEl.value;
+      if (v.indexOf('saved:') !== 0) { alert('בחרו קודם תבנית שלכם מהרשימה'); return; }
+      const name = v.slice(6); if (!confirm('למחוק את התבנית "' + name + '"?')) return;
+      const o = getMyTpls(); delete o[name]; setMyTpls(o); refreshMyTpls(); templateEl.value = '';
+    });
+    refreshMyTpls();
 
     // ---------- design styles ----------
     const STYLES = {
