@@ -171,11 +171,19 @@
       if (authed) loadList();
     }
 
-    async function api(path, opts = {}) {
-      opts.headers = Object.assign({ "Content-Type": "application/json", "X-Admin-Password": pw }, opts.headers || {});
-      const res = await fetch(API + path, opts);
+    async function api(path, opts = {}, _retry = false) {
+      const headers = Object.assign({ "Content-Type": "application/json", "X-Admin-Password": pw }, opts.headers || {});
+      const res = await fetch(API + path, { method: opts.method, body: opts.body, headers });
       const data = await res.json().catch(() => ({}));
-      if (res.status === 401) { throw { unauthorized: true }; }
+      if (res.status === 401) {
+        // Don't wipe a remembered password or dump to the full login screen — just
+        // re-prompt once inline and retry. Only a truly wrong password fails through.
+        if (!_retry) {
+          const v = prompt("סיסמה שגויה או שפגה — הזן שוב:");
+          if (v) { pw = v; localStorage.setItem(PW_KEY, pw); return api(path, opts, true); }
+        }
+        throw { unauthorized: true };
+      }
       if (!res.ok) { throw { msg: data.error || ("שגיאה " + res.status) }; }
       return data;
     }
@@ -239,8 +247,7 @@
         $("url").value = ""; $("alias").value = "";
         if (mode === "brand") loadList();
       } catch (e) {
-        if (e.unauthorized) { logoutToGate(); }
-        else $("createMsg").textContent = e.msg || "שגיאה ביצירת הקישור";
+        $("createMsg").textContent = e.unauthorized ? "סיסמה שגויה" : (e.msg || "שגיאה ביצירת הקישור");
       } finally {
         $("create").disabled = false;
       }
@@ -282,15 +289,14 @@
           box.appendChild(item);
         });
       } catch (e) {
-        if (e.unauthorized) logoutToGate();
-        else box.innerHTML = '<p class="empty">לא הצלחתי לטעון את הרשימה.</p>';
+        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "סיסמה שגויה — לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את הרשימה.") + '</p>';
       }
     }
 
     async function del(code) {
       if (!confirm("למחוק את הקישור הקצר הזה? לא ניתן לשחזר.")) return;
       try { await api("/api/delete", { method: "POST", body: JSON.stringify({ code }) }); loadList(); }
-      catch (e) { if (e.unauthorized) logoutToGate(); }
+      catch (e) { /* keep session — api() already re-prompted on 401 */ }
     }
 
     render();

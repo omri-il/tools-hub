@@ -31,6 +31,11 @@
     }
     body.admin #adminChip { display: flex; }
     #adminChip button { background: none; border: none; color: #fff; cursor: pointer; font-weight: 700; font-size: 0.82rem; }
+    /* tool categories */
+    .cat-section { margin: 0 auto 30px; max-width: 1100px; }
+    .cat { font-size: 1.12rem; font-weight: 700; margin: 0 0 16px; padding-bottom: 9px; opacity: .92;
+           border-bottom: 1px solid rgba(255,255,255,0.10); }
+    body:not(.admin) .cat-section.admin-only { display: none !important; }
   </style>
 </head>
 <body>
@@ -45,124 +50,114 @@
     <p class="tagline">אוסף כלים חינמיים שעוזרים לי בעבודה היומיומית — ומוצאים את הדרך לעוד אנשים. הכל רץ ישר בדפדפן או בחשבון שלכם, בלי להתקין כלום.</p>
   </header>
 
-  <main class="tools-grid" aria-label="כלים">
+  <main aria-label="כלים">
 
-    <a class="tool-card" href="https://omri-il.github.io/chapter-bar-web/" target="_blank" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">🎬</div>
-      <h2 class="tool-title">סרגל פרקים ליוטיוב</h2>
-      <p class="tool-desc">מחולל פס התקדמות פרקים לסרטוני יוטיוב — בלי תוכנות עריכה. מזינים פרקים, צובעים, מייצאים סרטון או שכבת אוברליי שקופה.</p>
-      <span class="tool-tags">
-        <span class="tag">יוצרי תוכן</span>
-        <span class="tag">חינמי</span>
-        <span class="tag">רץ בדפדפן</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
+    <section class="cat-section">
+      <h2 class="cat">🎬 וידאו ויוטיוב</h2>
+      <div class="tools-grid">
+        <a class="tool-card" href="https://omri-il.github.io/chapter-bar-web/" target="_blank" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">🎬</div>
+          <h2 class="tool-title">סרגל פרקים ליוטיוב</h2>
+          <p class="tool-desc">מחולל פס התקדמות פרקים לסרטוני יוטיוב — בלי תוכנות עריכה. מזינים פרקים, צובעים, מייצאים סרטון או שכבת אוברליי שקופה.</p>
+          <span class="tool-tags"><span class="tag">יוצרי תוכן</span><span class="tag">חינמי</span><span class="tag">רץ בדפדפן</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+        <a class="tool-card admin-only" href="http://147.79.114.195:8080" target="_blank" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">🎙️</div>
+          <h2 class="tool-title">תמלול אוטומטי לסרטונים</h2>
+          <p class="tool-desc">מתמלל אוטומטית סרטונים מגוגל דרייב ומיוטיוב בעזרת Whisper — תמלול מלא בעברית בלי להעלות קבצים ידנית.</p>
+          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">תמלול</span><span class="tag">AI</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+      </div>
+    </section>
 
-    <a class="tool-card admin-only" href="https://script.google.com/macros/s/AKfycbzHRDPpkaiO-0xplRWVGOJl8AKwTUk1anM85QlgPS0yFUsu3sFoVsyUlgZpAbCFr5xH/exec" target="_blank" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">✉️</div>
-      <h2 class="tool-title">מערכת מענה המוני ב-Gmail</h2>
-      <p class="tool-desc">שלחו תשובה אחת לעשרות הודעות בבת אחת ישירות מהג'ימייל שלכם, או פצלו מייל תפוצה נסתרת (BCC) למיילים פרטיים נפרדים לכל נמען — ללא העתקה והדבקה ידנית, ללא תוספים.</p>
-      <span class="tool-tags">
-        <span class="tag">Gmail</span>
-        <span class="tag">חוסך זמן</span>
-        <span class="tag">חינמי</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
+    <section class="cat-section">
+      <h2 class="cat">✉️ אימייל</h2>
+      <div class="tools-grid">
+        <a class="tool-card" href="email-generator/" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">📧</div>
+          <h2 class="tool-title">מחולל אימייל אוטומטי לטופס</h2>
+          <p class="tool-desc">בונה את הקוד לשליחת אימייל אוטומטי לכל מי שממלא טופס Google — מצגת, סרטון, קישורים. ממלאים, רואים תצוגה חיה, מעתיקים קוד מוכן.</p>
+          <span class="tool-tags"><span class="tag">מרצים</span><span class="tag">Google Forms</span><span class="tag">חוסך זמן</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+        <a class="tool-card admin-only" href="https://script.google.com/macros/s/AKfycbzHRDPpkaiO-0xplRWVGOJl8AKwTUk1anM85QlgPS0yFUsu3sFoVsyUlgZpAbCFr5xH/exec" target="_blank" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">📨</div>
+          <h2 class="tool-title">מערכת מענה המוני ב-Gmail</h2>
+          <p class="tool-desc">תשובה אחת לעשרות הודעות בבת אחת, או פיצול מייל תפוצה נסתרת (BCC) למיילים פרטיים נפרדים לכל נמען.</p>
+          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">Gmail</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+      </div>
+    </section>
 
-    <a class="tool-card admin-only" href="http://147.79.114.195:8080" target="_blank" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">🎙️</div>
-      <h2 class="tool-title">תמלול אוטומטי לסרטונים</h2>
-      <p class="tool-desc">מתמלל אוטומטית סרטונים מגוגל דרייב ומיוטיוב בעזרת Whisper — מקבלים תמלול מלא בעברית בלי להעלות קבצים ידנית או להעתיק טקסט.</p>
-      <span class="tool-tags">
-        <span class="tag">תמלול</span>
-        <span class="tag">יוצרי תוכן</span>
-        <span class="tag">AI</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
+    <section class="cat-section">
+      <h2 class="cat">🔗 קישורים וקודים</h2>
+      <div class="tools-grid">
+        <a class="tool-card" href="tinyurl/" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">⚡</div>
+          <h2 class="tool-title">מקצר קישורים מהיר</h2>
+          <p class="tool-desc">הדביקו קישור ארוך וקבלו קישור קצר של TinyURL — מהיר, בלי הרשמה, עם אפשרות לכינוי אישי.</p>
+          <span class="tool-tags"><span class="tag">קישורים</span><span class="tag">חינמי</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+        <a class="tool-card" href="qr/" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">🔳</div>
+          <h2 class="tool-title">מחולל קודי QR</h2>
+          <p class="tool-desc">קישור או טקסט → קוד QR מעוצב: צבעים, לוגו במרכז, כיתוב, והורדה כ-PNG או SVG. רץ בדפדפן.</p>
+          <span class="tool-tags"><span class="tag">חינמי</span><span class="tag">רץ בדפדפן</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+        <a class="tool-card" href="utm/" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">🏷️</div>
+          <h2 class="tool-title">בונה קישורי UTM</h2>
+          <p class="tool-desc">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין — וכך תדעו באנליטיקס מאיזה ערוץ הגיעו הקליקים.</p>
+          <span class="tool-tags"><span class="tag">שיווק</span><span class="tag">חינמי</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+        <a class="tool-card admin-only" href="shortener/" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">🔗</div>
+          <h2 class="tool-title">מקצר קישורים ממותג</h2>
+          <p class="tool-desc">קישורים קצרים עם הדומיין שלך (go.omri-iram.co.il) — כינוי אישי, ספירת לחיצות, ו-QR דינמי.</p>
+          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">דומיין משלי</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+      </div>
+    </section>
 
-    <a class="tool-card" href="randomizer/" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">🏆</div>
-      <h2 class="tool-title">הגרלת זוכה</h2>
-      <p class="tool-desc">מדביקים רשימת שמות או אימיילים ומגרילים זוכה אחד למקום הראשון — מושלם להגרלות ומתנות למצטרפים לרשימה. הוגן, אקראי, עם אנימציה וקונפטי.</p>
-      <span class="tool-tags">
-        <span class="tag">הגרלות</span>
-        <span class="tag">רץ בדפדפן</span>
-        <span class="tag">חינמי</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
+    <section class="cat-section">
+      <h2 class="cat">🎲 כללי</h2>
+      <div class="tools-grid">
+        <a class="tool-card" href="randomizer/" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">🏆</div>
+          <h2 class="tool-title">הגרלת זוכה</h2>
+          <p class="tool-desc">מדביקים רשימת שמות או אימיילים ומגרילים זוכה הוגן — מושלם להגרלות ומתנות. אנימציה וקונפטי.</p>
+          <span class="tool-tags"><span class="tag">הגרלות</span><span class="tag">רץ בדפדפן</span><span class="tag">חינמי</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+      </div>
+    </section>
 
-    <a class="tool-card" href="email-generator/" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">📧</div>
-      <h2 class="tool-title">מחולל אימייל אוטומטי לטופס</h2>
-      <p class="tool-desc">בונה את הקוד לשליחת אימייל אוטומטי לכל מי שממלא טופס Google — מצגת, סרטון, קישורים. ממלאים טופס פשוט, רואים תצוגה חיה, ומעתיקים קוד מוכן. בלי לכתוב שורת קוד.</p>
-      <span class="tool-tags">
-        <span class="tag">מרצים</span>
-        <span class="tag">Google Forms</span>
-        <span class="tag">חוסך זמן</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
-
-    <a class="tool-card" href="qr/" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">🔳</div>
-      <h2 class="tool-title">מחולל קודי QR</h2>
-      <p class="tool-desc">מזינים קישור או טקסט, בוחרים צבע וגודל, ומורידים קוד QR מוכן — PNG או SVG. מושלם לשלטים, מצגות וכרטיסי ביקור. רץ בדפדפן.</p>
-      <span class="tool-tags">
-        <span class="tag">חינמי</span>
-        <span class="tag">רץ בדפדפן</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
-
-    <a class="tool-card" href="utm/" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">🏷️</div>
-      <h2 class="tool-title">בונה קישורי UTM</h2>
-      <p class="tool-desc">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין — וכך תדעו באנליטיקס מאיזה ערוץ הגיעו הקליקים. ממלאים, מעתיקים, מפיצים.</p>
-      <span class="tool-tags">
-        <span class="tag">שיווק</span>
-        <span class="tag">חינמי</span>
-        <span class="tag">רץ בדפדפן</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
-
-    <a class="tool-card" href="tinyurl/" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">⚡</div>
-      <h2 class="tool-title">מקצר קישורים מהיר</h2>
-      <p class="tool-desc">הדביקו קישור ארוך וקבלו קישור קצר של TinyURL — מהיר, בלי הרשמה ובלי דומיין משלכם. מושלם לשיתוף מהיר.</p>
-      <span class="tool-tags">
-        <span class="tag">קישורים</span>
-        <span class="tag">חינמי</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
-
-    <!-- ===== admin-only tools (revealed after unlocking admin mode) ===== -->
-    <a class="tool-card admin-only" href="shortener/" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">🔗</div>
-      <h2 class="tool-title">מקצר קישורים ממותג</h2>
-      <p class="tool-desc">הופך קישורים ארוכים לקישורים קצרים עם הדומיין שלך (go.omri-iram.co.il) — כינוי אישי, ספירת לחיצות, ו-QR דינמי. אדמין בלבד.</p>
-      <span class="tool-tags">
-        <span class="tag">אדמין</span>
-        <span class="tag">דומיין משלי</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
-
-    <a class="tool-card admin-only" href="http://100.111.186.101:5007/" target="_blank" rel="noopener">
-      <div class="tool-icon" aria-hidden="true">🎛️</div>
-      <h2 class="tool-title">מרכז השליטה של DaVinci</h2>
-      <p class="tool-desc">לוח בקרה אישי להפעלת אוטומציות עריכה ב-DaVinci Resolve שעל המחשב הביתי — ייצוא, הסרת שקט, תמלול, הקמת פרויקט. נגיש מהמכשירים שלך דרך Tailscale, בלי סיסמה.</p>
-      <span class="tool-tags">
-        <span class="tag">אדמין</span>
-        <span class="tag">אוטומציה</span>
-      </span>
-      <span class="tool-cta">פתח את הכלי ←</span>
-    </a>
+    <section class="cat-section admin-only">
+      <h2 class="cat">🔒 אדמין</h2>
+      <div class="tools-grid">
+        <a class="tool-card admin-only" href="http://100.111.186.101:5007/" target="_blank" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">🎛️</div>
+          <h2 class="tool-title">מרכז השליטה של DaVinci</h2>
+          <p class="tool-desc">לוח בקרה להפעלת אוטומציות עריכה ב-DaVinci Resolve במחשב הביתי. נגיש מהמכשירים שלך דרך Tailscale, בלי סיסמה.</p>
+          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">אוטומציה</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+        <a class="tool-card admin-only" href="extra/" rel="noopener">
+          <div class="tool-icon" aria-hidden="true">📞</div>
+          <h2 class="tool-title">הקלטות שיחות (Extra)</h2>
+          <p class="tool-desc">חיפוש והאזנה להקלטות שיחות ממערכת אקסטרה — לפי טלפון, תאריך, שם, או אחרונות. הורדה כ-MP3.</p>
+          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">הקלטות</span></span>
+          <span class="tool-cta">פתח את הכלי ←</span>
+        </a>
+      </div>
+    </section>
 
   </main>
 

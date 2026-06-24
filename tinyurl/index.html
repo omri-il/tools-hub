@@ -51,7 +51,9 @@
     <div class="sheet">
       <label for="url">הקישור הארוך</label>
       <input type="text" id="url" placeholder="https://example.com/very/long/link?with=params" />
-      <button class="btn btn-primary" id="go" type="button">קצר את הקישור</button>
+      <label for="alias" style="margin-top:14px">כינוי אישי <span style="color:var(--faint);font-weight:400;font-size:.85rem">— אופציונלי (tinyurl.com/<span dir="ltr">הכינוי</span>)</span></label>
+      <input type="text" id="alias" dir="ltr" placeholder="my-link" />
+      <button class="btn btn-primary" id="go" type="button" style="margin-top:14px">קצר את הקישור</button>
       <div class="out" id="out"><a id="shortLink" href="#" target="_blank" rel="noopener"></a></div>
       <div class="msg" id="msg"></div>
       <button class="btn btn-ghost" id="copy" type="button" style="display:none">📋 העתק</button>
@@ -74,9 +76,10 @@
       if(!/^https?:\/\//i.test(url)){ msg.textContent='הדביקו כתובת שמתחילה ב-http:// או https://'; out.classList.remove('show'); return; }
       msg.textContent='מקצר…'; out.classList.remove('show'); $('copy').style.display='none';
       try{
-        const r=await fetch(API+'/tinyurl',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});
+        const alias=$('alias').value.trim();
+        const r=await fetch(API+'/tinyurl',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(alias?{url,alias}:{url})});
         const j=await r.json().catch(()=>({}));
-        if(!r.ok||!j.short){ msg.textContent='שגיאה: '+(j.error||'נסו שוב'); return; }
+        if(!r.ok||!j.short){ msg.textContent='שגיאה: '+(j.error||'הכינוי אולי תפוס, נסו אחר')+''; return; }
         last=j.short; const a=$('shortLink'); a.href=j.short; a.textContent=j.short;
         out.classList.add('show'); msg.textContent=''; $('copy').style.display='inline-block';
       }catch(e){ msg.textContent='שגיאת רשת, נסו שוב.'; }
