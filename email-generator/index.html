@@ -222,7 +222,7 @@
         <div class="sheet-head">
           <span class="sheet-num">א.</span>
           <h2>תוכן המכתב</h2>
-          <span class="note">מתעדכן חי משמאל</span>
+          <button id="resetAll" type="button" class="act act-ghost" style="margin-inline-start:auto;padding:6px 13px;font-size:0.8rem;">↺ אפס הכול</button>
         </div>
 
         <div class="field">
@@ -828,6 +828,23 @@ mlCallManual + '\n' +
     styleEl.addEventListener('change', () => {
       const s = STYLES[styleEl.value]; if (!s) return;
       accentEl.value = s.accent; fontEl.value = s.font; update();
+    });
+
+    // ---------- reset everything to default ----------
+    $('resetAll').addEventListener('click', () => {
+      if (!confirm('לאפס את כל השדות לברירת המחדל?')) return;
+      subjectEl.value = ''; bodyEl.value = '';
+      senderEl.value = ''; phoneEl.value = ''; websiteEl.value = ''; logoEl.value = '';
+      fontEl.value = 'arial'; accentEl.value = '#1a73e8';
+      templateEl.value = ''; styleEl.value = '';
+      personalizeEl.checked = false; nameRevealEl.classList.remove('show'); nameColEl.value = '2';
+      webhookEl.value = ''; eventNameEl.value = ''; eventDateEl.value = ''; eventRevealEl.style.display = 'none';
+      trackEl.checked = false; trackRevealEl.classList.remove('show'); campaignEl.value = '';
+      btnRows.innerHTML = '';
+      addButtonRow('📊 כפתור 1', '', '#1a73e8');
+      addButtonRow('🎬 כפתור 2', '', '#ea4335');
+      if (ADMIN) { senderEl.value = 'עומרי אירם'; phoneEl.value = '052-512-1007'; websiteEl.value = 'omri-iram.co.il'; }
+      update();
     });
 
     // ---------- full-size preview (a quick "test" of how it looks) ----------
