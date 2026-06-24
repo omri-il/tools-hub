@@ -270,6 +270,16 @@
 
         <div class="field">
           <label>עיצוב המייל ושולח <span class="hint">— כך ייראה וירגיש המכתב</span></label>
+          <div style="margin-bottom:13px;">
+            <label for="style" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">סגנון מוכן <span class="hint">— צבע + גופן בלחיצה</span></label>
+            <select id="style">
+              <option value="">— מותאם אישית —</option>
+              <option value="minimal">מינימליסטי</option>
+              <option value="colorful">צבעוני</option>
+              <option value="warm">חם ואישי</option>
+              <option value="formal">רשמי</option>
+            </select>
+          </div>
           <div class="two">
             <div>
               <label for="senderName" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">שם השולח</label>
@@ -426,7 +436,7 @@
     const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
     const trackEl = $('trackClicks'), trackRevealEl = $('trackReveal'), campaignEl = $('campaign'), trackNoteEl = $('trackNote');
     const phoneEl = $('phone'), websiteEl = $('website'), mlSection = $('mlSection');
-    const templateEl = $('template'), logoEl = $('logo');
+    const templateEl = $('template'), logoEl = $('logo'), styleEl = $('style');
     // Admin mode is shared site-wide via localStorage (unlocked on the hub or here).
     const ADMIN = (function(){ try { return localStorage.getItem('omri_admin') === '1'; } catch(_){ return false; } })();
 
@@ -494,7 +504,7 @@
       const div = document.createElement('div');
       div.className = 'btn-item';
       div.innerHTML =
-        '<input type="text" class="b-text" placeholder="טקסט הכפתור, למשל: לצפייה במצגת" value="' + esc(text||'') + '">' +
+        '<input type="text" class="b-text" placeholder="טקסט הכפתור — אפשר להוסיף אימוג׳י 🙂" value="' + esc(text||'') + '">' +
         '<input type="url" class="b-url" dir="ltr" placeholder="https://..." value="' + esc(url||'') + '">' +
         '<select class="b-color">' + colorOptions(color||'#1a73e8') + '</select>' +
         '<button type="button" class="btn-remove" title="הסר">✕</button>';
@@ -808,6 +818,18 @@ mlCallManual + '\n' +
       update();
     });
 
+    // ---------- design styles ----------
+    const STYLES = {
+      minimal:  { accent: '#0f172a', font: 'heebo' },
+      colorful: { accent: '#7c3aed', font: 'rubik' },
+      warm:     { accent: '#ea580c', font: 'assistant' },
+      formal:   { accent: '#1a73e8', font: 'georgia' },
+    };
+    styleEl.addEventListener('change', () => {
+      const s = STYLES[styleEl.value]; if (!s) return;
+      accentEl.value = s.accent; fontEl.value = s.font; update();
+    });
+
     // ---------- full-size preview (a quick "test" of how it looks) ----------
     $('fullPreview').addEventListener('click', () => {
       const w = window.open('', '_blank');
@@ -841,8 +863,8 @@ mlCallManual + '\n' +
     }
 
     // ---------- init ----------
-    addButtonRow('לצפייה במצגת המפגש', '', '#1a73e8');
-    addButtonRow('לצפייה בסרטון ההסבר', '', '#ea4335');
+    addButtonRow('📊 כפתור 1', '', '#1a73e8');
+    addButtonRow('🎬 כפתור 2', '', '#ea4335');
     try {
       const savedSender = localStorage.getItem('senderName'); if (savedSender) senderEl.value = savedSender;
       const sp = localStorage.getItem('sig_phone'); if (sp) phoneEl.value = sp;
