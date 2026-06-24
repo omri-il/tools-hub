@@ -315,6 +315,19 @@
             </div>
           </div>
         </div>
+        <hr class="divider">
+
+        <div class="field" style="margin-bottom:6px;">
+          <div class="check">
+            <input type="checkbox" id="trackClicks" />
+            <label for="trackClicks">מעקב קליקים <span class="hint">— ראו מי לחץ על איזה קישור ומתי, בגיליון שלכם</span></label>
+          </div>
+          <div class="reveal" id="trackReveal">
+            <label for="campaign" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">שם הקמפיין <span class="hint">— מבדיל בין מיילים שונים באותו גיליון</span></label>
+            <input type="text" id="campaign" placeholder="לדוגמה: סדנת AI מאי" />
+            <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, ייכתב לגיליון בלשונית <code>Clicks</code> (נמען · קישור · זמן), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App — ההוראות יופיעו מתחת לקוד.</p>
+          </div>
+        </div>
       </div>
 
       <!-- ===== PREVIEW ===== -->
@@ -352,6 +365,12 @@
         </ol>
         <p style="color:var(--ink-soft);padding-bottom:16px;">זהו. מעכשיו כל מי שימלא את הטופס יקבל את המכתב אוטומטית.</p>
       </details>
+
+      <p id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
+        <strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> כדי שזה יעבוד, פרסמו את הסקריפט כ-Web App:
+        <code>Deploy</code> ← <code>New deployment</code> ← סוג <code>Web app</code> ← <code>Execute as: Me</code> ← <code>Who has access: Anyone</code> ← <code>Deploy</code>, ואשרו הרשאות.
+        התוצאות ייכתבו אוטומטית בגיליון שלכם בלשונית <code>Clicks</code>: זמן · קמפיין · נמען · קישור.
+      </p>
     </div>
 
     <footer>
@@ -369,6 +388,7 @@
     const webhookEl = $('webhook'), eventRevealEl = $('eventReveal'), eventNameEl = $('eventName'), eventDateEl = $('eventDate');
     const senderEl = $('senderName'), fontEl = $('emailFont'), accentEl = $('accent');
     const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
+    const trackEl = $('trackClicks'), trackRevealEl = $('trackReveal'), campaignEl = $('campaign'), trackNoteEl = $('trackNote');
 
     // email fonts: web-safe stacks + optional Google webfont (loaded via @import, graceful fallback)
     const FONTS = {
@@ -462,7 +482,9 @@
         nameColumn: parseInt(nameColEl.value, 10),
         webhook: webhookEl.value.trim(),
         eventName: eventNameEl.value.trim(),
-        eventDate: eventDateEl.value.trim()
+        eventDate: eventDateEl.value.trim(),
+        trackClicks: trackEl.checked,
+        campaign: campaignEl.value.trim()
       };
     }
 
@@ -494,6 +516,45 @@
       const bodyText = bodyToText(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
       const nameColVal = cfg.personalize ? String(cfg.nameColumn) : 'null';
       const hasWebhook = !!cfg.webhook;
+      const trackOn = !!cfg.trackClicks;
+
+      // When tracking is on, button links are wrapped through this script's own
+      // web-app URL so each click is logged to a "Clicks" sheet, then forwarded.
+      const hrefJs = trackOn ? 'trackedLink_(b.url, recipientEmail)' : 'b.url';
+
+      const trackHeader = trackOn
+        ? '\n// ===== מעקב קליקים =====\n' +
+          'var CAMPAIGN = ' + JSON.stringify(cfg.campaign || 'default') + ';  // שם הקמפיין (עמודה בגיליון Clicks)\n' +
+          '// =======================\n'
+        : '';
+
+      const trackedFn = trackOn
+        ? '\n\nfunction trackedLink_(url, recipient) {\n' +
+          '  try {\n' +
+          '    var base = ScriptApp.getService().getUrl();  // כתובת ה-Web App של הסקריפט הזה\n' +
+          '    if (!base) return url;  // עוד לא פורסם כ-Web App\n' +
+          '    return base + "?c=" + encodeURIComponent(CAMPAIGN) +\n' +
+          '      "&r=" + encodeURIComponent(recipient || "") + "&u=" + encodeURIComponent(url);\n' +
+          '  } catch (e) { return url; }\n' +
+          '}\n' +
+          '\n' +
+          '// נקרא כשנמען לוחץ על קישור: רושם שורה בגיליון Clicks ומעביר ליעד.\n' +
+          'function doGet(e) {\n' +
+          '  var url = (e && e.parameter && e.parameter.u) ? e.parameter.u : "";\n' +
+          '  try {\n' +
+          '    var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
+          '    var sheet = ss.getSheetByName("Clicks") || ss.insertSheet("Clicks");\n' +
+          '    if (sheet.getLastRow() === 0) sheet.appendRow(["זמן", "קמפיין", "נמען", "קישור"]);\n' +
+          '    sheet.appendRow([new Date(), e.parameter.c || "", e.parameter.r || "", url]);\n' +
+          '  } catch (err) {}\n' +
+          '  var safe = /^https?:\\/\\//i.test(url) ? url : "https://omri-iram.co.il";\n' +
+          '  return HtmlService.createHtmlOutput(\n' +
+          '    \'<!doctype html><meta charset="utf-8">\' +\n' +
+          '    \'<script>location.replace(\' + JSON.stringify(safe) + \');<\\/script>\' +\n' +
+          '    \'<meta http-equiv="refresh" content="0;url=\' + safe + \'">מעביר…\'\n' +
+          '  );\n' +
+          '}'
+        : '';
 
       const eventBlock = hasWebhook
         ? '\n// ===== פרטי האירוע (ל-MailerLite) =====\n' +
@@ -538,9 +599,10 @@
 'var ACCENT      = ' + JSON.stringify(cfg.accent) + ';  // צבע ראשי (כותרת + קישורים)\n' +
 'var FONT_IMPORT = ' + JSON.stringify(fontImport(cfg.emailFont)) + ';\n' +
 eventBlock +
+trackHeader +
 '\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
 '\n\n' +
-'function getEmailContent(recipientName) {\n' +
+'function getEmailContent(recipientName, recipientEmail) {\n' +
 '  var subject = ' + JSON.stringify(cfg.subject) + ';\n' +
 '  var nm = recipientName || "";\n' +
 '\n' +
@@ -550,7 +612,7 @@ buttonsLiteral + '\n' +
 '  ];\n' +
 '\n' +
 '  var buttonsHtml = BUTTONS.map(function (b) {\n' +
-'    return \'<a href="\' + b.url + \'" target="_blank" style="background-color: \' + b.color +\n' +
+'    return \'<a href="\' + ' + hrefJs + ' + \'" target="_blank" style="background-color: \' + b.color +\n' +
 '      \'; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; \' +\n' +
 '      \'font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; \' +\n' +
 '      \'box-shadow: 0 2px 4px rgba(0,0,0,0.15);">\' + b.text + \'</a>\';\n' +
@@ -578,6 +640,7 @@ buttonsLiteral + '\n' +
 '\n' +
 '  return { subject: subject, htmlBody: htmlBody, textBody: textBody };\n' +
 '}' +
+trackedFn +
 mlFunction +
 '\n\n\n' +
 'function sendEmailOnFormSubmit(e) {\n' +
@@ -587,7 +650,7 @@ mlFunction +
 '    if (!emailAddress || emailAddress.indexOf(\'@\') === -1) return;\n' +
 '\n' +
 '    var name = (NAME_COLUMN !== null && e.values[NAME_COLUMN]) ? e.values[NAME_COLUMN] : null;\n' +
-'    var emailData = getEmailContent(name);\n' +
+'    var emailData = getEmailContent(name, emailAddress);\n' +
 '\n' +
 '    MailApp.sendEmail({\n' +
 '      to: emailAddress,\n' +
@@ -605,7 +668,7 @@ mlCallSubmit + '\n' +
 '\n\n' +
 'function sendTestEmail() {\n' +
 '  var myEmail = Session.getActiveUser().getEmail();\n' +
-'  var emailData = getEmailContent(null);\n' +
+'  var emailData = getEmailContent(null, myEmail);\n' +
 '  MailApp.sendEmail({\n' +
 '    to: myEmail,\n' +
 '    name: SENDER_NAME,\n' +
@@ -620,12 +683,12 @@ mlCallSubmit + '\n' +
 '  var emailsList = [\n' +
 '    // "name@example.com",\n' +
 '  ];\n' +
-'  var emailData = getEmailContent(null);\n' +
 '  var successCount = 0;\n' +
 '  for (var i = 0; i < emailsList.length; i++) {\n' +
 '    var currentEmail = emailsList[i].trim();\n' +
 '    if (currentEmail.indexOf(\'@\') !== -1) {\n' +
 '      try {\n' +
+'        var emailData = getEmailContent(null, currentEmail);\n' +
 '        MailApp.sendEmail({\n' +
 '          to: currentEmail,\n' +
 '          name: SENDER_NAME,\n' +
@@ -652,6 +715,7 @@ mlCallManual + '\n' +
       buildPreview(cfg);
       lastCode = generateScript(cfg);
       codeOut.textContent = lastCode;
+      trackNoteEl.style.display = cfg.trackClicks ? 'block' : 'none';
     }
 
     // ---------- events ----------
@@ -660,6 +724,8 @@ mlCallManual + '\n' +
     senderEl.addEventListener('input', () => { try { localStorage.setItem('senderName', senderEl.value.trim()); } catch(_){} });
     personalizeEl.addEventListener('change', () => { nameRevealEl.classList.toggle('show', personalizeEl.checked); update(); });
     nameColEl.addEventListener('change', update);
+    trackEl.addEventListener('change', () => { trackRevealEl.classList.toggle('show', trackEl.checked); update(); });
+    campaignEl.addEventListener('input', update);
     webhookEl.addEventListener('input', () => {
       try { localStorage.setItem('mlWebhook', webhookEl.value.trim()); } catch(_){}
       eventRevealEl.style.display = webhookEl.value.trim() ? 'block' : 'none';
