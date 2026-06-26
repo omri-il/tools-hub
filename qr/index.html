@@ -200,15 +200,16 @@
       });
     }
 
-    function compose(qc, S){
+    function compose(qc, S, target){
+      target = target || canvas;
       const above=aboveEl.value.trim(), below=belowEl.value.trim();
       const fontPx=parseInt(fontSizeEl.value,10), stack=FONTS[fontEl.value]||FONTS.heebo;
       const PAD=Math.round(S*0.045), lineH=Math.round(fontPx*1.45);
       const aboveH = above ? lineH : 0, belowH = below ? lineH : 0;
       const W = S + PAD*2;
       const H = PAD + aboveH + (aboveH?PAD*0.5:0) + S + (belowH?PAD*0.5:0) + belowH + PAD;
-      canvas.width=W; canvas.height=Math.round(H);
-      const ctx=canvas.getContext('2d');
+      target.width=W; target.height=Math.round(H);
+      const ctx=target.getContext('2d');
       ctx.clearRect(0,0,W,H);
       if(!transEl.checked){ ctx.fillStyle=bgEl.value; ctx.fillRect(0,0,W,H); }
 
@@ -232,6 +233,21 @@
 
     function download(href,name){ const a=document.createElement('a'); a.href=href; a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
     function fileBase(){ const t=contentEl.value.trim().replace(/^https?:\/\//,'').replace(/[^\w.-]+/g,'_').slice(0,40); return 'qr_'+(t||'code'); }
+
+    // Build a PNG data URL for any text using the CURRENT design settings,
+    // without touching the on-screen preview. Used to download each dynamic QR
+    // directly from its row in the list. cb(dataURL) or cb(null) on failure.
+    function buildQr(text, cb){
+      if(!text || typeof QRCode==='undefined'){ cb(null); return; }
+      const S=parseInt(sizeEl.value,10);
+      const qc=document.createElement('canvas');
+      QRCode.toCanvas(qc, text, qrOpts(), err=>{
+        if(err){ cb(null); return; }
+        const out=document.createElement('canvas');
+        compose(qc, S, out);
+        cb(out.toDataURL('image/png'));
+      });
+    }
 
     [contentEl,fgEl,bgEl,sizeEl,logoPctEl,aboveEl,belowEl,fontSizeEl,textColorEl].forEach(el=>el.addEventListener('input',render));
     [ecEl,fontEl].forEach(el=>el.addEventListener('change',()=>{
@@ -318,6 +334,7 @@
               '<input type="text" dir="ltr" value="'+esc(l.url)+'" data-code="'+esc(code)+'" style="flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:.85rem">'+
               '<button class="btn btn-ghost dyn-save" type="button" data-code="'+esc(code)+'" style="padding:8px 12px;font-size:.8rem">שמור יעד</button>'+
               '<button class="btn btn-ghost dyn-use" type="button" data-short="'+esc(l.short)+'" style="padding:8px 12px;font-size:.8rem">טען ל-QR</button>'+
+              '<button class="btn btn-primary dyn-dl" type="button" data-short="'+esc(l.short)+'" data-code="'+esc(code)+'" style="padding:8px 12px;font-size:.8rem">⬇ הורד QR</button>'+
             '</div>';
           box.appendChild(row);
         });
@@ -327,6 +344,14 @@
           const j=await r.json().catch(()=>({})); $('dynMsg').textContent = r.ok ? ('היעד של '+code+' עודכן ✓') : ('שגיאה: '+(j.error||r.status));
         }));
         box.querySelectorAll('.dyn-use').forEach(b=>b.addEventListener('click',()=>{ contentEl.value=b.dataset.short; render(); window.scrollTo({top:0,behavior:'smooth'}); }));
+        box.querySelectorAll('.dyn-dl').forEach(b=>b.addEventListener('click',()=>{
+          $('dynMsg').textContent='מכין QR…';
+          buildQr(b.dataset.short, durl=>{
+            if(!durl){ $('dynMsg').textContent='שגיאה ביצירת הקוד'; return; }
+            download(durl, 'qr_'+b.dataset.code+'.png');
+            $('dynMsg').textContent='ה-QR של '+b.dataset.code+' הורד ✓';
+          });
+        }));
       }catch(e){ box.innerHTML='<span class="hint">שגיאת רשת מול מקצר הקישורים.</span>'; }
     }
     async function dynCreate(){
