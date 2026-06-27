@@ -55,8 +55,21 @@
     .vid .body{padding:13px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
     .vid .vtitle{font-weight:600;font-size:.95rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .vid .meta{color:var(--faint);font-size:.8rem;margin-top:auto;display:flex;flex-wrap:wrap;gap:4px 10px}
-    .vid .open{margin-top:8px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--accent);font-weight:700;font-size:.85rem;text-decoration:none;padding:9px}
-    .vid .open:hover{border-color:var(--accent)}
+    .vid .actions{display:flex;gap:7px;margin-top:8px}
+    .vid .open,.vid .abtn{flex:1;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--accent);font-weight:700;font-size:.85rem;text-decoration:none;padding:9px;cursor:pointer;font-family:inherit}
+    .vid .open:hover,.vid .abtn:hover{border-color:var(--accent)}
+    .vid .abtn{color:#a78bfa;border-color:rgba(167,139,250,.35)}
+    .vid .abtn:hover{border-color:#a78bfa}
+    .vid .abtn:disabled{opacity:.55;cursor:default}
+    .apanel{display:none;margin-top:10px;background:#0a0b0f;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:.85rem;line-height:1.6}
+    .apanel.show{display:block}
+    .apanel .fit{display:inline-block;font-weight:700;border-radius:6px;padding:2px 9px;font-size:.78rem;margin-bottom:7px}
+    .fit-high{background:rgba(52,211,153,.16);color:#34d399}
+    .fit-mid{background:rgba(251,191,36,.16);color:#fbbf24}
+    .fit-low{background:rgba(244,63,94,.16);color:var(--accent)}
+    .apanel ul{margin:6px 0 0;padding-inline-start:18px}
+    .apanel .lvl{color:var(--faint);font-size:.78rem;margin-top:6px}
+    .apanel .note{color:var(--warn);font-size:.78rem;margin-top:6px}
     footer{margin-top:46px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
     footer a{color:var(--muted)}
     .admin-chip{position:fixed;bottom:18px;inset-inline-start:18px;background:rgba(251,146,60,.16);border:1px solid rgba(251,146,60,.5);color:#fdba74;font-weight:700;font-size:.82rem;padding:8px 14px;border-radius:10px;cursor:pointer;display:none;z-index:40}
@@ -125,6 +138,7 @@
     const API = isLocal ? 'http://127.0.0.1:8094/api/scraper' : 'https://go.omri-iram.co.il/scraper/api';
     const PAID = ['tiktok','instagram','facebook'];
     let lastResults = [];
+    let lastQuery = '';
 
     /* ---------- admin reveal (triple-click kicker, PIN 9464) ---------- */
     function isAdmin(){ try{ return localStorage.getItem('omri_admin')==='1'; }catch(_){ return false; } }
@@ -198,7 +212,7 @@
         }catch(e){ errs.push(pf+': '+e.message); }
       }
       sortResults(all,sort);
-      lastResults=all;
+      lastResults=all; lastQuery=q;
       render(all);
       $('go').disabled=false;
       if(!all.length){ msg.className='msg err'; msg.textContent=errs.length?('לא נמצאו תוצאות. '+errs.join(' · ')):'לא נמצאו תוצאות.'; }
@@ -216,18 +230,51 @@
     function render(list){
       const root=$('results'); root.innerHTML='';
       if(list.length){ $('toolbar').classList.add('show'); $('count').textContent=list.length+' תוצאות'; }
-      for(const r of list){
+      list.forEach((r,i)=>{
         const el=document.createElement('div'); el.className='vid';
         const v=fmtViews(r.views), date=(r.published_at||'').slice(0,10);
+        const canAnalyze = r.platform==='youtube';
         el.innerHTML=
           '<div class="thumb">'+(r.thumbnail?'<img loading="lazy" src="'+esc(r.thumbnail)+'" alt="">':'')+'<span class="badge">'+esc(r.platform)+'</span></div>'+
           '<div class="body">'+
             '<div class="vtitle">'+esc(r.title||'(ללא כותרת)')+'</div>'+
             '<div class="meta">'+(r.author?'<span>'+esc(r.author)+'</span>':'')+(v?'<span>👁 '+v+'</span>':'')+(date?'<span>'+date+'</span>':'')+'</div>'+
-            '<a class="open" href="'+esc(r.url)+'" target="_blank" rel="noopener">פתח ←</a>'+
+            '<div class="actions">'+
+              '<a class="open" href="'+esc(r.url)+'" target="_blank" rel="noopener">פתח ←</a>'+
+              (canAnalyze?'<button class="abtn" type="button" data-url="'+esc(r.url)+'">🔍 נתח</button>':'')+
+            '</div>'+
+            '<div class="apanel" id="ap'+i+'"></div>'+
           '</div>';
         root.appendChild(el);
-      }
+      });
+    }
+
+    /* ---------- Gemini analyze (watches the video) ---------- */
+    $('results').addEventListener('click',async e=>{
+      const btn=e.target.closest('.abtn'); if(!btn)return;
+      const panel=btn.closest('.body').querySelector('.apanel');
+      const url=btn.dataset.url;
+      btn.disabled=true; const orig=btn.textContent; btn.innerHTML='<span class="spinner"></span>מנתח…';
+      panel.className='apanel show'; panel.innerHTML='<span class="lvl">ה-AI צופה בסרטון… זה לוקח כמה שניות.</span>';
+      try{
+        const r=await fetch(API+'/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,subject:lastQuery})});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok||!d.analysis) throw new Error(d.error||'ניתוח נכשל');
+        renderAnalysis(panel,d.analysis);
+      }catch(err){ panel.innerHTML='<span class="fit fit-low">שגיאה</span><div>'+esc(err.message)+'</div>'; }
+      btn.disabled=false; btn.textContent=orig;
+    });
+
+    function renderAnalysis(panel,a){
+      const fitCls={'גבוהה':'fit-high','בינונית':'fit-mid','נמוכה':'fit-low'}[a.fits]||'fit-mid';
+      const pts=(a.key_points||[]).map(p=>'<li>'+esc(p)+'</li>').join('');
+      panel.innerHTML=
+        '<span class="fit '+fitCls+'">התאמה לנושא: '+esc(a.fits||'—')+'</span>'+
+        (a.is_educational===false?' <span class="fit fit-low">לא חינוכי</span>':'')+
+        '<div>'+esc(a.summary||'')+'</div>'+
+        (pts?'<ul>'+pts+'</ul>':'')+
+        (a.level?'<div class="lvl">קהל יעד: '+esc(a.level)+'</div>':'')+
+        (a.note?'<div class="note">⚠ '+esc(a.note)+'</div>':'');
     }
 
     /* ---------- CSV export ---------- */
