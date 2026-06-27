@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מחפש סרטונים לפי נושא</title>
+  <meta name="description" content="חיפוש סרטונים לפי נושא ביוטיוב (חינמי) ובטיקטוק/אינסטגרם/פייסבוק — תוצאות עם קישורים וייצוא ל-CSV." />
+  <meta property="og:title" content="מחפש סרטונים לפי נושא" />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#fb7185; --accent2:#f43f5e; --ok:#34d399; --warn:#fbbf24; font-family:'Heebo',system-ui,sans-serif; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(90% 60% at 50% -10%,rgba(244,63,94,0.09),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 80px;line-height:1.5}
+    .wrap{max-width:900px;margin:0 auto}
+    .back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:18px}
+    .masthead{text-align:center;margin-bottom:28px}
+    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent);cursor:default;user-select:none}
+    h1{font-weight:900;font-size:clamp(2rem,5vw,2.7rem);margin-top:10px}
+    h1 .em{color:var(--accent)}
+    .lede{color:var(--muted);font-weight:300;margin:14px auto 0;max-width:560px}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+    label{display:block;font-weight:600;font-size:.9rem;margin-bottom:7px}
+    input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:1.05rem;padding:14px 15px}
+    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(244,63,94,0.16)}
+    .platforms{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+    .chip{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:9px 15px;font-weight:600;font-size:.9rem;cursor:pointer;user-select:none;transition:.15s}
+    .chip:hover{border-color:var(--accent)}
+    .chip.on{background:rgba(244,63,94,0.16);border-color:var(--accent);color:#fff}
+    .chip .dot{width:9px;height:9px;border-radius:50%;background:var(--faint)}
+    .chip.on .dot{background:var(--accent)}
+    .chip .pay{font-size:.7rem;color:var(--warn);font-weight:700}
+    body:not(.admin) .admin-only{display:none !important}
+    .opts{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-top:18px}
+    .opt{flex:1;min-width:120px}
+    select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.95rem;padding:11px 12px;cursor:pointer}
+    select:focus{outline:none;border-color:var(--accent)}
+    .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:13px 24px;font-size:.98rem}
+    .btn-primary{background:var(--accent);color:#3b0712}
+    .btn-primary:hover{background:var(--accent2);color:#fff}
+    .btn-primary:disabled{opacity:.5;cursor:default}
+    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+    .msg{margin-top:14px;color:var(--faint);font-size:.9rem;min-height:1em;text-align:center}
+    .msg.err{color:var(--accent)}
+    .toolbar{display:none;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 14px;flex-wrap:wrap}
+    .toolbar.show{display:flex}
+    .toolbar .count{font-weight:700;color:var(--ink)}
+    .results{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+    .vid{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .vid .thumb{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
+    .vid .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .vid .badge{position:absolute;top:8px;inset-inline-start:8px;background:rgba(0,0,0,.72);color:#fff;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:6px}
+    .vid .body{padding:13px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+    .vid .vtitle{font-weight:600;font-size:.95rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .vid .meta{color:var(--faint);font-size:.8rem;margin-top:auto;display:flex;flex-wrap:wrap;gap:4px 10px}
+    .vid .open{margin-top:8px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--accent);font-weight:700;font-size:.85rem;text-decoration:none;padding:9px}
+    .vid .open:hover{border-color:var(--accent)}
+    footer{margin-top:46px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
+    footer a{color:var(--muted)}
+    .admin-chip{position:fixed;bottom:18px;inset-inline-start:18px;background:rgba(251,146,60,.16);border:1px solid rgba(251,146,60,.5);color:#fdba74;font-weight:700;font-size:.82rem;padding:8px 14px;border-radius:10px;cursor:pointer;display:none;z-index:40}
+    body.admin .admin-chip{display:inline-block}
+    .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-inline-end:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="../">→ חזרה לכל הכלים</a>
+    <div class="masthead">
+      <div class="kicker" id="kicker">הכלים של עומרי אירם</div>
+      <h1>מחפש סרטונים <span class="em">לפי נושא</span></h1>
+      <p class="lede">כתבו נושא וקבלו סרטונים רלוונטיים. חיפוש ביוטיוב חינמי לגמרי; טיקטוק / אינסטגרם / פייסבוק זמינים במצב אדמין.</p>
+    </div>
+
+    <div class="sheet">
+      <label for="q">הנושא לחיפוש</label>
+      <input type="text" id="q" placeholder="לדוגמה: תאי גזע, פוטוסינתזה, הר געש…" />
+
+      <div class="platforms" id="platforms">
+        <div class="chip on" data-pf="youtube"><span class="dot"></span>▶️ יוטיוב</div>
+        <div class="chip admin-only" data-pf="tiktok"><span class="dot"></span>🎵 טיקטוק <span class="pay">בתשלום</span></div>
+        <div class="chip admin-only" data-pf="instagram"><span class="dot"></span>📸 אינסטגרם <span class="pay">בתשלום</span></div>
+        <div class="chip admin-only" data-pf="facebook"><span class="dot"></span>👍 פייסבוק <span class="pay">בתשלום</span></div>
+      </div>
+
+      <div class="opts">
+        <div class="opt">
+          <label for="max">כמות תוצאות</label>
+          <select id="max"><option value="10">10</option><option value="25" selected>25</option></select>
+        </div>
+        <div class="opt">
+          <label for="sort">מיון</label>
+          <select id="sort">
+            <option value="relevance">הכי רלוונטי</option>
+            <option value="date">הכי חדש</option>
+            <option value="views">הכי נצפה</option>
+          </select>
+        </div>
+        <div class="opt" style="flex:0 0 auto">
+          <button class="btn btn-primary" id="go" type="button">🔍 חפש</button>
+        </div>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="toolbar" id="toolbar">
+      <span class="count" id="count"></span>
+      <button class="btn btn-ghost" id="csv" type="button">⬇️ ייצא ל-CSV</button>
+    </div>
+    <div class="results" id="results"></div>
+
+    <footer>
+      <p>חיפוש יוטיוב פתוח לכולם וחינמי. שאר הפלטפורמות עוברות דרך Apify (בתשלום) ולכן נעולות לאדמין.</p>
+      <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
+    </footer>
+  </div>
+
+  <div class="admin-chip" id="adminExit">🔓 מצב אדמין · יציאה</div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const isLocal = location.hostname==='localhost' || location.hostname==='127.0.0.1';
+    const API = isLocal ? 'http://127.0.0.1:8094/api/scraper' : 'https://go.omri-iram.co.il/scraper/api';
+    const PAID = ['tiktok','instagram','facebook'];
+    let lastResults = [];
+
+    /* ---------- admin reveal (triple-click kicker, PIN 9464) ---------- */
+    function isAdmin(){ try{ return localStorage.getItem('omri_admin')==='1'; }catch(_){ return false; } }
+    if(isAdmin()) document.body.classList.add('admin');
+    (function(){
+      const k=$('kicker'); let c=0,t=null;
+      k.addEventListener('click',()=>{
+        c++; clearTimeout(t); t=setTimeout(()=>c=0,1200);
+        if(c>=3){ c=0; if(isAdmin())return;
+          const code=prompt('קוד אדמין:');
+          if(code==='9464'){ try{localStorage.setItem('omri_admin','1');}catch(_){}; document.body.classList.add('admin'); }
+          else if(code!==null){ alert('קוד שגוי'); }
+        }
+      });
+    })();
+    $('adminExit').addEventListener('click',()=>{ try{localStorage.removeItem('omri_admin');}catch(_){}; document.body.classList.remove('admin');
+      PAID.forEach(pf=>{ const c=document.querySelector('.chip[data-pf="'+pf+'"]'); if(c)c.classList.remove('on'); }); });
+
+    /* ---------- TOTP session (shared omri_session) ---------- */
+    function tok(){ try{ return localStorage.getItem('omri_session')||''; }catch(_){ return ''; } }
+    async function authWithCode(code){
+      try{
+        const r=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+        if(!r.ok) return false;
+        const d=await r.json().catch(()=>({}));
+        if(d.token){ try{localStorage.setItem('omri_session',d.token);}catch(_){}; return true; }
+      }catch(_){}
+      return false;
+    }
+
+    /* ---------- platform chips ---------- */
+    $('platforms').addEventListener('click',e=>{
+      const chip=e.target.closest('.chip'); if(!chip)return;
+      chip.classList.toggle('on');
+    });
+    function selected(){ return [...document.querySelectorAll('.chip.on')].map(c=>c.dataset.pf); }
+
+    /* ---------- search ---------- */
+    async function fetchYouTube(q,max,sort){
+      const r=await fetch(API+'/youtube?q='+encodeURIComponent(q)+'&max='+max+'&sort='+sort);
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(d.error||'youtube error');
+      return d.results||[];
+    }
+    async function fetchPaid(pf,subject,max,sort,retry){
+      const r=await fetch(API+'/paid',{method:'POST',headers:{'Content-Type':'application/json','X-Session':tok()},body:JSON.stringify({platform:pf,subject,max,sort})});
+      if(r.status===401 && !retry){
+        const code=prompt('קוד מ-Google Authenticator (6 ספרות):');
+        if(code && await authWithCode(code.trim())) return fetchPaid(pf,subject,max,sort,true);
+        throw new Error('דרושה התחברות אדמין');
+      }
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(d.error||(pf+' error'));
+      return d.results||[];
+    }
+
+    async function search(){
+      const q=$('q').value.trim(), msg=$('msg');
+      const pfs=selected();
+      if(!q){ msg.className='msg err'; msg.textContent='כתבו נושא לחיפוש.'; return; }
+      if(!pfs.length){ msg.className='msg err'; msg.textContent='בחרו לפחות פלטפורמה אחת.'; return; }
+      const max=$('max').value, sort=$('sort').value;
+      $('go').disabled=true; msg.className='msg'; msg.innerHTML='<span class="spinner"></span>מחפש…';
+      $('toolbar').classList.remove('show'); $('results').innerHTML='';
+
+      let all=[]; const errs=[];
+      for(const pf of pfs){
+        try{
+          const rs = pf==='youtube' ? await fetchYouTube(q,max,sort) : await fetchPaid(pf,q,max,sort,false);
+          all=all.concat(rs);
+        }catch(e){ errs.push(pf+': '+e.message); }
+      }
+      sortResults(all,sort);
+      lastResults=all;
+      render(all);
+      $('go').disabled=false;
+      if(!all.length){ msg.className='msg err'; msg.textContent=errs.length?('לא נמצאו תוצאות. '+errs.join(' · ')):'לא נמצאו תוצאות.'; }
+      else{ msg.className='msg'; msg.textContent=errs.length?('שימו לב — '+errs.join(' · ')):''; }
+    }
+
+    function sortResults(a,sort){
+      if(sort==='views') a.sort((x,y)=>(y.views||0)-(x.views||0));
+      else if(sort==='date') a.sort((x,y)=>(y.published_at||'').localeCompare(x.published_at||''));
+    }
+
+    function fmtViews(n){ if(n==null) return ''; if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(1)+'K'; return ''+n; }
+    function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    function render(list){
+      const root=$('results'); root.innerHTML='';
+      if(list.length){ $('toolbar').classList.add('show'); $('count').textContent=list.length+' תוצאות'; }
+      for(const r of list){
+        const el=document.createElement('div'); el.className='vid';
+        const v=fmtViews(r.views), date=(r.published_at||'').slice(0,10);
+        el.innerHTML=
+          '<div class="thumb">'+(r.thumbnail?'<img loading="lazy" src="'+esc(r.thumbnail)+'" alt="">':'')+'<span class="badge">'+esc(r.platform)+'</span></div>'+
+          '<div class="body">'+
+            '<div class="vtitle">'+esc(r.title||'(ללא כותרת)')+'</div>'+
+            '<div class="meta">'+(r.author?'<span>'+esc(r.author)+'</span>':'')+(v?'<span>👁 '+v+'</span>':'')+(date?'<span>'+date+'</span>':'')+'</div>'+
+            '<a class="open" href="'+esc(r.url)+'" target="_blank" rel="noopener">פתח ←</a>'+
+          '</div>';
+        root.appendChild(el);
+      }
+    }
+
+    /* ---------- CSV export ---------- */
+    function toCSV(list){
+      const cols=['platform','title','url','author','published_at','views','likes','duration'];
+      const head=cols.join(',');
+      const rows=list.map(r=>cols.map(c=>{ let v=r[c]==null?'':(''+r[c]); v=v.replace(/"/g,'""'); return '"'+v+'"'; }).join(','));
+      return '﻿'+[head,...rows].join('\n');
+    }
+    $('csv').addEventListener('click',()=>{
+      if(!lastResults.length)return;
+      const blob=new Blob([toCSV(lastResults)],{type:'text/csv;charset=utf-8'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='videos_'+($('q').value.trim().replace(/\s+/g,'_')||'results')+'.csv';
+      a.click(); URL.revokeObjectURL(a.href);
+    });
+
+    $('go').addEventListener('click',search);
+    $('q').addEventListener('keydown',e=>{ if(e.key==='Enter') search(); });
+  </script>
+</body>
+</html>
