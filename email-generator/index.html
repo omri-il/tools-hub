@@ -91,6 +91,31 @@
     .field .hint { color: var(--ink-faint); font-weight: 400; font-size: 0.8rem; }
     .field .hint code { background: var(--paper-2); padding: 1px 7px; border-radius: 5px; font-size: 0.9em; color: var(--accent); font-family: 'Consolas','SF Mono',monospace; font-weight: 600; }
 
+    /* logo upload */
+    .logo-upload-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .logo-upload-btn {
+      background: transparent; color: var(--accent); border: 1px dashed var(--line);
+      border-radius: 10px; padding: 10px 16px; cursor: pointer; font-family: var(--sans);
+      font-weight: 600; font-size: 0.88rem; transition: border-color .18s, background .18s;
+    }
+    .logo-upload-btn:hover { border-color: var(--accent); background: rgba(244,181,63,0.07); }
+    .logo-upload-row .hint { color: var(--ink-faint); font-size: 0.8rem; }
+    .logo-preview {
+      display: flex; align-items: center; gap: 14px; margin-top: 12px;
+      background: rgba(255,255,255,0.025); border: 1px solid var(--line-soft);
+      border-radius: 11px; padding: 10px 12px;
+    }
+    .logo-preview img { max-width: 130px; max-height: 62px; border-radius: 6px; background: #fff; padding: 4px; }
+    .logo-preview-info { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .logo-preview-info .l-name { font-size: 0.8rem; color: var(--ink-soft); }
+    .logo-remove {
+      background: transparent; color: var(--danger); border: 1px solid var(--line);
+      border-radius: 8px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; font-family: var(--sans);
+      transition: border-color .18s, background .18s;
+    }
+    .logo-remove:hover { border-color: var(--danger); background: rgba(255,107,107,0.12); }
+    .logo-warn { display: none; color: var(--danger); font-size: 0.8rem; margin-top: 8px; line-height: 1.6; }
+
     input[type=text], input[type=date], input[type=url], textarea, select {
       width: 100%; background: #0f1115; border: 1px solid var(--line);
       border-radius: 10px; color: var(--ink); font-family: var(--sans);
@@ -340,9 +365,22 @@
         <div class="fold-body">
 
         <div class="field">
-          <label for="logo">תמונה / לוגו בראש המייל <span class="hint">— קישור לתמונה, אופציונלי</span></label>
+          <label for="logo">תמונה / לוגו בראש המייל <span class="hint">— אופציונלי</span></label>
           <input type="url" id="logo" dir="ltr" placeholder="https://example.com/logo.png" />
-          <p class="hint" style="margin-top:7px;">העלו את התמונה לאתר או ל-Google Drive (קישור ישיר) והדביקו כאן. תופיע במרכז בראש המייל.</p>
+          <div class="logo-upload-row">
+            <input type="file" id="logoFile" accept="image/*" hidden />
+            <button type="button" class="logo-upload-btn" id="logoUploadBtn">⬆ העלו קובץ מהמחשב</button>
+            <span class="hint">או הדביקו קישור למעלה</span>
+          </div>
+          <div class="logo-preview" id="logoPreview" style="display:none;">
+            <img id="logoThumb" alt="לוגו" />
+            <div class="logo-preview-info">
+              <span class="l-name" id="logoInfo"></span>
+              <button type="button" class="logo-remove" id="logoRemove">✕ הסר לוגו</button>
+            </div>
+          </div>
+          <p class="logo-warn" id="logoWarn">⚠️ הקובץ גדול יחסית — הקוד שנוצר יהיה ארוך. כדאי להעלות תמונה קטנה או פשוטה יותר.</p>
+          <p class="hint" style="margin-top:7px;">אפשר להדביק קישור ישיר לתמונה (אתר / Google Drive) <strong>או</strong> להעלות קובץ מהמחשב — קובץ שתעלו מוטמע ישירות בקוד כדי שיוצג בכל תוכנת דואר. יופיע במרכז בראש המייל.</p>
 
           <label for="attachLink" style="margin-top:16px;">צירוף קובץ מ-Google Drive <span class="hint">— קישור, אופציונלי</span></label>
           <input type="url" id="attachLink" dir="ltr" placeholder="https://drive.google.com/file/d/.../view" />
@@ -627,6 +665,9 @@
     const trackEl = $('trackClicks'), trackRevealEl = $('trackReveal'), campaignEl = $('campaign'), trackNoteEl = $('trackNote');
     const phoneEl = $('phone'), websiteEl = $('website'), mlSection = $('mlSection');
     const templateEl = $('template'), logoEl = $('logo'), styleEl = $('style'), attachLinkEl = $('attachLink');
+    const logoFileEl = $('logoFile'), logoUploadBtn = $('logoUploadBtn'), logoPreviewEl = $('logoPreview'),
+          logoThumbEl = $('logoThumb'), logoInfoEl = $('logoInfo'), logoRemoveEl = $('logoRemove'), logoWarnEl = $('logoWarn');
+    let logoData = '';  // data-URL of an uploaded logo (base64); '' when none
     const followUpEl = $('followUp'), followRevealEl = $('followReveal'), followUp2El = $('followUp2'), fu2Block = $('fu2Block');
     const previewTabs = $('previewTabs');
     const fu1 = { days: $('fu1Days'), cond: $('fu1Cond'), subject: $('fu1Subject'), body: $('fu1Body'), btnRows: $('fu1BtnRows') };
@@ -788,6 +829,52 @@
     document.addEventListener('click', closeEmojiPicker);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEmojiPicker(); });
 
+    // ---------- logo upload ----------
+    const LOGO_MAX = 600;  // resize so the longest side ≤ this (email is 600px wide)
+    function setLogoData(dataUrl, label){
+      logoData = dataUrl || '';
+      if (logoData){
+        logoThumbEl.src = logoData;
+        logoInfoEl.textContent = label || 'לוגו מוטמע';
+        logoPreviewEl.style.display = 'flex';
+      } else {
+        logoPreviewEl.style.display = 'none';
+        logoWarnEl.style.display = 'none';
+        logoThumbEl.removeAttribute('src');
+      }
+    }
+    function loadLogoFile(file){
+      if (!file) return;
+      if (!/^image\//.test(file.type)) { alert('נא לבחור קובץ תמונה'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          const scale = Math.min(1, LOGO_MAX / Math.max(w, h));
+          w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          // keep PNG for formats that may have transparency; JPEG otherwise (smaller)
+          const keepAlpha = /png|webp|gif|svg/i.test(file.type);
+          const out = keepAlpha ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.9);
+          const b64 = out.split(',')[1] || '';
+          const sizeKB = Math.round(b64.length * 0.75 / 1024);
+          setLogoData(out, (file.name || 'לוגו') + ' · ~' + sizeKB + 'KB');
+          logoWarnEl.style.display = sizeKB > 200 ? 'block' : 'none';
+          try { localStorage.setItem('eg_logo_data', out); } catch(_){}
+          update();
+        };
+        img.onerror = () => alert('לא הצלחנו לקרוא את התמונה');
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    logoUploadBtn.addEventListener('click', () => logoFileEl.click());
+    logoFileEl.addEventListener('change', () => { loadLogoFile(logoFileEl.files[0]); logoFileEl.value = ''; });
+    logoRemoveEl.addEventListener('click', () => { setLogoData('', ''); try { localStorage.removeItem('eg_logo_data'); } catch(_){} update(); });
+
     // ---------- read config ----------
     function readConfig(){
       return {
@@ -807,6 +894,7 @@
         trackClicks: trackEl.checked,
         campaign: campaignEl.value.trim(),
         logo: logoEl.value.trim(),
+        logoData: logoData,
         attach: attachLinkEl.value.trim(),
         followUp1: readFollowUp(fu1, followUpEl.checked),
         followUp2: readFollowUp(fu2, followUpEl.checked && followUp2El.checked)
@@ -835,7 +923,7 @@
       const accent = cfg.accent;
       const html = fontImport(cfg.emailFont) +
         '<div style="direction: rtl; text-align: right; font-family: ' + font + '; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">' +
-          (cfg.logo ? '<div style="text-align:center;margin-bottom:18px;"><img src="' + esc(cfg.logo) + '" alt="" style="max-width:100%;border-radius:8px;"></div>' : '') +
+          ((cfg.logoData || cfg.logo) ? '<div style="text-align:center;margin-bottom:18px;"><img src="' + (cfg.logoData || esc(cfg.logo)) + '" alt="" style="max-width:100%;border-radius:8px;"></div>' : '') +
           '<h2 style="color: ' + accent + '; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
           (bodyToHtml(previewBody) || '<p style="color:#94a3b8;font-size:15px;">— כתבו את גוף המכתב כדי לראות תצוגה —</p>') +
           '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(buttons, true) + '</div>' +
@@ -862,6 +950,15 @@
       const fuOn = fu1c.enabled;
       const needsTrackForFU = (fu1c.enabled && fu1c.cond === 'noclick') || (fu2c.enabled && fu2c.cond === 'noclick');
       const trackOn = !!cfg.trackClicks || needsTrackForFU;
+
+      // uploaded logo → base64 + mime, embedded as an inline (cid) image so it
+      // shows reliably in Gmail/Outlook. A pasted URL is used as-is instead.
+      let logoB64 = '', logoType = '';
+      if (cfg.logoData) {
+        const m = cfg.logoData.match(/^data:([^;]+);base64,(.*)$/);
+        if (m) { logoType = m[1]; logoB64 = m[2]; }
+      }
+      const logoUrl = logoB64 ? '' : (cfg.logo || '');
 
       // When tracking is on, button links are wrapped through this script's own
       // web-app URL so each click is logged to a "Clicks" sheet, then forwarded.
@@ -1034,7 +1131,7 @@ fuConfigItems.join(',\n') + '\n' +
 '      try {\n' +
 '        var ed = getFollowUpContent_(fu.n, name, email);\n' +
 '        if (!ed) continue;\n' +
-'        MailApp.sendEmail({ to: email, name: SENDER_NAME, subject: ed.subject, body: ed.textBody, htmlBody: ed.htmlBody });\n' +
+'        MailApp.sendEmail({ to: email, name: SENDER_NAME, subject: ed.subject, body: ed.textBody, htmlBody: ed.htmlBody, inlineImages: _inlineImages_() });\n' +
 '        doneSheet.appendRow([new Date(), email, "FU" + fu.n]); sent[key] = true;\n' +
 '        Logger.log("מעקב " + fu.n + " נשלח אל: " + email);\n' +
 '      } catch (err) { Logger.log("שגיאת מעקב ל-" + email + ": " + err.toString()); }\n' +
@@ -1049,7 +1146,7 @@ fuConfigItems.join(',\n') + '\n' +
 '    var n = FOLLOWUP_CONFIG[f].n;\n' +
 '    var ed = getFollowUpContent_(n, null, myEmail);\n' +
 '    if (!ed) continue;\n' +
-'    MailApp.sendEmail({ to: myEmail, name: SENDER_NAME, subject: "[בדיקת מעקב " + n + "] " + ed.subject, body: ed.textBody, htmlBody: ed.htmlBody });\n' +
+'    MailApp.sendEmail({ to: myEmail, name: SENDER_NAME, subject: "[בדיקת מעקב " + n + "] " + ed.subject, body: ed.textBody, htmlBody: ed.htmlBody, inlineImages: _inlineImages_() });\n' +
 '  }\n' +
 '  Logger.log("מייל בדיקת מעקב נשלח אל: " + myEmail);\n' +
 '}\n'
@@ -1069,7 +1166,10 @@ fuConfigItems.join(',\n') + '\n' +
 'var FONT_IMPORT = ' + JSON.stringify(fontImport(cfg.emailFont)) + ';\n' +
 'var SENDER_PHONE = ' + JSON.stringify(cfg.phone) + ';  // טלפון בחתימה (ריק = לא מוצג)\n' +
 'var SENDER_SITE  = ' + JSON.stringify(cfg.website) + ';  // אתר בחתימה (ריק = לא מוצג)\n' +
-'var TOP_IMAGE   = ' + JSON.stringify(cfg.logo || '') + ';  // תמונה/לוגו בראש המייל (קישור; ריק = אין)\n' +
+'var TOP_IMAGE      = ' + JSON.stringify(logoUrl) + ';  // לוגו לפי קישור (ריק = אין / הועלה קובץ)\n' +
+'var TOP_IMAGE_DATA = ' + JSON.stringify(logoB64) + ';  // לוגו מוטמע (base64; ריק = אין)\n' +
+'var TOP_IMAGE_TYPE = ' + JSON.stringify(logoType) + ';  // סוג התמונה המוטמעת\n' +
+'var TOP_IMAGE_SRC  = TOP_IMAGE_DATA ? "cid:topLogo" : TOP_IMAGE;  // מקור התמונה בגוף המייל\n' +
 'var ATTACH_FILE_ID = ' + JSON.stringify(driveFileId(cfg.attach || '')) + ';  // קובץ מצורף מ-Drive (ריק = אין)\n' +
 eventBlock +
 trackHeader +
@@ -1096,7 +1196,7 @@ trackHeader +
 '\n' +
 '  var htmlBody = FONT_IMPORT +\n' +
 '    \'<div style="direction: rtl; text-align: right; font-family: \' + EMAIL_FONT + \'; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">\' +\n' +
-'      (TOP_IMAGE ? \'<div style="text-align: center; margin-bottom: 18px;"><img src="\' + TOP_IMAGE + \'" alt="" style="max-width: 100%; border-radius: 8px;"></div>\' : "") +\n' +
+'      (TOP_IMAGE_SRC ? \'<div style="text-align: center; margin-bottom: 18px;"><img src="\' + TOP_IMAGE_SRC + \'" alt="" style="max-width: 100%; border-radius: 8px;"></div>\' : "") +\n' +
 '      \'<h2 style="color: \' + ACCENT + \'; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
 '      bodyHtml +\n' +
 '      (buttonsHtml ? \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' : "") +\n' +
@@ -1132,6 +1232,13 @@ mlFunction +
 '  try { return [DriveApp.getFileById(ATTACH_FILE_ID).getBlob()]; }\n' +
 '  catch (e) { Logger.log("צירוף הקובץ נכשל — בדקו שהקובץ קיים ומשותף: " + e); return []; }\n' +
 '}\n' +
+'\n' +
+'// מחזיר את הלוגו כתמונה מוטמעת (inline) אם הועלה קובץ. ריק = אין / לוגו לפי קישור.\n' +
+'function _inlineImages_() {\n' +
+'  if (!TOP_IMAGE_DATA) return {};\n' +
+'  try { return { topLogo: Utilities.newBlob(Utilities.base64Decode(TOP_IMAGE_DATA), TOP_IMAGE_TYPE || "image/png", "logo") }; }\n' +
+'  catch (e) { Logger.log("הטמעת הלוגו נכשלה: " + e); return {}; }\n' +
+'}\n' +
 '\n\n' +
 'function sendEmailOnFormSubmit(e) {\n' +
 '  try {\n' +
@@ -1148,7 +1255,8 @@ mlFunction +
 '      subject: emailData.subject,\n' +
 '      body: emailData.textBody,\n' +
 '      htmlBody: emailData.htmlBody,\n' +
-'      attachments: _attachments_()\n' +
+'      attachments: _attachments_(),\n' +
+'      inlineImages: _inlineImages_()\n' +
 '    });\n' +
 '    Logger.log("אימייל נשלח אל: " + emailAddress);' +
 mlCallSubmit + '\n' +
@@ -1166,7 +1274,8 @@ mlCallSubmit + '\n' +
 '    subject: "[בדיקה] " + emailData.subject,\n' +
 '    body: emailData.textBody,\n' +
 '    htmlBody: emailData.htmlBody,\n' +
-'    attachments: _attachments_()\n' +
+'    attachments: _attachments_(),\n' +
+'    inlineImages: _inlineImages_()\n' +
 '  });\n' +
 '  Logger.log("מייל בדיקה נשלח אל: " + myEmail);\n' +
 '}\n' +
@@ -1187,7 +1296,8 @@ mlCallSubmit + '\n' +
 '          subject: emailData.subject,\n' +
 '          body: emailData.textBody,\n' +
 '          htmlBody: emailData.htmlBody,\n' +
-'          attachments: _attachments_()\n' +
+'          attachments: _attachments_(),\n' +
+'          inlineImages: _inlineImages_()\n' +
 '        });\n' +
 '        successCount++;' +
 mlCallManual + '\n' +
@@ -1280,6 +1390,8 @@ followUpFns
       subjectEl.value = cfg.subject || ''; bodyEl.value = cfg.body || '';
       senderEl.value = cfg.senderName || ''; phoneEl.value = cfg.phone || '';
       websiteEl.value = cfg.website || ''; logoEl.value = cfg.logo || '';
+      setLogoData(cfg.logoData || '', cfg.logoData ? 'לוגו שמור' : '');
+      try { if (cfg.logoData) localStorage.setItem('eg_logo_data', cfg.logoData); } catch(_){}
       attachLinkEl.value = cfg.attach || '';
       if (cfg.emailFont) fontEl.value = cfg.emailFont;
       if (cfg.accent) accentEl.value = cfg.accent;
@@ -1300,7 +1412,7 @@ followUpFns
       const o = getMyTpls();
       o[name] = { subject: subjectEl.value, body: bodyEl.value, buttons: readButtonsRaw(),
                   senderName: senderEl.value, phone: phoneEl.value, website: websiteEl.value, logo: logoEl.value,
-                  attach: attachLinkEl.value, emailFont: fontEl.value, accent: accentEl.value };
+                  logoData: logoData, attach: attachLinkEl.value, emailFont: fontEl.value, accent: accentEl.value };
       setMyTpls(o); refreshMyTpls(); templateEl.value = 'saved:' + name; alert('התבנית נשמרה ✓');
     });
     $('delTpl').addEventListener('click', () => {
@@ -1328,6 +1440,7 @@ followUpFns
       if (!confirm('לאפס את כל השדות לברירת המחדל?')) return;
       subjectEl.value = ''; bodyEl.value = '';
       senderEl.value = ''; phoneEl.value = ''; websiteEl.value = ''; logoEl.value = ''; attachLinkEl.value = '';
+      setLogoData('', ''); try { localStorage.removeItem('eg_logo_data'); } catch(_){}
       fontEl.value = 'arial'; accentEl.value = '#1a73e8';
       templateEl.value = ''; styleEl.value = '';
       personalizeEl.checked = false; nameRevealEl.classList.remove('show'); nameColEl.value = '2';
@@ -1387,6 +1500,8 @@ followUpFns
       const sw = localStorage.getItem('sig_website'); if (sw) websiteEl.value = sw;
       const saved = localStorage.getItem('mlWebhook');
       if (saved) { webhookEl.value = saved; eventRevealEl.style.display = 'block'; }
+      const savedLogo = localStorage.getItem('eg_logo_data');
+      if (savedLogo) setLogoData(savedLogo, 'לוגו שמור');
     } catch(_){}
     if (ADMIN) {
       mlSection.style.display = 'block';
