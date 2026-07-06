@@ -448,8 +448,23 @@
         </details>
 
         <details class="fold" id="foldAdvanced">
-        <summary>⚙️ אפשרויות מתקדמות <span class="summary-on">פעיל</span> <span class="s-sub">— פנייה בשם, מעקב קליקים</span></summary>
+        <summary>⚙️ אפשרויות מתקדמות <span class="summary-on">פעיל</span> <span class="s-sub">— עמודת אימייל, פנייה בשם, מעקב</span></summary>
         <div class="fold-body">
+
+        <div class="field">
+          <label for="emailCol">עמודת האימייל בגיליון <span class="hint">— לאן יישלח המייל</span></label>
+          <select id="emailCol">
+            <option value="1">עמודה B — נאסף אוטומטית (ברירת מחדל)</option>
+            <option value="2">עמודה C</option>
+            <option value="3">עמודה D</option>
+            <option value="4">עמודה E</option>
+            <option value="5">עמודה F</option>
+            <option value="6">עמודה G</option>
+            <option value="7">עמודה H</option>
+          </select>
+          <p class="hint" style="margin-top:7px;">עמודה A היא תמיד חותמת הזמן. אם הפעלתם <strong>"Collect email addresses"</strong> בטופס — האימייל בעמודה B, השאירו כברירת מחדל. אם ביקשתם את האימייל <strong>כשאלה רגילה בטופס</strong> — פתחו את הגיליון, בדקו באיזו עמודה מופיעה כתובת המייל, ובחרו אותה כאן.</p>
+        </div>
+        <hr class="divider">
 
         <div class="field" style="margin-bottom:6px;">
           <div class="check">
@@ -459,12 +474,14 @@
           <div class="reveal" id="nameReveal">
             <label for="nameCol" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">באיזו עמודה בגיליון נמצא השם?</label>
             <select id="nameCol">
-              <option value="2">עמודה C — השאלה הראשונה בטופס</option>
-              <option value="3">עמודה D — השאלה השנייה</option>
-              <option value="4">עמודה E — השאלה השלישית</option>
-              <option value="5">עמודה F — השאלה הרביעית</option>
+              <option value="2">עמודה C</option>
+              <option value="3">עמודה D</option>
+              <option value="4">עמודה E</option>
+              <option value="5">עמודה F</option>
+              <option value="6">עמודה G</option>
+              <option value="7">עמודה H</option>
             </select>
-            <p class="hint" style="margin-top:7px;">עמודה A = חותמת זמן, עמודה B = אימייל. לכן השאלה הראשונה בטופס היא בדרך כלל עמודה C.</p>
+            <p class="hint" style="margin-top:7px;">פתחו את הגיליון ובדקו באיזו עמודה מופיע השם, ובחרו אותה כאן. (עמודה A = חותמת זמן; אם האימייל נאסף אוטומטית הוא בעמודה B, והשאלה הראשונה בטופס היא עמודה C.)</p>
           </div>
         </div>
 
@@ -624,7 +641,7 @@
       <details class="guide">
         <summary>איך מתקינים את הקוד? חמישה שלבים</summary>
         <ol>
-          <li>בטופס Google שלכם — ודאו שמופעל <strong>"Collect email addresses"</strong> (האימייל נקרא מעמודה B).</li>
+          <li>ודאו שהטופס אוסף כתובות אימייל — או דרך <strong>"Collect email addresses"</strong> (אז האימייל בעמודה B), או כשאלה רגילה בטופס. אם האימייל <strong>אינו</strong> בעמודה B, בחרו את העמודה הנכונה תחת <strong>⚙️ אפשרויות מתקדמות → עמודת האימייל</strong>.</li>
           <li>פתחו את <strong>הגיליון המחובר לטופס</strong> → תפריט <code>Extensions</code> → <code>Apps Script</code>.</li>
           <li>מחקו את הקוד הקיים, <strong>הדביקו את הקוד מכאן</strong>, ולחצו על 💾 לשמירה.</li>
           <li>הריצו פעם אחת את הפונקציה <code>sendTestEmail</code> ואשרו את ההרשאות — יישלח אליכם מייל בדיקה.</li>
@@ -659,6 +676,7 @@
     const $ = id => document.getElementById(id);
     const subjectEl = $('subject'), bodyEl = $('body'), btnRows = $('btnRows');
     const personalizeEl = $('personalize'), nameRevealEl = $('nameReveal'), nameColEl = $('nameCol');
+    const emailColEl = $('emailCol');
     const webhookEl = $('webhook'), eventRevealEl = $('eventReveal'), eventNameEl = $('eventName'), eventDateEl = $('eventDate');
     const senderEl = $('senderName'), fontEl = $('emailFont'), accentEl = $('accent');
     const emailPreview = $('emailPreview'), subjPreview = $('subjPreview'), codeOut = $('codeOut');
@@ -888,6 +906,7 @@
         accent: accentEl.value,
         personalize: personalizeEl.checked,
         nameColumn: parseInt(nameColEl.value, 10),
+        emailColumn: parseInt(emailColEl.value, 10),
         webhook: webhookEl.value.trim(),
         eventName: eventNameEl.value.trim(),
         eventDate: eventDateEl.value.trim(),
@@ -1090,7 +1109,7 @@ fuConfigItems.join(',\n') + '\n' +
 '    doneSheet = ss.insertSheet("FollowUps");\n' +
 '    doneSheet.appendRow(["זמן", "נמען", "מעקב"]);\n' +
 '    for (var r = 1; r < data.length; r++) {\n' +
-'      var em0 = data[r][1];\n' +
+'      var em0 = data[r][EMAIL_COLUMN];\n' +
 '      if (em0 && String(em0).indexOf("@") !== -1) {\n' +
 '        doneSheet.appendRow([new Date(), em0, "FU1"]);\n' +
 '        doneSheet.appendRow([new Date(), em0, "FU2"]);\n' +
@@ -1114,7 +1133,7 @@ fuConfigItems.join(',\n') + '\n' +
 '  var now = new Date();\n' +
 '  for (var i = 1; i < data.length; i++) {\n' +
 '    var ts = data[i][0];\n' +
-'    var email = data[i][1];\n' +
+'    var email = data[i][EMAIL_COLUMN];\n' +
 '    if (!email || String(email).indexOf("@") === -1) continue;\n' +
 '    if (!(ts instanceof Date)) ts = new Date(ts);\n' +
 '    var ageDays = (now.getTime() - ts.getTime()) / 86400000;\n' +
@@ -1173,7 +1192,8 @@ fuConfigItems.join(',\n') + '\n' +
 'var ATTACH_FILE_ID = ' + JSON.stringify(driveFileId(cfg.attach || '')) + ';  // קובץ מצורף מ-Drive (ריק = אין)\n' +
 eventBlock +
 trackHeader +
-'\nvar NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
+'\nvar EMAIL_COLUMN = ' + cfg.emailColumn + ';  // אינדקס עמודת האימייל ב-e.values (B=1, C=2, ...)\n' +
+'var NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
 '\n\n' +
 '// בונה משותף לכל המיילים (ראשי + מעקב)\n' +
 'function buildEmail_(subject, bodyHtml, bodyText, BUTTONS, recipientEmail) {\n' +
@@ -1243,7 +1263,7 @@ mlFunction +
 'function sendEmailOnFormSubmit(e) {\n' +
 '  try {\n' +
 '    if (!e || !e.values) return;\n' +
-'    var emailAddress = e.values[1]; // עמודה B — "collect email addresses"\n' +
+'    var emailAddress = e.values[EMAIL_COLUMN]; // עמודת האימייל\n' +
 '    if (!emailAddress || emailAddress.indexOf(\'@\') === -1) return;\n' +
 '\n' +
 '    var name = (NAME_COLUMN !== null && e.values[NAME_COLUMN]) ? e.values[NAME_COLUMN] : null;\n' +
@@ -1335,7 +1355,7 @@ followUpFns
       trackNoteEl.style.display = (cfg.trackClicks || noclickFU) ? 'block' : 'none';
       followUpNoteEl.style.display = fuOn ? 'block' : 'none';
       $('foldFollow').classList.toggle('is-on', fuOn);
-      $('foldAdvanced').classList.toggle('is-on', cfg.personalize || cfg.trackClicks);
+      $('foldAdvanced').classList.toggle('is-on', cfg.personalize || cfg.trackClicks || cfg.emailColumn !== 1);
     }
 
     // ---------- events ----------
@@ -1346,6 +1366,7 @@ followUpFns
     websiteEl.addEventListener('input', () => { try { localStorage.setItem('sig_website', websiteEl.value.trim()); } catch(_){} update(); });
     personalizeEl.addEventListener('change', () => { nameRevealEl.classList.toggle('show', personalizeEl.checked); update(); });
     nameColEl.addEventListener('change', update);
+    emailColEl.addEventListener('change', update);
     trackEl.addEventListener('change', () => { trackRevealEl.classList.toggle('show', trackEl.checked); update(); });
     campaignEl.addEventListener('input', update);
     webhookEl.addEventListener('input', () => {
@@ -1444,6 +1465,7 @@ followUpFns
       fontEl.value = 'arial'; accentEl.value = '#1a73e8';
       templateEl.value = ''; styleEl.value = '';
       personalizeEl.checked = false; nameRevealEl.classList.remove('show'); nameColEl.value = '2';
+      emailColEl.value = '1';
       webhookEl.value = ''; eventNameEl.value = ''; eventDateEl.value = ''; eventRevealEl.style.display = 'none';
       trackEl.checked = false; trackRevealEl.classList.remove('show'); campaignEl.value = '';
       followUpEl.checked = false; followUp2El.checked = false;
