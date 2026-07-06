@@ -116,6 +116,12 @@
     .logo-remove:hover { border-color: var(--danger); background: rgba(255,107,107,0.12); }
     .logo-warn { display: none; color: var(--danger); font-size: 0.8rem; margin-top: 8px; line-height: 1.6; }
 
+    /* column auto-detect */
+    #pasteRows { min-height: 78px; font-size: 0.9rem; }
+    .detect-result { font-size: 0.85rem; font-weight: 700; }
+    .detect-result.ok { color: var(--ok); }
+    .detect-result.warn { color: var(--danger); }
+
     input[type=text], input[type=date], input[type=url], textarea, select {
       width: 100%; background: #0f1115; border: 1px solid var(--line);
       border-radius: 10px; color: var(--ink); font-family: var(--sans);
@@ -451,6 +457,17 @@
         <summary>⚙️ אפשרויות מתקדמות <span class="summary-on">פעיל</span> <span class="s-sub">— עמודת אימייל, פנייה בשם, מעקב</span></summary>
         <div class="fold-body">
 
+        <div class="field" id="detectField">
+          <label for="pasteRows">🔎 זיהוי אוטומטי של עמודות <span class="hint">— לא חובה, אבל חוסך חיפוש ידני</span></label>
+          <textarea id="pasteRows" placeholder="הדביקו כאן שורה מהגיליון — רצוי את שורת הכותרות, ואם אפשר גם שורת תגובה אחת לדוגמה."></textarea>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+            <button type="button" class="act act-ghost" id="detectBtn" style="padding:9px 16px;font-size:0.85rem;">זהה עמודות</button>
+            <span id="detectResult" class="detect-result"></span>
+          </div>
+          <p class="hint" style="margin-top:8px;">פותחים את גיליון התגובות, מסמנים את שורת הכותרות (ואם רוצים — גם שורת תגובה אחת), מעתיקים ב-Ctrl+C ומדביקים כאן. הכלי יזהה לבד את עמודת האימייל והשם ויעדכן את הבחירות למטה. הכול נשאר בדפדפן שלכם.</p>
+        </div>
+        <hr class="divider">
+
         <div class="field">
           <label for="emailCol">עמודת האימייל בגיליון <span class="hint">— לאן יישלח המייל</span></label>
           <select id="emailCol">
@@ -641,7 +658,7 @@
       <details class="guide">
         <summary>איך מתקינים את הקוד? חמישה שלבים</summary>
         <ol>
-          <li>ודאו שהטופס אוסף כתובות אימייל — או דרך <strong>"Collect email addresses"</strong> (אז האימייל בעמודה B), או כשאלה רגילה בטופס. אם האימייל <strong>אינו</strong> בעמודה B, בחרו את העמודה הנכונה תחת <strong>⚙️ אפשרויות מתקדמות → עמודת האימייל</strong>.</li>
+          <li>ודאו שהטופס אוסף כתובות אימייל — או דרך <strong>"Collect email addresses"</strong> (אז האימייל בעמודה B), או כשאלה רגילה בטופס. אם האימייל <strong>אינו</strong> בעמודה B, בחרו את העמודה הנכונה תחת <strong>⚙️ אפשרויות מתקדמות → עמודת האימייל</strong> — או פשוט הדביקו שם שורה מהגיליון תחת <strong>🔎 זיהוי אוטומטי</strong> והכלי יזהה לבד.</li>
           <li>פתחו את <strong>הגיליון המחובר לטופס</strong> → תפריט <code>Extensions</code> → <code>Apps Script</code>.</li>
           <li>מחקו את הקוד הקיים, <strong>הדביקו את הקוד מכאן</strong>, ולחצו על 💾 לשמירה.</li>
           <li>הריצו פעם אחת את הפונקציה <code>sendTestEmail</code> ואשרו את ההרשאות — יישלח אליכם מייל בדיקה.</li>
@@ -1367,6 +1384,56 @@ followUpFns
     personalizeEl.addEventListener('change', () => { nameRevealEl.classList.toggle('show', personalizeEl.checked); update(); });
     nameColEl.addEventListener('change', update);
     emailColEl.addEventListener('change', update);
+
+    // ---------- auto-detect email / name columns from a pasted sheet row ----------
+    const pasteRowsEl = $('pasteRows'), detectBtn = $('detectBtn'), detectResultEl = $('detectResult');
+    const CONTAINS_EMAIL = /[^\s,;@]+@[^\s,;@]+\.[^\s,;@]+/;
+    function colLetter(i){ return String.fromCharCode(65 + i); }  // 0→A, 1→B, ...
+    function setDetectResult(msg, cls){ detectResultEl.textContent = msg; detectResultEl.className = 'detect-result ' + (cls || ''); }
+    function ensureColOption(sel, index){
+      if (![...sel.options].some(o => o.value === String(index))){
+        const o = document.createElement('option');
+        o.value = String(index); o.textContent = 'עמודה ' + colLetter(index);
+        sel.appendChild(o);
+      }
+      sel.value = String(index);
+    }
+    function detectColumns(){
+      const raw = pasteRowsEl.value.replace(/\r/g, '').trim();
+      if (!raw){ setDetectResult('הדביקו קודם שורה מהגיליון.', 'warn'); return; }
+      const lines = raw.split('\n').filter(l => l.length);
+      const delim = lines[0].indexOf('\t') !== -1 ? '\t' : ',';
+      const rows = lines.map(l => l.split(delim).map(c => c.trim().replace(/^"|"$/g, '')));
+      const header = rows[0] || [];
+      const nCols = Math.max(...rows.map(r => r.length));
+
+      let emailCol = -1, nameCol = -1;
+      // email — by content (@ anywhere in the column), most reliable
+      for (let c = 0; c < nCols && emailCol === -1; c++){
+        for (const r of rows){ if (r[c] && CONTAINS_EMAIL.test(r[c])){ emailCol = c; break; } }
+      }
+      // email — fallback to header text
+      if (emailCol === -1){
+        for (let c = 0; c < nCols; c++){ if (header[c] && /e-?mail|אימייל|אימיל|מייל|דוא/i.test(header[c])){ emailCol = c; break; } }
+      }
+      // name — by header text (skip timestamp col 0 and the email col)
+      for (let c = 1; c < nCols; c++){
+        if (c === emailCol) continue;
+        if (header[c] && /שם|full ?name|\bname\b/i.test(header[c])){ nameCol = c; break; }
+      }
+
+      const found = [];
+      if (emailCol >= 0){ ensureColOption(emailColEl, emailCol); found.push('אימייל = עמודה ' + colLetter(emailCol)); }
+      if (nameCol >= 1){
+        ensureColOption(nameColEl, nameCol);
+        personalizeEl.checked = true; nameRevealEl.classList.add('show');
+        found.push('שם = עמודה ' + colLetter(nameCol));
+      }
+      if (!found.length){ setDetectResult('לא זוהו עמודות — נסו להדביק גם שורת תגובה, או בחרו ידנית למטה.', 'warn'); return; }
+      update();
+      setDetectResult('✓ זוהה: ' + found.join(' · ') + (nameCol >= 1 ? ' · הופעלה פנייה אישית' : ''), 'ok');
+    }
+    detectBtn.addEventListener('click', detectColumns);
     trackEl.addEventListener('change', () => { trackRevealEl.classList.toggle('show', trackEl.checked); update(); });
     campaignEl.addEventListener('input', update);
     webhookEl.addEventListener('input', () => {
@@ -1466,6 +1533,7 @@ followUpFns
       templateEl.value = ''; styleEl.value = '';
       personalizeEl.checked = false; nameRevealEl.classList.remove('show'); nameColEl.value = '2';
       emailColEl.value = '1';
+      pasteRowsEl.value = ''; setDetectResult('', '');
       webhookEl.value = ''; eventNameEl.value = ''; eventDateEl.value = ''; eventRevealEl.style.display = 'none';
       trackEl.checked = false; trackRevealEl.classList.remove('show'); campaignEl.value = '';
       followUpEl.checked = false; followUp2El.checked = false;
