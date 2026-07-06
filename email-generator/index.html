@@ -749,11 +749,19 @@
         <p style="color:var(--ink-soft);padding-bottom:16px;">זהו. מעכשיו כל מי שימלא את הטופס יקבל את המכתב אוטומטית.</p>
       </details>
 
-      <p id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
-        <strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר יוצרת עבורכם את לשונית <code>Clicks</code> (זמן · קמפיין · נמען · כפתור · קישור). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App כדי שהלחיצות יירשמו:<br>
-        <code>Deploy</code> ← <code>New deployment</code> ← סוג <code>Web app</code> ← <code>Execute as: Me</code> ← <code>Who has access: Anyone</code> ← <code>Deploy</code>, ואשרו הרשאות.
-        (זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד.) הריצו שוב את <code>setup</code> והיא תאשר לכם ש"מעקב קליקים פעיל".
-      </p>
+      <div id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
+        <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר יוצרת עבורכם את לשונית <code>Clicks</code> (זמן · קמפיין · נמען · כפתור · קישור). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
+        <ol style="margin:0;padding-inline-start:22px;line-height:2;">
+          <li>למעלה מימין לחצו על הכפתור <code>Deploy</code>.</li>
+          <li>בתפריט שנפתח בחרו <code>New deployment</code>.</li>
+          <li>ליד הכותרת "Select type" לחצו על גלגל השיניים ⚙️ ובחרו <code>Web app</code>.</li>
+          <li>בשדה <code>Execute as</code> בחרו <code>Me</code> (זה אתם).</li>
+          <li>בשדה <code>Who has access</code> בחרו <code>Anyone</code> (כל אחד).</li>
+          <li>לחצו על <code>Deploy</code>, ואם תתבקשו — אשרו את ההרשאות.</li>
+          <li>חזרו לעורך והריצו שוב את <code>setup</code> — אמורה להופיע ההודעה "✅ מעקב קליקים פעיל".</li>
+        </ol>
+        <p style="margin-top:10px;font-size:0.85rem;color:var(--ink-faint);">💡 זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד — לכן צריך את הלחיצות האלה פעם אחת.</p>
+      </div>
 
       <p id="followUpNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
         <strong style="color:var(--accent);">📨 אימייל מעקב מופעל.</strong> אין מה להגדיר — הרצת <code>setup</code> כבר מקימה את הבדיקה היומית ויוצרת בסיס (מי שכבר מילא לא יקבל מעקב למפרע; רק מילויים חדשים מכאן ואילך).<br>
