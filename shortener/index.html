@@ -100,14 +100,13 @@
       <p style="color:var(--text-dim); margin:0;">קישורים קצרים עם הדומיין שלי — <span style="direction:ltr;">go.omri-iram.co.il</span></p>
     </header>
 
-    <!-- TOTP gate -->
+    <!-- Google sign-in gate -->
     <section id="gate" class="panel" style="display:none;">
       <h2>🔒 כניסה</h2>
-      <p class="hint">הכלי הזה פרטי. הזן את הקוד בן 6 הספרות מ-Google Authenticator.</p>
-      <input type="text" id="pw" placeholder="קוד בן 6 ספרות" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr" />
-      <div class="btn-row"><button id="unlock">כניסה</button></div>
+      <p class="hint">הכלי הזה פרטי. התחברו עם חשבון Google של hello@omri-iram.co.il.</p>
+      <div class="btn-row"><button id="signin">התחבר עם Google</button></div>
       <p class="msg error" id="gateMsg"></p>
-      <p class="gate-note">הכניסה תקפה ל-30 יום, ומשותפת לכל הכלים הפרטיים. הקוד מתחלף כל 30 שניות.</p>
+      <p class="gate-note">הכניסה תקפה ל-30 יום, ומשותפת לכל הכלים הפרטיים.</p>
     </section>
 
     <!-- Main app -->
@@ -158,10 +157,20 @@
 
   <script>
     const API = "https://go.omri-iram.co.il";
-    // Shared session token across all private tools (shortener, qr, extra).
-    // A 6-digit Google Authenticator code is exchanged for this signed token.
+    // Shared session token across all private tools. Obtained by signing in with
+    // Google (only hello@omri-iram.co.il); the go-shortener backend mints this
+    // 30-day signed token, cross-valid on every tool.
     const SESS_KEY = "omri_session";
+    // Grab a token handed back in the URL fragment after Google sign-in.
+    (function(){ try{
+      const m=(location.hash||'').match(/(?:^#|&)omri_session=([^&]+)/);
+      if(m){ localStorage.setItem(SESS_KEY,decodeURIComponent(m[1])); history.replaceState(null,'',location.pathname+location.search); }
+      else if(/(?:^#|&)auth_error=/.test(location.hash||'')){ history.replaceState(null,'',location.pathname+location.search);
+        alert('ההתחברות נכשלה או שהחשבון לא מורשה. התחברו עם hello@omri-iram.co.il.'); }
+    }catch(_){}})();
     let token = localStorage.getItem(SESS_KEY) || "";
+    // Send the user to Google sign-in, returning to this page afterwards.
+    function signIn(){ location.href=API+'/api/auth/google/start?return='+encodeURIComponent(location.origin+location.pathname+location.search); }
 
     const $ = (id) => document.getElementById(id);
     const show = (el, on) => { el.style.display = on ? "" : "none"; };
@@ -173,48 +182,21 @@
       if (authed) loadList();
     }
 
-    // Exchange a 6-digit TOTP code for a session token. Returns true on success.
-    async function authWithCode(code) {
-      try {
-        const res = await fetch(API + "/api/auth", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: code })
-        });
-        if (!res.ok) return false;
-        const d = await res.json().catch(() => ({}));
-        if (d.token) { token = d.token; localStorage.setItem(SESS_KEY, token); return true; }
-      } catch (_) {}
-      return false;
-    }
-
-    async function api(path, opts = {}, _retry = false) {
+    // Session missing/expired — bounce through Google sign-in, then retry.
+    async function api(path, opts = {}) {
       const headers = Object.assign({ "Content-Type": "application/json", "X-Session": token }, opts.headers || {});
       const res = await fetch(API + path, { method: opts.method, body: opts.body, headers });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) {
-        // Session missing/expired — ask for a fresh code once, then retry.
-        if (!_retry) {
-          const v = prompt("קוד מ-Google Authenticator (6 ספרות):");
-          if (v && await authWithCode(v.trim())) return api(path, opts, true);
-        }
-        throw { unauthorized: true };
+        localStorage.removeItem(SESS_KEY); token = ""; signIn();
+        return new Promise(() => {});
       }
       if (!res.ok) { throw { msg: data.error || ("שגיאה " + res.status) }; }
       return data;
     }
 
     // --- gate ---
-    $("unlock").onclick = async () => {
-      const val = $("pw").value.trim();
-      if (!val) return;
-      $("gateMsg").textContent = "";
-      if (await authWithCode(val)) {
-        render();
-      } else {
-        $("gateMsg").textContent = "קוד שגוי או שפג — נסו שוב";
-      }
-    };
-    $("pw").addEventListener("keydown", (e) => { if (e.key === "Enter") $("unlock").click(); });
+    $("signin").onclick = signIn;
 
     $("logout").onclick = () => { localStorage.removeItem(SESS_KEY); token = ""; render(); };
 

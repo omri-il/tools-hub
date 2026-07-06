@@ -157,17 +157,18 @@
     $('adminExit').addEventListener('click',()=>{ try{localStorage.removeItem('omri_admin');}catch(_){}; document.body.classList.remove('admin');
       PAID.forEach(pf=>{ const c=document.querySelector('.chip[data-pf="'+pf+'"]'); if(c)c.classList.remove('on'); }); });
 
-    /* ---------- TOTP session (shared omri_session) ---------- */
+    /* ---------- session (shared omri_session, via Google sign-in) ---------- */
+    const AUTH_BASE='https://go.omri-iram.co.il';
     function tok(){ try{ return localStorage.getItem('omri_session')||''; }catch(_){ return ''; } }
-    async function authWithCode(code){
-      try{
-        const r=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
-        if(!r.ok) return false;
-        const d=await r.json().catch(()=>({}));
-        if(d.token){ try{localStorage.setItem('omri_session',d.token);}catch(_){}; return true; }
-      }catch(_){}
-      return false;
-    }
+    // Grab a token handed back in the URL fragment after Google sign-in.
+    (function(){ try{
+      const m=(location.hash||'').match(/(?:^#|&)omri_session=([^&]+)/);
+      if(m){ try{localStorage.setItem('omri_session',decodeURIComponent(m[1]));}catch(_){}; history.replaceState(null,'',location.pathname+location.search); }
+      else if(/(?:^#|&)auth_error=/.test(location.hash||'')){ history.replaceState(null,'',location.pathname+location.search);
+        alert('ההתחברות נכשלה או שהחשבון לא מורשה. התחברו עם hello@omri-iram.co.il.'); }
+    }catch(_){}})();
+    // Send the user to Google sign-in (only hello@omri-iram.co.il), returning here after.
+    function signIn(){ location.href=AUTH_BASE+'/api/auth/google/start?return='+encodeURIComponent(location.origin+location.pathname+location.search); }
 
     /* ---------- platform chips ---------- */
     $('platforms').addEventListener('click',e=>{
@@ -184,12 +185,9 @@
       return d.results||[];
     }
     async function fetchPaid(pf,subject,max,sort,retry){
+      if(!tok()){ signIn(); return new Promise(()=>{}); }
       const r=await fetch(API+'/paid',{method:'POST',headers:{'Content-Type':'application/json','X-Session':tok()},body:JSON.stringify({platform:pf,subject,max,sort})});
-      if(r.status===401 && !retry){
-        const code=prompt('קוד מ-Google Authenticator (6 ספרות):');
-        if(code && await authWithCode(code.trim())) return fetchPaid(pf,subject,max,sort,true);
-        throw new Error('דרושה התחברות אדמין');
-      }
+      if(r.status===401){ try{localStorage.removeItem('omri_session');}catch(_){}; signIn(); return new Promise(()=>{}); }
       const d=await r.json().catch(()=>({}));
       if(!r.ok) throw new Error(d.error||(pf+' error'));
       return d.results||[];

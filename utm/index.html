@@ -129,7 +129,7 @@
     </div>
 
     <div class="note">
-      💡 הקיצור והשוואת הקליקים זמינים במצב אדמין — שלוש לחיצות על הכותרת "הכלים של עומרי אירם" למעלה, ואז קוד מ-Google Authenticator.
+      💡 הקיצור והשוואת הקליקים זמינים במצב אדמין — שלוש לחיצות על הכותרת "הכלים של עומרי אירם" למעלה, ואז התחברות עם Google.
     </div>
 
     <footer>
@@ -192,18 +192,23 @@
     function tokGet(){ try{ return localStorage.getItem(SESS_KEY)||''; }catch(_){ return ''; } }
     function tokSet(t){ try{ localStorage.setItem(SESS_KEY,t); }catch(_){ } }
     function tokClear(){ try{ localStorage.removeItem(SESS_KEY); }catch(_){ } }
-    async function authWithCode(code){
-      try{ const res=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
-        if(!res.ok) return false; const d=await res.json().catch(()=>({})); if(d.token){ tokSet(d.token); return true; } }catch(_){}
-      return false;
-    }
+    const AUTH_BASE='https://go.omri-iram.co.il';
+    // Grab a token handed back in the URL fragment after Google sign-in.
+    (function(){ try{
+      const m=(location.hash||'').match(/(?:^#|&)omri_session=([^&]+)/);
+      if(m){ tokSet(decodeURIComponent(m[1])); history.replaceState(null,'',location.pathname+location.search); }
+      else if(/(?:^#|&)auth_error=/.test(location.hash||'')){ history.replaceState(null,'',location.pathname+location.search);
+        alert('ההתחברות נכשלה או שהחשבון לא מורשה. התחברו עם hello@omri-iram.co.il.'); }
+    }catch(_){}})();
+    // Send the user to Google sign-in (only hello@omri-iram.co.il), returning here after.
+    function signIn(){ location.href=AUTH_BASE+'/api/auth/google/start?return='+encodeURIComponent(location.origin+location.pathname+location.search); }
     async function apiFetch(path, opts){
       opts=opts||{};
       const mk=t=>Object.assign({},opts,{headers:Object.assign({},opts.headers||{},{'X-Session':t})});
       let t=tokGet();
-      if(!t){ const v=prompt('קוד מ-Google Authenticator (6 ספרות):')||''; if(v&&await authWithCode(v.trim())) t=tokGet(); }
+      if(!t){ signIn(); return new Promise(()=>{}); }
       let r=await fetch(API+path, mk(t));
-      if(r.status===401){ tokClear(); const v2=prompt('צריך להתחבר — קוד מ-Google Authenticator (6 ספרות):')||''; if(v2&&await authWithCode(v2.trim())) r=await fetch(API+path, mk(tokGet())); }
+      if(r.status===401){ tokClear(); signIn(); return new Promise(()=>{}); }
       return r;
     }
     function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
