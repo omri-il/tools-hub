@@ -831,6 +831,14 @@
 
     // ---------- helpers ----------
     function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    // Make a user-entered link a valid absolute URL. "yent.co.il" → "https://yent.co.il".
+    // Leaves http(s)/mailto/tel as-is; empty stays empty.
+    function normUrl(u){
+      u = (u || '').trim();
+      if (!u) return u;
+      if (/^(https?:\/\/|mailto:|tel:)/i.test(u)) return u;
+      return 'https://' + u.replace(/^\/+/, '');
+    }
     // Pull the file ID out of a Google Drive share link (/d/ID, ?id=ID, or a bare ID).
     function driveFileId(link){
       link = (link || '').trim();
@@ -1392,7 +1400,7 @@
       }
       if (bl.type === 'buttons'){
         const items = (bl.items || []).filter(b => b.text && b.url).map(b =>
-          '{ text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) +
+          '{ text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(normUrl(b.url)) +
           ', color: ' + JSON.stringify(b.color) + ', icon: ' + JSON.stringify(b.icon || '') +
           ', style: ' + JSON.stringify(b.style || 'filled') + ' }').join(', ');
         return '    { type: "buttons", items: [' + items + '] }';
@@ -1483,7 +1491,7 @@
           '    if (sheet.getLastRow() === 0) sheet.appendRow(["זמן", "קמפיין", "נמען", "כפתור", "קישור"]);\n' +
           '    sheet.appendRow([new Date(), p.c || "", p.r || "", p.l || "", url]);\n' +
           '  } catch (err) {}\n' +
-          '  var safe = /^https?:\\/\\//i.test(url) ? url : "https://omri-iram.co.il";\n' +
+          '  var safe = /^https?:\\/\\//i.test(url) ? url : (url ? "https://" + url.replace(/^\\/+/, "") : "https://omri-iram.co.il");\n' +
           '  return HtmlService.createHtmlOutput(\n' +
           '    \'<!doctype html><meta charset="utf-8">\' +\n' +
           '    \'<script>location.replace(\' + JSON.stringify(safe) + \');<\\/script>\' +\n' +
