@@ -213,6 +213,98 @@
     }
     .add-btn:hover { border-color: var(--accent); background: rgba(244,181,63,0.07); }
 
+    /* ---------- block editor ---------- */
+    .blocks { display: flex; flex-direction: column; gap: 12px; }
+    .block-card {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--line-soft);
+      border-radius: 13px; overflow: hidden; transition: border-color .18s, box-shadow .18s;
+    }
+    .block-card.dragging { opacity: 0.45; }
+    .block-card.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(244,181,63,0.25); }
+    .block-head {
+      display: flex; align-items: center; gap: 8px; padding: 9px 11px;
+      background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--line-soft);
+    }
+    .block-card.collapsed .block-head { border-bottom-color: transparent; }
+    .block-drag {
+      cursor: grab; color: var(--ink-faint); font-size: 1.05rem; line-height: 1;
+      padding: 2px 4px; user-select: none; flex: 0 0 auto;
+    }
+    .block-drag:active { cursor: grabbing; }
+    .block-type { font-weight: 700; font-size: 0.86rem; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+    .block-type .bt-emoji { font-size: 1rem; }
+    .block-spacer { margin-inline-start: auto; }
+    .block-ctrl {
+      background: transparent; border: 1px solid var(--line); color: var(--ink-soft);
+      border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 0.9rem;
+      font-family: var(--sans); line-height: 1; transition: border-color .16s, background .16s, color .16s;
+      display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    }
+    .block-ctrl:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .block-ctrl:disabled { opacity: 0.32; cursor: default; }
+    .block-ctrl.del:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,107,107,0.1); }
+    .block-body { padding: 13px; }
+    .block-card.collapsed .block-body { display: none; }
+    .block-body textarea { min-height: 110px; }
+    .mini-bar { display: flex; gap: 7px; margin-bottom: 8px; flex-wrap: wrap; }
+    .mini-bar button {
+      background: #0f1115; border: 1px solid var(--line); color: var(--ink-soft);
+      border-radius: 8px; padding: 5px 11px; font-size: 0.8rem; cursor: pointer; font-family: var(--sans);
+      font-weight: 600; transition: border-color .16s, color .16s;
+    }
+    .mini-bar button:hover { border-color: var(--accent); color: var(--accent); }
+    .divider-toggle { display: flex; gap: 8px; }
+    .divider-toggle button {
+      flex: 1; background: #0f1115; border: 1px solid var(--line); color: var(--ink-soft);
+      border-radius: 9px; padding: 10px; cursor: pointer; font-family: var(--sans); font-weight: 600;
+      font-size: 0.86rem; transition: border-color .16s, color .16s, background .16s;
+    }
+    .divider-toggle button.on { border-color: var(--accent); color: var(--accent); background: rgba(244,181,63,0.08); }
+
+    /* image block */
+    .img-block-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .img-block-thumb { max-width: 120px; max-height: 60px; border-radius: 6px; background: #fff; padding: 3px; }
+    .img-url-field { margin-top: 10px; }
+
+    /* add-block bar */
+    .add-block-bar {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
+    }
+    .add-block-bar button {
+      flex: 1 1 auto; background: transparent; color: var(--accent);
+      border: 1px dashed var(--line); border-radius: 11px; padding: 11px 10px;
+      cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 0.86rem;
+      transition: border-color .18s, background .18s; white-space: nowrap;
+    }
+    .add-block-bar button:hover { border-color: var(--accent); background: rgba(244,181,63,0.07); }
+
+    /* color picker (swatch grid + custom) */
+    .color-pick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .swatch-grid { display: flex; gap: 5px; flex-wrap: wrap; }
+    .swatch {
+      width: 24px; height: 24px; border-radius: 6px; cursor: pointer; padding: 0;
+      border: 2px solid transparent; box-shadow: 0 0 0 1px rgba(255,255,255,0.14);
+      transition: transform .12s;
+    }
+    .swatch:hover { transform: scale(1.12); }
+    .swatch.sel { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+    .color-custom {
+      width: 30px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px;
+      cursor: pointer; background: #0f1115;
+    }
+    .color-hex { font-family: 'Consolas','SF Mono',monospace; font-size: 0.76rem; color: var(--ink-faint); }
+    .btn-editor {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--line-soft);
+      border-radius: 11px; padding: 10px; display: flex; flex-direction: column; gap: 9px;
+    }
+    .btn-editor + .btn-editor { margin-top: 9px; }
+    .btn-editor .be-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn-editor .be-row input { padding: 9px 11px; font-size: 0.88rem; }
+    .btn-editor .b-text { flex: 1 1 130px; }
+    .btn-editor .b-url { flex: 1 1 150px; }
+    .btn-editor select { flex: 0 0 auto; padding: 9px; font-size: 0.84rem; width: auto; }
+    .be-label { font-size: 0.78rem; font-weight: 600; color: var(--ink-faint); }
+
     .divider { border: none; border-top: 1px solid var(--line-soft); margin: 22px 0; }
 
     /* foldable sections inside the form */
@@ -348,22 +440,16 @@
         </div>
 
         <div class="field">
-          <label for="body">גוף המכתב
-            <span class="hint">— שורה ריקה = פסקה · <code>**מודגש**</code> · <code>{שם}</code> יוחלף בשם המשתתף</span>
+          <label>גוף המכתב
+            <span class="hint">— בנוי מבלוקים: טקסט, כפתורים, תמונה וקו מפריד. גררו ⠿ או ▲▼ כדי לסדר.</span>
           </label>
-          <textarea id="body" placeholder="שלום {שם},
-
-תודה רבה שהשתתפת בסדנה שלי על **בחירת כלי ה-AI הנכון בהוראת מדעים**.
-
-מצרף כאן את המצגת מהמפגש, וגם סרטון קצר שמסביר את הדברים בצורה ברורה.
-
-אשמח מאוד לשמוע את התובנות שלך בנושא!"></textarea>
-        </div>
-
-        <div class="field">
-          <label>כפתורי קישור <span class="hint">— מצגת, סרטון, דף עבודה...</span></label>
-          <div class="btn-rows" id="btnRows"></div>
-          <button class="add-btn" id="addBtn" type="button">＋ הוסף כפתור</button>
+          <div class="blocks" id="blocks"></div>
+          <div class="add-block-bar" id="addBlockBar">
+            <button type="button" data-add="text">➕ טקסט</button>
+            <button type="button" data-add="buttons">➕ כפתורים</button>
+            <button type="button" data-add="image">➕ תמונה</button>
+            <button type="button" data-add="divider">➕ קו מפריד</button>
+          </div>
         </div>
 
         <details class="fold" id="foldDesign">
@@ -568,15 +654,14 @@
                 <input type="text" id="fu1Subject" placeholder="לדוגמה: רק רציתי לוודא שקיבלת..." />
               </div>
               <div style="margin-top:13px;">
-                <label class="fu-lbl" for="fu1Body">גוף מייל המעקב <span class="hint">— <code>{שם}</code> יוחלף בשם</span></label>
-                <textarea id="fu1Body" placeholder="שלום {שם},
-
-שמתי לב שעדיין לא הצצת בחומרים ששלחתי לפני כמה ימים. ריכזתי לך אותם שוב כאן, כדי שיהיה לך נוח."></textarea>
-              </div>
-              <div style="margin-top:13px;">
-                <label class="fu-lbl">כפתורי קישור במייל המעקב</label>
-                <div class="btn-rows" id="fu1BtnRows"></div>
-                <button class="add-btn" id="fu1AddBtn" type="button">＋ הוסף כפתור</button>
+                <label class="fu-lbl">גוף מייל המעקב <span class="hint">— בלוקים: טקסט / כפתורים / תמונה / קו · <code>{שם}</code> יוחלף בשם</span></label>
+                <div class="blocks" id="fu1Blocks"></div>
+                <div class="add-block-bar" id="fu1AddBar">
+                  <button type="button" data-add="text">➕ טקסט</button>
+                  <button type="button" data-add="buttons">➕ כפתורים</button>
+                  <button type="button" data-add="image">➕ תמונה</button>
+                  <button type="button" data-add="divider">➕ קו מפריד</button>
+                </div>
               </div>
             </div>
 
@@ -605,15 +690,14 @@
                 <input type="text" id="fu2Subject" placeholder="לדוגמה: הזדמנות אחרונה..." />
               </div>
               <div style="margin-top:13px;">
-                <label class="fu-lbl" for="fu2Body">גוף מייל המעקב <span class="hint">— <code>{שם}</code> יוחלף בשם</span></label>
-                <textarea id="fu2Body" placeholder="שלום {שם},
-
-רק תזכורת אחרונה — הקישורים עדיין כאן וזמינים עבורך."></textarea>
-              </div>
-              <div style="margin-top:13px;">
-                <label class="fu-lbl">כפתורי קישור במייל המעקב</label>
-                <div class="btn-rows" id="fu2BtnRows"></div>
-                <button class="add-btn" id="fu2AddBtn" type="button">＋ הוסף כפתור</button>
+                <label class="fu-lbl">גוף מייל המעקב <span class="hint">— בלוקים: טקסט / כפתורים / תמונה / קו · <code>{שם}</code> יוחלף בשם</span></label>
+                <div class="blocks" id="fu2Blocks"></div>
+                <div class="add-block-bar" id="fu2AddBar">
+                  <button type="button" data-add="text">➕ טקסט</button>
+                  <button type="button" data-add="buttons">➕ כפתורים</button>
+                  <button type="button" data-add="image">➕ תמונה</button>
+                  <button type="button" data-add="divider">➕ קו מפריד</button>
+                </div>
               </div>
             </div>
 
@@ -691,7 +775,7 @@
 
   <script>
     const $ = id => document.getElementById(id);
-    const subjectEl = $('subject'), bodyEl = $('body'), btnRows = $('btnRows');
+    const subjectEl = $('subject'), blocksEl = $('blocks');
     const personalizeEl = $('personalize'), nameRevealEl = $('nameReveal'), nameColEl = $('nameCol');
     const emailColEl = $('emailCol');
     const webhookEl = $('webhook'), eventRevealEl = $('eventReveal'), eventNameEl = $('eventName'), eventDateEl = $('eventDate');
@@ -705,8 +789,8 @@
     let logoData = '';  // data-URL of an uploaded logo (base64); '' when none
     const followUpEl = $('followUp'), followRevealEl = $('followReveal'), followUp2El = $('followUp2'), fu2Block = $('fu2Block');
     const previewTabs = $('previewTabs');
-    const fu1 = { days: $('fu1Days'), cond: $('fu1Cond'), subject: $('fu1Subject'), body: $('fu1Body'), btnRows: $('fu1BtnRows') };
-    const fu2 = { days: $('fu2Days'), cond: $('fu2Cond'), subject: $('fu2Subject'), body: $('fu2Body'), btnRows: $('fu2BtnRows') };
+    const fu1 = { days: $('fu1Days'), cond: $('fu1Cond'), subject: $('fu1Subject'), blocks: $('fu1Blocks') };
+    const fu2 = { days: $('fu2Days'), cond: $('fu2Cond'), subject: $('fu2Subject'), blocks: $('fu2Blocks') };
     // Admin mode is shared site-wide via localStorage (unlocked on the hub or here).
     const ADMIN = (function(){ try { return localStorage.getItem('omri_admin') === '1'; } catch(_){ return false; } })();
 
@@ -737,9 +821,8 @@
     }
 
     const PALETTE = [
-      { name: 'כחול', hex: '#1a73e8' }, { name: 'אדום', hex: '#ea4335' },
-      { name: 'ירוק', hex: '#34a853' }, { name: 'סגול', hex: '#9334e8' },
-      { name: 'כתום', hex: '#f59e0b' }
+      '#1a73e8', '#0d9488', '#34a853', '#9334e8',
+      '#ea4335', '#f59e0b', '#0f172a', '#db2777'
     ];
 
     // ---------- helpers ----------
@@ -780,45 +863,394 @@
       ).join('');
     }
 
-    // ---------- buttons editor ----------
-    function colorOptions(selected){
-      return PALETTE.map(c => '<option value="' + c.hex + '"' + (c.hex===selected?' selected':'') + '>' + c.name + '</option>').join('');
+    // ---------- shared block renderer (preview; mirrored in generated code) ----------
+    // A block is one of:
+    //   { type:'text',    content }
+    //   { type:'buttons', items:[{icon,text,url,color,style}] }
+    //   { type:'image',   url, data, mime }
+    //   { type:'divider', variant:'line'|'space' }
+    function imgSrcFor(block){ return block.data ? block.data : block.url; }
+    function blocksToHtml(blocks, opts){
+      opts = opts || {};
+      const sampleName = opts.sampleName || '';
+      return blocks.map(bl => {
+        if (bl.type === 'text'){
+          const t = (bl.content || '').replace(/\{שם\}/g, sampleName);
+          return bodyToHtml(t);
+        }
+        if (bl.type === 'buttons'){
+          const items = (bl.items || []).filter(b => b.text && b.url);
+          if (!items.length) return '';
+          return '<div style="margin: 30px 0; text-align: center;">' + buttonsHtmlFrom(items, true) + '</div>';
+        }
+        if (bl.type === 'image'){
+          const src = imgSrcFor(bl);
+          if (!src) return '';
+          return '<div style="text-align:center;margin:22px 0;"><img src="' + esc(src) + '" alt="" style="max-width:100%;border-radius:8px;"></div>';
+        }
+        if (bl.type === 'divider'){
+          return bl.variant === 'space'
+            ? '<div style="height:28px;"></div>'
+            : '<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">';
+        }
+        return '';
+      }).join('');
     }
+    function blocksToText(blocks, sampleName){
+      sampleName = sampleName || '';
+      return blocks.map(bl => {
+        if (bl.type === 'text') return bodyToText((bl.content || '').replace(/\{שם\}/g, sampleName));
+        if (bl.type === 'buttons') return (bl.items || []).filter(b => b.text && b.url)
+          .map(b => (b.icon ? b.icon + ' ' : '') + b.text + ': ' + b.url).join('\n');
+        if (bl.type === 'divider') return '—';
+        return '';  // image: no text
+      }).filter(Boolean).join('\n\n');
+    }
+
+    // ---------- color picker ----------
+    function colorPickerHtml(selected){
+      const sel = selected || PALETTE[0];
+      const swatches = PALETTE.map(hex =>
+        '<button type="button" class="swatch' + (hex.toLowerCase() === sel.toLowerCase() ? ' sel' : '') +
+        '" data-hex="' + hex + '" style="background:' + hex + '" title="' + hex + '"></button>'
+      ).join('');
+      return '<div class="color-pick">' +
+        '<div class="swatch-grid">' + swatches + '</div>' +
+        '<input type="color" class="color-custom" value="' + esc(sel) + '">' +
+        '<input type="hidden" class="b-color" value="' + esc(sel) + '">' +
+        '<span class="color-hex">' + esc(sel) + '</span>' +
+      '</div>';
+    }
+    function wireColorPicker(root){
+      const hidden = root.querySelector('.b-color'),
+            custom = root.querySelector('.color-custom'),
+            hexLbl = root.querySelector('.color-hex'),
+            swatches = [...root.querySelectorAll('.swatch')];
+      function setColor(hex){
+        hidden.value = hex; custom.value = hex; hexLbl.textContent = hex;
+        swatches.forEach(s => s.classList.toggle('sel', s.dataset.hex.toLowerCase() === hex.toLowerCase()));
+        update();
+      }
+      swatches.forEach(s => s.addEventListener('click', () => setColor(s.dataset.hex)));
+      custom.addEventListener('input', () => setColor(custom.value));
+    }
+
+    // ---------- style dropdown ----------
     function styleOptions(sel){
       return [['filled','מלא'],['outline','מתאר'],['pill','גלולה']]
         .map(o => '<option value="' + o[0] + '"' + (o[0]===sel?' selected':'') + '>' + o[1] + '</option>').join('');
     }
-    function addButtonRow(text, url, color, icon, btnStyle, container){
-      container = container || btnRows;
-      const div = document.createElement('div');
-      div.className = 'btn-item';
-      div.innerHTML =
-        '<div class="b-icon-cell">' +
-          '<button type="button" class="icon-trigger' + (icon ? '' : ' empty') + '" title="בחרו אייקון / אימוג׳י">' + (icon ? esc(icon) : '＋') + '</button>' +
-          '<input type="hidden" class="b-icon" value="' + esc(icon||'') + '">' +
+
+    // ---------- generic image → resized base64 (shared by top-logo + image blocks) ----------
+    const IMG_MAX = 600;  // resize so the longest side ≤ this (email body is 600px)
+    function fileToResizedDataUrl(file, cb){
+      if (!file) return;
+      if (!/^image\//.test(file.type)) { alert('נא לבחור קובץ תמונה'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          const scale = Math.min(1, IMG_MAX / Math.max(w, h));
+          w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const keepAlpha = /png|webp|gif|svg/i.test(file.type);
+          const out = keepAlpha ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.9);
+          const b64 = out.split(',')[1] || '';
+          cb(out, Math.round(b64.length * 0.75 / 1024));
+        };
+        img.onerror = () => alert('לא הצלחנו לקרוא את התמונה');
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ---------- block editor ----------
+    const BLOCK_META = {
+      text:    { emoji: '📝', label: 'טקסט' },
+      buttons: { emoji: '🔘', label: 'כפתורים' },
+      image:   { emoji: '🖼️', label: 'תמונה' },
+      divider: { emoji: '➖', label: 'קו מפריד' }
+    };
+
+    // build one button-editor row inside a buttons block
+    function buttonEditorHtml(b){
+      b = b || {};
+      return '<div class="btn-editor">' +
+        '<div class="be-row">' +
+          '<div class="b-icon-cell">' +
+            '<button type="button" class="icon-trigger' + (b.icon ? '' : ' empty') + '" title="בחרו אייקון">' + (b.icon ? esc(b.icon) : '＋') + '</button>' +
+            '<input type="hidden" class="b-icon" value="' + esc(b.icon || '') + '">' +
+          '</div>' +
+          '<input type="text" class="b-text" placeholder="טקסט הכפתור" value="' + esc(b.text || '') + '">' +
+          '<input type="url" class="b-url" dir="ltr" placeholder="https://..." value="' + esc(b.url || '') + '">' +
+          '<select class="b-style">' + styleOptions(b.style || 'filled') + '</select>' +
+          '<button type="button" class="btn-remove be-remove" title="הסר כפתור">✕</button>' +
         '</div>' +
-        '<input type="text" class="b-text" placeholder="טקסט הכפתור" value="' + esc(text||'') + '">' +
-        '<input type="url" class="b-url" dir="ltr" placeholder="https://..." value="' + esc(url||'') + '">' +
-        '<select class="b-color">' + colorOptions(color||'#1a73e8') + '</select>' +
-        '<select class="b-style">' + styleOptions(btnStyle||'filled') + '</select>' +
-        '<button type="button" class="btn-remove" title="הסר">✕</button>';
-      div.querySelector('.btn-remove').addEventListener('click', () => { div.remove(); update(); });
-      div.querySelectorAll('input,select').forEach(el => el.addEventListener('input', update));
-      const trigger = div.querySelector('.icon-trigger'), hidden = div.querySelector('.b-icon');
-      trigger.addEventListener('click', (ev) => { ev.stopPropagation(); openEmojiPicker(trigger, hidden); });
-      container.appendChild(div);
+        colorPickerHtml(b.color || PALETTE[0]) +
+      '</div>';
     }
-    function readButtonsRaw(container){
-      container = container || btnRows;
-      return [...container.querySelectorAll('.btn-item')].map(row => ({
-        icon: row.querySelector('.b-icon').value.trim(),
-        text: row.querySelector('.b-text').value.trim(),
-        url: row.querySelector('.b-url').value.trim(),
-        color: row.querySelector('.b-color').value,
-        style: row.querySelector('.b-style').value
-      }));
+    function wireButtonEditor(ed){
+      const trigger = ed.querySelector('.icon-trigger'), hidden = ed.querySelector('.b-icon');
+      trigger.addEventListener('click', ev => { ev.stopPropagation(); openEmojiPicker(trigger, hidden); });
+      ed.querySelectorAll('input.b-text, input.b-url').forEach(el => el.addEventListener('input', update));
+      ed.querySelector('.b-style').addEventListener('change', update);
+      wireColorPicker(ed);
+      const rm = ed.querySelector('.be-remove');
+      rm.addEventListener('click', () => {
+        const wrap = ed.closest('.buttons-editors');
+        ed.remove();
+        // keep at least one button editor
+        if (wrap && !wrap.querySelector('.btn-editor')) wrap.appendChild(makeButtonEditor({}));
+        update();
+      });
     }
-    function readButtons(container){ return readButtonsRaw(container).filter(b => b.text && b.url); }
+    function makeButtonEditor(b){
+      const tmp = document.createElement('div');
+      tmp.innerHTML = buttonEditorHtml(b);
+      const ed = tmp.firstElementChild;
+      wireButtonEditor(ed);
+      return ed;
+    }
+
+    // build the type-specific body of a block card
+    function blockBodyHtml(bl){
+      if (bl.type === 'text'){
+        return '<div class="mini-bar">' +
+            '<button type="button" data-ins="bold">B מודגש</button>' +
+            '<button type="button" data-ins="name">{שם}</button>' +
+          '</div>' +
+          '<textarea class="blk-text" placeholder="כתבו כאן... שורה ריקה = פסקה חדשה">' + esc(bl.content || '') + '</textarea>';
+      }
+      if (bl.type === 'buttons'){
+        const items = (bl.items && bl.items.length) ? bl.items : [{}];
+        return '<div class="buttons-editors">' + items.map(buttonEditorHtml).join('') + '</div>' +
+          '<button type="button" class="add-btn add-2nd-btn" style="margin-top:9px;">＋ כפתור נוסף לצד</button>';
+      }
+      if (bl.type === 'image'){
+        const src = bl.data || bl.url || '';
+        return '<div class="img-block-row">' +
+            '<input type="file" class="blk-img-file" accept="image/*" hidden>' +
+            '<button type="button" class="logo-upload-btn blk-img-upload">⬆ העלו קובץ</button>' +
+            (src ? '<img class="img-block-thumb" src="' + esc(src) + '" alt="">' : '') +
+            (src ? '<button type="button" class="logo-remove blk-img-remove">✕ הסר</button>' : '') +
+          '</div>' +
+          '<div class="img-url-field"><input type="url" class="blk-img-url" dir="ltr" placeholder="או הדביקו קישור לתמונה https://..." value="' + esc(bl.url || '') + '"></div>' +
+          '<p class="hint" style="margin-top:7px;">קובץ שתעלו מוטמע ישירות במייל (מוצג בכל תוכנת דואר). קישור מוצג כפי שהוא.</p>';
+      }
+      if (bl.type === 'divider'){
+        return '<div class="divider-toggle">' +
+            '<button type="button" data-var="line" class="' + (bl.variant !== 'space' ? 'on' : '') + '">— קו</button>' +
+            '<button type="button" data-var="space" class="' + (bl.variant === 'space' ? 'on' : '') + '">␣ רווח</button>' +
+          '</div>';
+      }
+      return '';
+    }
+
+    // create a full block card element for a given block object
+    function makeBlockCard(bl){
+      const meta = BLOCK_META[bl.type] || BLOCK_META.text;
+      const card = document.createElement('div');
+      card.className = 'block-card';
+      card.dataset.type = bl.type;
+      if (bl.type === 'image'){ card._imgData = bl.data || ''; card._imgMime = bl.mime || ''; }
+      if (bl.type === 'divider'){ card._variant = bl.variant === 'space' ? 'space' : 'line'; }
+      card.innerHTML =
+        '<div class="block-head">' +
+          '<span class="block-drag" draggable="true" title="גררו לסידור">⠿</span>' +
+          '<span class="block-type"><span class="bt-emoji">' + meta.emoji + '</span>' + meta.label + '</span>' +
+          '<span class="block-spacer"></span>' +
+          '<button type="button" class="block-ctrl mv-up" title="למעלה">▲</button>' +
+          '<button type="button" class="block-ctrl mv-down" title="למטה">▼</button>' +
+          '<button type="button" class="block-ctrl collapse" title="כווץ / הרחב">▾</button>' +
+          '<button type="button" class="block-ctrl del" title="מחק בלוק">✕</button>' +
+        '</div>' +
+        '<div class="block-body">' + blockBodyHtml(bl) + '</div>';
+      wireBlockCard(card);
+      return card;
+    }
+
+    function wireBlockCard(card){
+      const type = card.dataset.type;
+      const container = () => card.parentElement;
+      // header controls
+      card.querySelector('.del').addEventListener('click', () => {
+        const c = container(); card.remove();
+        if (c && !c.querySelector('.block-card')) c.appendChild(makeBlockCard({ type:'text', content:'' }));
+        update();
+      });
+      card.querySelector('.collapse').addEventListener('click', () => card.classList.toggle('collapsed'));
+      card.querySelector('.mv-up').addEventListener('click', () => {
+        const prev = card.previousElementSibling;
+        if (prev) { card.parentElement.insertBefore(card, prev); update(); }
+      });
+      card.querySelector('.mv-down').addEventListener('click', () => {
+        const next = card.nextElementSibling;
+        if (next) { card.parentElement.insertBefore(next, card); update(); }
+      });
+      // drag reorder
+      const handle = card.querySelector('.block-drag');
+      handle.addEventListener('dragstart', e => {
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', ''); } catch(_){}
+      });
+      handle.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        card.parentElement.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+        update();
+      });
+      card.addEventListener('dragover', e => {
+        const dragging = card.parentElement.querySelector('.dragging');
+        if (!dragging || dragging === card) return;
+        e.preventDefault();
+        const r = card.getBoundingClientRect();
+        const after = e.clientY > r.top + r.height / 2;
+        card.parentElement.insertBefore(dragging, after ? card.nextElementSibling : card);
+      });
+      // type-specific wiring
+      if (type === 'text'){
+        const ta = card.querySelector('.blk-text');
+        ta.addEventListener('input', update);
+        card.querySelectorAll('.mini-bar button').forEach(b => b.addEventListener('click', () => {
+          const ins = b.dataset.ins;
+          const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
+          if (ins === 'bold'){
+            const sel = v.slice(s, e) || 'טקסט';
+            ta.value = v.slice(0, s) + '**' + sel + '**' + v.slice(e);
+            ta.selectionStart = s + 2; ta.selectionEnd = s + 2 + sel.length;
+          } else {
+            ta.value = v.slice(0, s) + '{שם}' + v.slice(e);
+            ta.selectionStart = ta.selectionEnd = s + 4;
+          }
+          ta.focus(); update();
+        }));
+      } else if (type === 'buttons'){
+        card.querySelectorAll('.btn-editor').forEach(wireButtonEditor);
+        card.querySelector('.add-2nd-btn').addEventListener('click', () => {
+          const wrap = card.querySelector('.buttons-editors');
+          if (wrap.querySelectorAll('.btn-editor').length >= 2) { alert('אפשר עד שני כפתורים לצד זה — הוסיפו בלוק כפתורים נוסף לשורה נפרדת.'); return; }
+          wrap.appendChild(makeButtonEditor({}));
+          update();
+        });
+      } else if (type === 'image'){
+        const fileEl = card.querySelector('.blk-img-file'),
+              uploadBtn = card.querySelector('.blk-img-upload'),
+              urlEl = card.querySelector('.blk-img-url');
+        uploadBtn.addEventListener('click', () => fileEl.click());
+        fileEl.addEventListener('change', () => {
+          fileToResizedDataUrl(fileEl.files[0], (dataUrl) => {
+            const m = dataUrl.match(/^data:([^;]+);base64,/);
+            card._imgData = dataUrl; card._imgMime = m ? m[1] : 'image/png';
+            urlEl.value = '';  // uploaded file wins over URL
+            rebuildImageBody(card);
+            update();
+          });
+          fileEl.value = '';
+        });
+        urlEl.addEventListener('input', update);
+        const rm = card.querySelector('.blk-img-remove');
+        if (rm) rm.addEventListener('click', () => { card._imgData = ''; card._imgMime = ''; rebuildImageBody(card); update(); });
+      } else if (type === 'divider'){
+        card.querySelectorAll('.divider-toggle button').forEach(b => b.addEventListener('click', () => {
+          card._variant = b.dataset.var;
+          card.querySelectorAll('.divider-toggle button').forEach(x => x.classList.toggle('on', x === b));
+          update();
+        }));
+      }
+    }
+
+    // re-render an image block's body after data/url change (keeps handlers via wire)
+    function rebuildImageBody(card){
+      const url = (card.querySelector('.blk-img-url') || {}).value || '';
+      const bl = { type:'image', url: url, data: card._imgData || '', mime: card._imgMime || '' };
+      const body = card.querySelector('.block-body');
+      const data = card._imgData, mime = card._imgMime;  // preserve across innerHTML swap
+      body.innerHTML = blockBodyHtml(bl);
+      card._imgData = data; card._imgMime = mime;
+      // re-wire only image controls
+      const fileEl = card.querySelector('.blk-img-file'),
+            uploadBtn = card.querySelector('.blk-img-upload'),
+            urlEl = card.querySelector('.blk-img-url');
+      uploadBtn.addEventListener('click', () => fileEl.click());
+      fileEl.addEventListener('change', () => {
+        fileToResizedDataUrl(fileEl.files[0], (dataUrl) => {
+          const m = dataUrl.match(/^data:([^;]+);base64,/);
+          card._imgData = dataUrl; card._imgMime = m ? m[1] : 'image/png';
+          card.querySelector('.blk-img-url').value = '';
+          rebuildImageBody(card); update();
+        });
+        fileEl.value = '';
+      });
+      urlEl.addEventListener('input', update);
+      const rm = card.querySelector('.blk-img-remove');
+      if (rm) rm.addEventListener('click', () => { card._imgData=''; card._imgMime=''; rebuildImageBody(card); update(); });
+    }
+
+    // add a fresh block of a type to a container
+    function newBlockOf(type){
+      if (type === 'buttons') return { type:'buttons', items:[{ icon:'', text:'', url:'', color:PALETTE[0], style:'filled' }] };
+      if (type === 'image')   return { type:'image', url:'', data:'', mime:'' };
+      if (type === 'divider') return { type:'divider', variant:'line' };
+      return { type:'text', content:'' };
+    }
+    function addBlock(container, type){
+      const card = makeBlockCard(newBlockOf(type));
+      container.appendChild(card);
+      return card;
+    }
+    // replace all cards in a container from a blocks array
+    function setBlocks(container, blocks){
+      container.innerHTML = '';
+      (blocks && blocks.length ? blocks : [{ type:'text', content:'' }]).forEach(bl => container.appendChild(makeBlockCard(bl)));
+    }
+    // read the ordered block list out of a container's cards
+    function readBlocks(container){
+      return [...container.querySelectorAll(':scope > .block-card')].map(card => {
+        const type = card.dataset.type;
+        if (type === 'text') return { type:'text', content: (card.querySelector('.blk-text').value || '') };
+        if (type === 'buttons'){
+          const items = [...card.querySelectorAll('.btn-editor')].map(ed => ({
+            icon: ed.querySelector('.b-icon').value.trim(),
+            text: ed.querySelector('.b-text').value.trim(),
+            url: ed.querySelector('.b-url').value.trim(),
+            color: ed.querySelector('.b-color').value,
+            style: ed.querySelector('.b-style').value
+          }));
+          return { type:'buttons', items: items };
+        }
+        if (type === 'image'){
+          const url = (card.querySelector('.blk-img-url') || {}).value || '';
+          return { type:'image', url: url.trim(), data: card._imgData || '', mime: card._imgMime || '' };
+        }
+        if (type === 'divider') return { type:'divider', variant: card._variant === 'space' ? 'space' : 'line' };
+        return { type:'text', content:'' };
+      });
+    }
+    // filter out empty blocks for output (empty text / no-item buttons / imageless image)
+    function usefulBlocks(blocks){
+      return blocks.filter(bl => {
+        if (bl.type === 'text') return (bl.content || '').trim() !== '';
+        if (bl.type === 'buttons') return (bl.items || []).some(b => b.text && b.url);
+        if (bl.type === 'image') return !!(bl.data || bl.url);
+        if (bl.type === 'divider') return true;
+        return false;
+      }).map(bl => {
+        if (bl.type === 'buttons') return { type:'buttons', items: bl.items.filter(b => b.text && b.url) };
+        return bl;
+      });
+    }
+    // wire the "add block" bar + drop-at-end for a container
+    function wireBlockContainer(container, bar){
+      bar.querySelectorAll('button[data-add]').forEach(b =>
+        b.addEventListener('click', () => { const c = addBlock(container, b.dataset.add); c.scrollIntoView({block:'nearest'}); update(); }));
+      container.addEventListener('dragover', e => {
+        const dragging = container.querySelector('.dragging');
+        if (dragging && !e.target.closest('.block-card')) { e.preventDefault(); container.appendChild(dragging); }
+      });
+    }
 
     // ---------- emoji picker ----------
     const EMOJIS = ['📊','📈','🎬','🎥','▶️','📎','📄','📑','📅','🗓️','✅','☑️','🔗','📥','📤','🎓',
@@ -864,8 +1296,7 @@
     document.addEventListener('click', closeEmojiPicker);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEmojiPicker(); });
 
-    // ---------- logo upload ----------
-    const LOGO_MAX = 600;  // resize so the longest side ≤ this (email is 600px wide)
+    // ---------- logo upload (top-of-email image) ----------
     function setLogoData(dataUrl, label){
       logoData = dataUrl || '';
       if (logoData){
@@ -879,32 +1310,12 @@
       }
     }
     function loadLogoFile(file){
-      if (!file) return;
-      if (!/^image\//.test(file.type)) { alert('נא לבחור קובץ תמונה'); return; }
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          let w = img.naturalWidth, h = img.naturalHeight;
-          const scale = Math.min(1, LOGO_MAX / Math.max(w, h));
-          w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          // keep PNG for formats that may have transparency; JPEG otherwise (smaller)
-          const keepAlpha = /png|webp|gif|svg/i.test(file.type);
-          const out = keepAlpha ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.9);
-          const b64 = out.split(',')[1] || '';
-          const sizeKB = Math.round(b64.length * 0.75 / 1024);
-          setLogoData(out, (file.name || 'לוגו') + ' · ~' + sizeKB + 'KB');
-          logoWarnEl.style.display = sizeKB > 200 ? 'block' : 'none';
-          try { localStorage.setItem('eg_logo_data', out); } catch(_){}
-          update();
-        };
-        img.onerror = () => alert('לא הצלחנו לקרוא את התמונה');
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
+      fileToResizedDataUrl(file, (out, sizeKB) => {
+        setLogoData(out, (file.name || 'לוגו') + ' · ~' + sizeKB + 'KB');
+        logoWarnEl.style.display = sizeKB > 200 ? 'block' : 'none';
+        try { localStorage.setItem('eg_logo_data', out); } catch(_){}
+        update();
+      });
     }
     logoUploadBtn.addEventListener('click', () => logoFileEl.click());
     logoFileEl.addEventListener('change', () => { loadLogoFile(logoFileEl.files[0]); logoFileEl.value = ''; });
@@ -914,8 +1325,7 @@
     function readConfig(){
       return {
         subject: subjectEl.value.trim(),
-        body: bodyEl.value,
-        buttons: readButtons(),
+        blocks: readBlocks(blocksEl),
         senderName: senderEl.value.trim(),
         phone: phoneEl.value.trim(),
         website: websiteEl.value.trim(),
@@ -942,27 +1352,25 @@
         days: Math.max(1, parseInt(refs.days.value, 10) || 1),
         cond: refs.cond.value,                 // 'noclick' | 'all'
         subject: refs.subject.value.trim(),
-        body: refs.body.value,
-        buttons: readButtons(refs.btnRows)
+        blocks: readBlocks(refs.blocks)
       };
     }
 
     // ---------- preview ----------
     function buildPreview(cfg, mode){
-      let subject, bodySrc, buttons;
-      if (mode === 'fu1')      { subject = cfg.followUp1.subject || 'נושא מייל המעקב'; bodySrc = cfg.followUp1.body; buttons = cfg.followUp1.buttons; }
-      else if (mode === 'fu2') { subject = cfg.followUp2.subject || 'נושא מייל המעקב'; bodySrc = cfg.followUp2.body; buttons = cfg.followUp2.buttons; }
-      else                     { subject = cfg.subject || 'נושא המייל';                bodySrc = cfg.body;            buttons = cfg.buttons; }
+      let subject, blocks;
+      if (mode === 'fu1')      { subject = cfg.followUp1.subject || 'נושא מייל המעקב'; blocks = cfg.followUp1.blocks; }
+      else if (mode === 'fu2') { subject = cfg.followUp2.subject || 'נושא מייל המעקב'; blocks = cfg.followUp2.blocks; }
+      else                     { subject = cfg.subject || 'נושא המייל';                blocks = cfg.blocks; }
       const sampleName = cfg.personalize ? 'ישראל' : '';
-      const previewBody = bodySrc.replace(/\{שם\}/g, sampleName);
       const font = fontStack(cfg.emailFont);
       const accent = cfg.accent;
+      const bodyHtml = blocksToHtml(usefulBlocks(blocks || []), { sampleName: sampleName });
       const html = fontImport(cfg.emailFont) +
         '<div style="direction: rtl; text-align: right; font-family: ' + font + '; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">' +
           ((cfg.logoData || cfg.logo) ? '<div style="text-align:center;margin-bottom:18px;"><img src="' + (cfg.logoData || esc(cfg.logo)) + '" alt="" style="max-width:100%;border-radius:8px;"></div>' : '') +
           '<h2 style="color: ' + accent + '; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
-          (bodyToHtml(previewBody) || '<p style="color:#94a3b8;font-size:15px;">— כתבו את גוף המכתב כדי לראות תצוגה —</p>') +
-          '<div style="margin: 35px 0; text-align: center;">' + buttonsHtmlFrom(buttons, true) + '</div>' +
+          (bodyHtml || '<p style="color:#94a3b8;font-size:15px;">— הוסיפו בלוקים כדי לראות תצוגה —</p>') +
           signatureHtml(cfg.senderName, accent, cfg.phone, cfg.website) +
         '</div>';
       emailPreview.innerHTML = html;
@@ -970,22 +1378,62 @@
     }
 
     // ---------- code generation ----------
-    function buttonsLiteralFor(arr){
-      return arr.length
-        ? arr.map(b => '    { text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) + ', color: ' + JSON.stringify(b.color) + ', icon: ' + JSON.stringify(b.icon || '') + ', style: ' + JSON.stringify(b.style || 'filled') + ' }').join(',\n')
-        : '    // אין כפתורים';
+    // Emit one block as a JS-literal for the generated BLOCKS array.
+    // `imgCid(block)` returns a cid (e.g. "blkimg0") for an uploaded image, or '' for a URL image.
+    function blockLiteralFor(bl, imgCid){
+      if (bl.type === 'text'){
+        const h = bodyToHtml(bl.content || '').replace(/\{שם\}/g, '{{NAME}}');
+        const t = bodyToText(bl.content || '').replace(/\{שם\}/g, '{{NAME}}');
+        return '    { type: "text", html: ' + JSON.stringify(h) + ', text: ' + JSON.stringify(t) + ' }';
+      }
+      if (bl.type === 'buttons'){
+        const items = (bl.items || []).filter(b => b.text && b.url).map(b =>
+          '{ text: ' + JSON.stringify(b.text) + ', url: ' + JSON.stringify(b.url) +
+          ', color: ' + JSON.stringify(b.color) + ', icon: ' + JSON.stringify(b.icon || '') +
+          ', style: ' + JSON.stringify(b.style || 'filled') + ' }').join(', ');
+        return '    { type: "buttons", items: [' + items + '] }';
+      }
+      if (bl.type === 'image'){
+        const cid = imgCid(bl);
+        const src = cid ? ('cid:' + cid) : (bl.url || '');
+        return '    { type: "image", src: ' + JSON.stringify(src) + ' }';
+      }
+      if (bl.type === 'divider'){
+        return '    { type: "divider", variant: ' + JSON.stringify(bl.variant === 'space' ? 'space' : 'line') + ' }';
+      }
+      return '    { type: "text", html: "", text: "" }';
+    }
+    function blocksLiteralFor(blocks, imgCid){
+      const useful = usefulBlocks(blocks || []);
+      return useful.length ? useful.map(bl => blockLiteralFor(bl, imgCid)).join(',\n') : '    // אין תוכן';
     }
     function generateScript(cfg){
-      const buttons = cfg.buttons;
-      const buttonsLiteral = buttons.length ? buttonsLiteralFor(buttons) : '    // הוסיפו כפתורים בכלי';
-      const bodyHtml = bodyToHtml(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
-      const bodyText = bodyToText(cfg.body).replace(/\{שם\}/g, '{{NAME}}');
+      const mainBlocks = usefulBlocks(cfg.blocks || []);
       const nameColVal = cfg.personalize ? String(cfg.nameColumn) : 'null';
       const hasWebhook = ADMIN && !!cfg.webhook;
       const fu1c = cfg.followUp1, fu2c = cfg.followUp2;
       const fuOn = fu1c.enabled;
       const needsTrackForFU = (fu1c.enabled && fu1c.cond === 'noclick') || (fu2c.enabled && fu2c.cond === 'noclick');
       const trackOn = !!cfg.trackClicks || needsTrackForFU;
+
+      // ----- inline images: assign one cid per UPLOADED image block, across all emails -----
+      // The top logo keeps cid "topLogo"; block images get "blkimg0", "blkimg1", ...
+      const inlineList = [];  // { cid, mime, b64 }
+      const imgCidMap = new Map();  // block object → cid
+      function registerImg(bl){
+        if (bl.type !== 'image' || !bl.data) return;
+        if (imgCidMap.has(bl)) return;
+        const m = bl.data.match(/^data:([^;]+);base64,(.*)$/);
+        if (!m) return;
+        const cid = 'blkimg' + inlineList.length;
+        inlineList.push({ cid: cid, mime: m[1], b64: m[2] });
+        imgCidMap.set(bl, cid);
+      }
+      [mainBlocks, usefulBlocks(fu1c.blocks || []), usefulBlocks(fu2c.blocks || [])]
+        .forEach(list => list.forEach(registerImg));
+      const imgCid = bl => imgCidMap.get(bl) || '';
+
+      const mainBlocksLiteral = blocksLiteralFor(cfg.blocks, imgCid);
 
       // uploaded logo → base64 + mime, embedded as an inline (cid) image so it
       // shows reliably in Gmail/Outlook. A pasted URL is used as-is instead.
@@ -995,6 +1443,11 @@
         if (m) { logoType = m[1]; logoB64 = m[2]; }
       }
       const logoUrl = logoB64 ? '' : (cfg.logo || '');
+
+      // literal for the INLINE_IMAGES list (block images; the logo is added separately)
+      const inlineImagesLiteral = inlineList.length
+        ? inlineList.map(im => '  { cid: ' + JSON.stringify(im.cid) + ', mime: ' + JSON.stringify(im.mime) + ', data: ' + JSON.stringify(im.b64) + ' }').join(',\n')
+        : '  // אין תמונות מוטמעות בגוף המייל';
 
       // When tracking is on, button links are wrapped through this script's own
       // web-app URL so each click is logged to a "Clicks" sheet, then forwarded.
@@ -1066,10 +1519,6 @@
         : '';
 
       // ----- follow-up code -----
-      const fu1Html = bodyToHtml(fu1c.body).replace(/\{שם\}/g, '{{NAME}}');
-      const fu1Text = bodyToText(fu1c.body).replace(/\{שם\}/g, '{{NAME}}');
-      const fu2Html = bodyToHtml(fu2c.body).replace(/\{שם\}/g, '{{NAME}}');
-      const fu2Text = bodyToText(fu2c.body).replace(/\{שם\}/g, '{{NAME}}');
       const fuConfigItems = ['    { n: 1, days: ' + fu1c.days + ', cond: ' + JSON.stringify(fu1c.cond) + ' }'];
       if (fu2c.enabled) fuConfigItems.push('    { n: 2, days: ' + fu2c.days + ', cond: ' + JSON.stringify(fu2c.cond) + ' }');
 
@@ -1087,17 +1536,13 @@ fuConfigItems.join(',\n') + '\n' +
 'function getFollowUpContent_(n, recipientName, recipientEmail) {\n' +
 '  var nm = recipientName || "";\n' +
 '  if (n === 1) {\n' +
-'    var B = [\n' + buttonsLiteralFor(fu1c.buttons) + '\n    ];\n' +
-'    var h = ' + JSON.stringify(fu1Html) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'    var t = ' + JSON.stringify(fu1Text) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'    return buildEmail_(' + JSON.stringify(fu1c.subject) + ', h, t, B, recipientEmail);\n' +
+'    var B = [\n' + blocksLiteralFor(fu1c.blocks, imgCid) + '\n    ];\n' +
+'    return buildEmail_(' + JSON.stringify(fu1c.subject) + ', B, recipientEmail, nm);\n' +
 '  }\n' +
 (fu2c.enabled ?
 '  if (n === 2) {\n' +
-'    var B2 = [\n' + buttonsLiteralFor(fu2c.buttons) + '\n    ];\n' +
-'    var h2 = ' + JSON.stringify(fu2Html) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'    var t2 = ' + JSON.stringify(fu2Text) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'    return buildEmail_(' + JSON.stringify(fu2c.subject) + ', h2, t2, B2, recipientEmail);\n' +
+'    var B2 = [\n' + blocksLiteralFor(fu2c.blocks, imgCid) + '\n    ];\n' +
+'    return buildEmail_(' + JSON.stringify(fu2c.subject) + ', B2, recipientEmail, nm);\n' +
 '  }\n' : '') +
 '  return null;\n' +
 '}\n' +
@@ -1205,26 +1650,49 @@ fuConfigItems.join(',\n') + '\n' +
 'var TOP_IMAGE      = ' + JSON.stringify(logoUrl) + ';  // לוגו לפי קישור (ריק = אין / הועלה קובץ)\n' +
 'var TOP_IMAGE_DATA = ' + JSON.stringify(logoB64) + ';  // לוגו מוטמע (base64; ריק = אין)\n' +
 'var TOP_IMAGE_TYPE = ' + JSON.stringify(logoType) + ';  // סוג התמונה המוטמעת\n' +
-'var TOP_IMAGE_SRC  = TOP_IMAGE_DATA ? "cid:topLogo" : TOP_IMAGE;  // מקור התמונה בגוף המייל\n' +
+'var TOP_IMAGE_SRC  = TOP_IMAGE_DATA ? "cid:topLogo" : TOP_IMAGE;  // מקור התמונה בראש המייל\n' +
 'var ATTACH_FILE_ID = ' + JSON.stringify(driveFileId(cfg.attach || '')) + ';  // קובץ מצורף מ-Drive (ריק = אין)\n' +
+'\n// תמונות מוטמעות בגוף המייל (בלוקי תמונה שהועלו). כל אחת מקבלת מזהה cid ייחודי.\n' +
+'var INLINE_IMAGES = [\n' + inlineImagesLiteral + '\n];\n' +
 eventBlock +
 trackHeader +
 '\nvar EMAIL_COLUMN = ' + cfg.emailColumn + ';  // אינדקס עמודת האימייל ב-e.values (B=1, C=2, ...)\n' +
 'var NAME_COLUMN = ' + nameColVal + ';  // אינדקס עמודת השם ב-e.values (null = ללא שם)\n' +
 '\n\n' +
-'// בונה משותף לכל המיילים (ראשי + מעקב)\n' +
-'function buildEmail_(subject, bodyHtml, bodyText, BUTTONS, recipientEmail) {\n' +
-'  var buttonsHtml = BUTTONS.map(function (b) {\n' +
-'    var label = (b.icon ? b.icon + " " : "") + b.text;\n' +
-'    var css;\n' +
-'    if (b.style === "outline") css = "background-color: transparent; color: " + b.color + "; border: 2px solid " + b.color + "; padding: 10px 22px; border-radius: 6px;";\n' +
-'    else if (b.style === "pill") css = "background-color: " + b.color + "; color: white; padding: 12px 26px; border-radius: 999px;";\n' +
-'    else css = "background-color: " + b.color + "; color: white; padding: 12px 24px; border-radius: 6px;";\n' +
-'    return \'<a href="\' + ' + hrefJs + ' + \'" target="_blank" style="\' + css +\n' +
-'      \' text-decoration: none; font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">\' + label + \'</a>\';\n' +
-'  }).join(\'\');\n' +
+'// בונה כפתור בודד (HTML)\n' +
+'function buttonHtml_(b, recipientEmail) {\n' +
+'  var label = (b.icon ? b.icon + " " : "") + b.text;\n' +
+'  var css;\n' +
+'  if (b.style === "outline") css = "background-color: transparent; color: " + b.color + "; border: 2px solid " + b.color + "; padding: 10px 22px; border-radius: 6px;";\n' +
+'  else if (b.style === "pill") css = "background-color: " + b.color + "; color: white; padding: 12px 26px; border-radius: 999px;";\n' +
+'  else css = "background-color: " + b.color + "; color: white; padding: 12px 24px; border-radius: 6px;";\n' +
+'  return \'<a href="\' + ' + hrefJs + ' + \'" target="_blank" style="\' + css +\n' +
+'    \' text-decoration: none; font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">\' + label + \'</a>\';\n' +
+'}\n' +
 '\n' +
-'  var buttonsText = BUTTONS.map(function (b) { return (b.icon ? b.icon + " " : "") + b.text + ": " + b.url; }).join("\\n");\n' +
+'// בונה משותף לכל המיילים (ראשי + מעקב) — עובר על מערך הבלוקים לפי הסדר.\n' +
+'function buildEmail_(subject, BLOCKS, recipientEmail, recipientName) {\n' +
+'  var nm = recipientName || "";\n' +
+'  var bodyHtml = "";\n' +
+'  var bodyText = "";\n' +
+'  for (var i = 0; i < BLOCKS.length; i++) {\n' +
+'    var bl = BLOCKS[i];\n' +
+'    if (bl.type === "text") {\n' +
+'      bodyHtml += bl.html.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'      if (bodyText) bodyText += "\\n\\n";\n' +
+'      bodyText += bl.text.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
+'    } else if (bl.type === "buttons") {\n' +
+'      var b;\n' +
+'      var html = "";\n' +
+'      for (var j = 0; j < bl.items.length; j++) { b = bl.items[j]; html += buttonHtml_(b, recipientEmail); }\n' +
+'      if (html) bodyHtml += \'<div style="margin: 30px 0; text-align: center;">\' + html + \'</div>\';\n' +
+'      for (var k = 0; k < bl.items.length; k++) { b = bl.items[k]; if (bodyText) bodyText += "\\n\\n"; bodyText += (b.icon ? b.icon + " " : "") + b.text + ": " + b.url; }\n' +
+'    } else if (bl.type === "image") {\n' +
+'      if (bl.src) bodyHtml += \'<div style="text-align:center;margin:22px 0;"><img src="\' + bl.src + \'" alt="" style="max-width:100%;border-radius:8px;"></div>\';\n' +
+'    } else if (bl.type === "divider") {\n' +
+'      bodyHtml += (bl.variant === "space") ? \'<div style="height:28px;"></div>\' : \'<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">\';\n' +
+'    }\n' +
+'  }\n' +
 '\n' +
 '  var sigName = SENDER_NAME ? \'<p style="margin: 5px 0 0 0; font-weight: bold; color: #0f172a; font-size: 16px;">\' + SENDER_NAME + \'</p>\' : "";\n' +
 '  var sigContact = "";\n' +
@@ -1236,14 +1704,13 @@ trackHeader +
 '      (TOP_IMAGE_SRC ? \'<div style="text-align: center; margin-bottom: 18px;"><img src="\' + TOP_IMAGE_SRC + \'" alt="" style="max-width: 100%; border-radius: 8px;"></div>\' : "") +\n' +
 '      \'<h2 style="color: \' + ACCENT + \'; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">\' + subject + \'</h2>\' +\n' +
 '      bodyHtml +\n' +
-'      (buttonsHtml ? \'<div style="margin: 35px 0; text-align: center;">\' + buttonsHtml + \'</div>\' : "") +\n' +
 '      \'<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;">\' +\n' +
 '      \'<p style="margin: 0; color: #64748b; font-size: 15px;">בברכה,</p>\' +\n' +
 '      sigName +\n' +
 '      sigContact +\n' +
 '    \'</div>\';\n' +
 '\n' +
-'  var textBody = bodyText + (buttonsText ? "\\n\\n" + buttonsText : "") + "\\n\\nבברכה," +\n' +
+'  var textBody = bodyText + "\\n\\nבברכה," +\n' +
 '    (SENDER_NAME ? "\\n" + SENDER_NAME : "") +\n' +
 '    (SENDER_PHONE ? "\\nטלפון: " + SENDER_PHONE : "") +\n' +
 '    (SENDER_SITE ? "\\nאתר: " + SENDER_SITE : "");\n' +
@@ -1253,12 +1720,10 @@ trackHeader +
 '\n\n' +
 'function getEmailContent(recipientName, recipientEmail) {\n' +
 '  var nm = recipientName || "";\n' +
-'  var BUTTONS = [\n' +
-buttonsLiteral + '\n' +
+'  var BLOCKS = [\n' +
+mainBlocksLiteral + '\n' +
 '  ];\n' +
-'  var bodyHtml = ' + JSON.stringify(bodyHtml) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'  var bodyText = ' + JSON.stringify(bodyText) + '.replace(/\\{\\{NAME\\}\\}/g, nm);\n' +
-'  return buildEmail_(' + JSON.stringify(cfg.subject) + ', bodyHtml, bodyText, BUTTONS, recipientEmail);\n' +
+'  return buildEmail_(' + JSON.stringify(cfg.subject) + ', BLOCKS, recipientEmail, nm);\n' +
 '}' +
 trackedFn +
 mlFunction +
@@ -1270,11 +1735,19 @@ mlFunction +
 '  catch (e) { Logger.log("צירוף הקובץ נכשל — בדקו שהקובץ קיים ומשותף: " + e); return []; }\n' +
 '}\n' +
 '\n' +
-'// מחזיר את הלוגו כתמונה מוטמעת (inline) אם הועלה קובץ. ריק = אין / לוגו לפי קישור.\n' +
+'// מחזיר את כל התמונות המוטמעות (inline): הלוגו בראש המייל + בלוקי תמונה שהועלו.\n' +
 'function _inlineImages_() {\n' +
-'  if (!TOP_IMAGE_DATA) return {};\n' +
-'  try { return { topLogo: Utilities.newBlob(Utilities.base64Decode(TOP_IMAGE_DATA), TOP_IMAGE_TYPE || "image/png", "logo") }; }\n' +
-'  catch (e) { Logger.log("הטמעת הלוגו נכשלה: " + e); return {}; }\n' +
+'  var imgs = {};\n' +
+'  if (TOP_IMAGE_DATA) {\n' +
+'    try { imgs.topLogo = Utilities.newBlob(Utilities.base64Decode(TOP_IMAGE_DATA), TOP_IMAGE_TYPE || "image/png", "logo"); }\n' +
+'    catch (e) { Logger.log("הטמעת הלוגו נכשלה: " + e); }\n' +
+'  }\n' +
+'  for (var i = 0; i < INLINE_IMAGES.length; i++) {\n' +
+'    var im = INLINE_IMAGES[i];\n' +
+'    try { imgs[im.cid] = Utilities.newBlob(Utilities.base64Decode(im.data), im.mime || "image/png", im.cid); }\n' +
+'    catch (e2) { Logger.log("הטמעת תמונה נכשלה (" + im.cid + "): " + e2); }\n' +
+'  }\n' +
+'  return imgs;\n' +
 '}\n' +
 '\n\n' +
 'function sendEmailOnFormSubmit(e) {\n' +
@@ -1376,8 +1849,12 @@ followUpFns
     }
 
     // ---------- events ----------
-    [subjectEl, bodyEl, eventNameEl, eventDateEl, senderEl].forEach(el => el.addEventListener('input', update));
+    [subjectEl, eventNameEl, eventDateEl, senderEl].forEach(el => el.addEventListener('input', update));
     [fontEl, accentEl].forEach(el => el.addEventListener('change', update));
+    // block containers + add-block bars
+    wireBlockContainer(blocksEl, $('addBlockBar'));
+    wireBlockContainer(fu1.blocks, $('fu1AddBar'));
+    wireBlockContainer(fu2.blocks, $('fu2AddBar'));
     senderEl.addEventListener('input', () => { try { localStorage.setItem('senderName', senderEl.value.trim()); } catch(_){} });
     phoneEl.addEventListener('input', () => { try { localStorage.setItem('sig_phone', phoneEl.value.trim()); } catch(_){} update(); });
     websiteEl.addEventListener('input', () => { try { localStorage.setItem('sig_website', websiteEl.value.trim()); } catch(_){} update(); });
@@ -1441,7 +1918,6 @@ followUpFns
       eventRevealEl.style.display = webhookEl.value.trim() ? 'block' : 'none';
       update();
     });
-    $('addBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8'); update(); });
     logoEl.addEventListener('input', update);
     attachLinkEl.addEventListener('input', update);
 
@@ -1452,11 +1928,9 @@ followUpFns
       autoEnableTrackingForFU();
       update();
     }));
-    [fu1.days, fu1.subject, fu1.body, fu2.days, fu2.subject, fu2.body].forEach(el => el.addEventListener('input', update));
+    [fu1.days, fu1.subject, fu2.days, fu2.subject].forEach(el => el.addEventListener('input', update));
     [fu1.cond, fu2.cond].forEach(el => el.addEventListener('change', () => { autoEnableTrackingForFU(); update(); }));
     previewTabs.querySelectorAll('.pv-tab').forEach(t => t.addEventListener('click', () => { pvMode = t.dataset.pv; update(); }));
-    $('fu1AddBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8', '', 'filled', fu1.btnRows); update(); });
-    $('fu2AddBtn').addEventListener('click', () => { addButtonRow('', '', '#1a73e8', '', 'filled', fu2.btnRows); update(); });
 
     // ---------- templates ----------
     const TEMPLATES = {
@@ -1474,8 +1948,23 @@ followUpFns
       og.innerHTML = names.map(n => '<option value="saved:' + esc(n) + '">' + esc(n) + '</option>').join('');
       og.style.display = names.length ? '' : 'none';
     }
+    // migrate an old config/template shape (body + buttons) into a blocks array.
+    // Built-in TEMPLATES store buttons as [text,url,color] tuples; saved ones as objects.
+    function toBlocks(cfg){
+      if (cfg.blocks && cfg.blocks.length) return cfg.blocks;
+      const blocks = [];
+      if (cfg.body != null && String(cfg.body).trim() !== '') blocks.push({ type:'text', content: cfg.body });
+      const btns = cfg.buttons || [];
+      if (btns.length){
+        const items = btns.map(b => Array.isArray(b)
+          ? { icon:'', text: b[0] || '', url: b[1] || '', color: b[2] || PALETTE[0], style:'filled' }
+          : { icon: b.icon || '', text: b.text || '', url: b.url || '', color: b.color || PALETTE[0], style: b.style || 'filled' });
+        blocks.push({ type:'buttons', items: items });
+      }
+      return blocks.length ? blocks : [{ type:'text', content:'' }];
+    }
     function applyConfig(cfg){
-      subjectEl.value = cfg.subject || ''; bodyEl.value = cfg.body || '';
+      subjectEl.value = cfg.subject || '';
       senderEl.value = cfg.senderName || ''; phoneEl.value = cfg.phone || '';
       websiteEl.value = cfg.website || ''; logoEl.value = cfg.logo || '';
       setLogoData(cfg.logoData || '', cfg.logoData ? 'לוגו שמור' : '');
@@ -1483,22 +1972,21 @@ followUpFns
       attachLinkEl.value = cfg.attach || '';
       if (cfg.emailFont) fontEl.value = cfg.emailFont;
       if (cfg.accent) accentEl.value = cfg.accent;
-      btnRows.innerHTML = '';
-      (cfg.buttons || []).forEach(b => addButtonRow(b.text, b.url, b.color, b.icon, b.style));
-      if (!btnRows.children.length) addButtonRow('', '', '#1a73e8');
+      setBlocks(blocksEl, toBlocks(cfg));
       update();
     }
     templateEl.addEventListener('change', () => {
       const v = templateEl.value;
       if (v.indexOf('saved:') === 0) { const cfg = getMyTpls()[v.slice(6)]; if (cfg) applyConfig(cfg); return; }
       const t = TEMPLATES[v]; if (!t) return;
-      subjectEl.value = t.subject; bodyEl.value = t.body;
-      btnRows.innerHTML = ''; t.buttons.forEach(b => addButtonRow(b[0], b[1], b[2])); update();
+      subjectEl.value = t.subject;
+      setBlocks(blocksEl, toBlocks(t));
+      update();
     });
     $('saveTpl').addEventListener('click', () => {
       const name = (prompt('שם לתבנית שלך:') || '').trim(); if (!name) return;
       const o = getMyTpls();
-      o[name] = { subject: subjectEl.value, body: bodyEl.value, buttons: readButtonsRaw(),
+      o[name] = { subject: subjectEl.value, blocks: readBlocks(blocksEl),
                   senderName: senderEl.value, phone: phoneEl.value, website: websiteEl.value, logo: logoEl.value,
                   logoData: logoData, attach: attachLinkEl.value, emailFont: fontEl.value, accent: accentEl.value };
       setMyTpls(o); refreshMyTpls(); templateEl.value = 'saved:' + name; alert('התבנית נשמרה ✓');
@@ -1523,10 +2011,20 @@ followUpFns
       accentEl.value = s.accent; fontEl.value = s.font; update();
     });
 
+    // default starter blocks for the main email (one text + one 2-button block)
+    function defaultMainBlocks(){
+      return [
+        { type:'text', content:'שלום {שם},\n\n' },
+        { type:'buttons', items:[
+          { icon:'📊', text:'כפתור 1', url:'', color:'#1a73e8', style:'filled' },
+          { icon:'🎬', text:'כפתור 2', url:'', color:'#ea4335', style:'filled' }
+        ] }
+      ];
+    }
     // ---------- reset everything to default ----------
     $('resetAll').addEventListener('click', () => {
       if (!confirm('לאפס את כל השדות לברירת המחדל?')) return;
-      subjectEl.value = ''; bodyEl.value = '';
+      subjectEl.value = '';
       senderEl.value = ''; phoneEl.value = ''; websiteEl.value = ''; logoEl.value = ''; attachLinkEl.value = '';
       setLogoData('', ''); try { localStorage.removeItem('eg_logo_data'); } catch(_){}
       fontEl.value = 'arial'; accentEl.value = '#1a73e8';
@@ -1538,13 +2036,12 @@ followUpFns
       trackEl.checked = false; trackRevealEl.classList.remove('show'); campaignEl.value = '';
       followUpEl.checked = false; followUp2El.checked = false;
       followRevealEl.classList.remove('show'); fu2Block.style.display = 'none';
-      fu1.days.value = '3'; fu1.cond.value = 'noclick'; fu1.subject.value = ''; fu1.body.value = '';
-      fu2.days.value = '7'; fu2.cond.value = 'noclick'; fu2.subject.value = ''; fu2.body.value = '';
-      fu1.btnRows.innerHTML = ''; fu2.btnRows.innerHTML = '';
+      fu1.days.value = '3'; fu1.cond.value = 'noclick'; fu1.subject.value = '';
+      fu2.days.value = '7'; fu2.cond.value = 'noclick'; fu2.subject.value = '';
+      setBlocks(fu1.blocks, [{ type:'text', content:'' }]);
+      setBlocks(fu2.blocks, [{ type:'text', content:'' }]);
       pvMode = 'main';
-      btnRows.innerHTML = '';
-      addButtonRow('📊 כפתור 1', '', '#1a73e8');
-      addButtonRow('🎬 כפתור 2', '', '#ea4335');
+      setBlocks(blocksEl, defaultMainBlocks());
       if (ADMIN) { senderEl.value = 'עומרי אירם'; phoneEl.value = '052-512-1007'; websiteEl.value = 'omri-iram.co.il'; }
       update();
     });
@@ -1582,8 +2079,9 @@ followUpFns
     }
 
     // ---------- init ----------
-    addButtonRow('📊 כפתור 1', '', '#1a73e8');
-    addButtonRow('🎬 כפתור 2', '', '#ea4335');
+    setBlocks(blocksEl, defaultMainBlocks());
+    setBlocks(fu1.blocks, [{ type:'text', content:'' }]);
+    setBlocks(fu2.blocks, [{ type:'text', content:'' }]);
     try {
       const savedSender = localStorage.getItem('senderName'); if (savedSender) senderEl.value = savedSender;
       const sp = localStorage.getItem('sig_phone'); if (sp) phoneEl.value = sp;
