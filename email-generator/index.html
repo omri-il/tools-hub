@@ -701,7 +701,7 @@
               </div>
             </div>
 
-            <p class="hint" style="margin-top:15px;line-height:1.8;">⏰ מיילי המעקב חלים על מילויי טופס <strong>חדשים</strong> מרגע ההתקנה — מי שכבר מילא לא יקבל מעקב למפרע. צריך להוסיף טריגר יומי לפונקציה <code>sendFollowUps</code> (ההוראות יופיעו מתחת לקוד).</p>
+            <p class="hint" style="margin-top:15px;line-height:1.8;">⏰ מיילי המעקב חלים על מילויי טופס <strong>חדשים</strong> מרגע ההתקנה — מי שכבר מילא לא יקבל מעקב למפרע. הבדיקה היומית מוקמת אוטומטית כשמריצים <code>setup</code> — אין צורך להגדיר טריגר ידנית.</p>
           </div>
         </div>
 
@@ -740,28 +740,24 @@
       <pre class="code" id="codeOut" dir="ltr"></pre>
 
       <details class="guide">
-        <summary>איך מתקינים את הקוד? חמישה שלבים</summary>
+        <summary>איך מתקינים את הקוד? שלושה שלבים</summary>
         <ol>
           <li>ודאו שהטופס אוסף כתובות אימייל — או דרך <strong>"Collect email addresses"</strong> (אז האימייל בעמודה B), או כשאלה רגילה בטופס. אם האימייל <strong>אינו</strong> בעמודה B, בחרו את העמודה הנכונה תחת <strong>⚙️ אפשרויות מתקדמות → עמודת האימייל</strong> — או פשוט הדביקו שם שורה מהגיליון תחת <strong>🔎 זיהוי אוטומטי</strong> והכלי יזהה לבד.</li>
-          <li>פתחו את <strong>הגיליון המחובר לטופס</strong> → תפריט <code>Extensions</code> → <code>Apps Script</code>.</li>
-          <li>מחקו את הקוד הקיים, <strong>הדביקו את הקוד מכאן</strong>, ולחצו על 💾 לשמירה.</li>
-          <li>הריצו פעם אחת את הפונקציה <code>sendTestEmail</code> ואשרו את ההרשאות — יישלח אליכם מייל בדיקה.</li>
-          <li>הגדירו טריגר: סמל השעון ⏰ (Triggers) → <code>Add Trigger</code> → פונקציה <code>sendEmailOnFormSubmit</code>, מקור <code>From form</code>, סוג <code>On form submit</code> → שמרו.</li>
+          <li>פתחו את <strong>הגיליון המחובר לטופס</strong> → תפריט <code>Extensions</code> → <code>Apps Script</code>. מחקו את הקוד הקיים, <strong>הדביקו את הקוד מכאן</strong>, ולחצו על 💾 לשמירה.</li>
+          <li>בחרו למעלה את הפונקציה <code>setup</code> ולחצו <strong>▶ Run</strong> פעם אחת, ואשרו את ההרשאות. זהו — <code>setup</code> מקימה את הטריגר לבד, שולחת אליכם מייל בדיקה, ומודיעה לכם שהכול מוכן. <strong>אין צורך להגדיר טריגרים ידנית.</strong></li>
         </ol>
         <p style="color:var(--ink-soft);padding-bottom:16px;">זהו. מעכשיו כל מי שימלא את הטופס יקבל את המכתב אוטומטית.</p>
       </details>
 
       <p id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
-        <strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> כדי שזה יעבוד, פרסמו את הסקריפט כ-Web App:
+        <strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר יוצרת עבורכם את לשונית <code>Clicks</code> (זמן · קמפיין · נמען · כפתור · קישור). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App כדי שהלחיצות יירשמו:<br>
         <code>Deploy</code> ← <code>New deployment</code> ← סוג <code>Web app</code> ← <code>Execute as: Me</code> ← <code>Who has access: Anyone</code> ← <code>Deploy</code>, ואשרו הרשאות.
-        התוצאות ייכתבו אוטומטית בגיליון שלכם בלשונית <code>Clicks</code>: זמן · קמפיין · נמען · קישור.
+        (זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד.) הריצו שוב את <code>setup</code> והיא תאשר לכם ש"מעקב קליקים פעיל".
       </p>
 
       <p id="followUpNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
-        <strong style="color:var(--accent);">📨 אימייל מעקב מופעל.</strong> כדי שזה יעבוד, צריך עוד שני צעדים חד־פעמיים:<br>
-        1️⃣ הריצו פעם אחת את הפונקציה <code>sendFollowUps</code> (מאשר הרשאות + יוצר בסיס — מי שכבר מילא לא יקבל מעקב למפרע).<br>
-        2️⃣ הגדירו טריגר יומי: סמל השעון ⏰ ← <code>Add Trigger</code> ← פונקציה <code>sendFollowUps</code> ← מקור <code>Time-driven</code> ← <code>Day timer</code> ← שמרו.<br>
-        💡 לבדיקת התוכן לפני הכל, הריצו <code>sendFollowUpTest</code> — יישלח אליכם עותק של כל מייל מעקב.
+        <strong style="color:var(--accent);">📨 אימייל מעקב מופעל.</strong> אין מה להגדיר — הרצת <code>setup</code> כבר מקימה את הבדיקה היומית ויוצרת בסיס (מי שכבר מילא לא יקבל מעקב למפרע; רק מילויים חדשים מכאן ואילך).<br>
+        💡 רוצים לראות איך המעקב ייראה? הריצו <code>sendFollowUpTest</code> — יישלח אליכם עותק בדיקה של כל מייל מעקב.
       </p>
     </div>
 
@@ -1526,8 +1522,8 @@
 '\n\n\n' +
 '// ====================================================\n' +
 '//  אימייל מעקב אוטומטי (Follow-up)\n' +
-'//  הריצו פעם אחת ידנית את sendFollowUps כדי לאשר הרשאות\n' +
-'//  וליצור בסיס, ואז הגדירו טריגר יומי (Time-driven) לפונקציה זו.\n' +
+'//  הפונקציה setup (למטה) כבר יוצרת את הטריגר היומי ואת הבסיס —\n' +
+'//  אין צורך להגדיר כאן שום דבר ידנית.\n' +
 '// ====================================================\n' +
 'var FOLLOWUP_CONFIG = [\n' +
 fuConfigItems.join(',\n') + '\n' +
@@ -1633,13 +1629,79 @@ fuConfigItems.join(',\n') + '\n' +
 '}\n'
       );
 
+      // ----- one-click installer: setup() -----
+      // Always generated. Auto-creates the form-submit trigger + (when relevant) the
+      // Clicks columns, the daily follow-up trigger + baseline, sends a test email, and
+      // reports whether the Web App is deployed. Idempotent — safe to re-run.
+      const setupClicks = trackOn
+        ? '  // לשונית Clicks — יוצרים את העמודות מראש (לא מחכים ללחיצה הראשונה)\n' +
+          '  var clk = ss.getSheetByName("Clicks");\n' +
+          '  if (!clk) clk = ss.insertSheet("Clicks");\n' +
+          '  if (clk.getLastRow() === 0) clk.appendRow(["זמן", "קמפיין", "נמען", "כפתור", "קישור"]);\n' +
+          '  msg.push("✅ לשונית Clicks מוכנה: זמן · קמפיין · נמען · כפתור · קישור");\n' +
+          '\n'
+        : '';
+
+      const setupFollow = fuOn
+        ? '  // טריגר יומי לאימיילי מעקב + יצירת בסיס (מי שכבר מילא לא יקבל מעקב למפרע)\n' +
+          '  ScriptApp.newTrigger("sendFollowUps").timeBased().everyDays(1).atHour(9).create();\n' +
+          '  sendFollowUps();\n' +
+          '  msg.push("✅ אימיילי מעקב מופעלים — בדיקה יומית אוטומטית");\n' +
+          '\n'
+        : '';
+
+      const setupTrackStatus = trackOn
+        ? '  // האם הסקריפט כבר פורסם כ-Web App? (חובה כדי שמעקב הקליקים ירשום נתונים)\n' +
+          '  var wa = "";\n' +
+          '  try { wa = ScriptApp.getService().getUrl(); } catch (e) {}\n' +
+          '  if (wa) msg.push("✅ מעקב קליקים פעיל — הכול מוכן!");\n' +
+          '  else msg.push("⚠️ נשאר צעד אחרון למעקב קליקים — פרסמו כ-Web App:\\nDeploy ← New deployment ← Web app ← Execute as: Me ← Who has access: Anyone ← Deploy");\n' +
+          '\n'
+        : '';
+
+      const killMap = fuOn
+        ? '{ "sendEmailOnFormSubmit": true, "sendFollowUps": true }'
+        : '{ "sendEmailOnFormSubmit": true }';
+
+      const setupFn =
+'\n\n\n' +
+'// ====================================================\n' +
+'//  התקנה בלחיצה אחת — הריצו פעם אחת את setup\n' +
+'//  יוצר את הטריגר' + (fuOn ? 'ים' : '') + (trackOn ? ' + לשונית Clicks' : '') + ', שולח מייל בדיקה, ומאשר הרשאות.\n' +
+'//  אפשר להריץ שוב בכל עת — לא ייווצרו כפילויות.\n' +
+'// ====================================================\n' +
+'function setup() {\n' +
+'  var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
+'  var msg = [];\n' +
+'\n' +
+setupClicks +
+'  // טריגר: שליחת מייל אוטומטית בכל מילוי טופס (מוחקים קודם כפילויות)\n' +
+'  var kill = ' + killMap + ';\n' +
+'  var trg = ScriptApp.getProjectTriggers();\n' +
+'  for (var i = 0; i < trg.length; i++) { if (kill[trg[i].getHandlerFunction()]) ScriptApp.deleteTrigger(trg[i]); }\n' +
+'  ScriptApp.newTrigger("sendEmailOnFormSubmit").forSpreadsheet(ss).onFormSubmit().create();\n' +
+'  msg.push("✅ טריגר הותקן — כל מי שממלא את הטופס יקבל מייל אוטומטית");\n' +
+'\n' +
+setupFollow +
+'  // מייל בדיקה — הוכחה מיידית שהכול עובד\n' +
+'  sendTestEmail();\n' +
+'  msg.push("✅ מייל בדיקה נשלח אליכם — בדקו את תיבת הדואר");\n' +
+'\n' +
+setupTrackStatus +
+'  Browser.msgBox("🎉 ההתקנה הושלמה", msg.join("\\n\\n"), Browser.Buttons.OK);\n' +
+'  Logger.log(msg.join("\\n"));\n' +
+'}';
+
       return (
 '/**\n' +
 ' * אימייל אוטומטי בעת מילוי טופס Google' + (hasWebhook ? ' + הוספה ל-MailerLite' : '') + (fuOn ? ' + אימייל מעקב' : '') + '\n' +
 ' * נוצר במחולל של עומרי אירם — https://tools.omri-iram.co.il/email-generator/\n' +
 ' *\n' +
 ' * התקנה: Extensions → Apps Script בגיליון המחובר לטופס, הדביקו קוד זה,\n' +
-' * ואז הגדירו טריגר "On form submit" לפונקציה sendEmailOnFormSubmit.\n' +
+' * הריצו פעם אחת את הפונקציה setup ואשרו הרשאות — היא יוצרת את הטריגר' + (fuOn ? 'ים' : '') + ',\n' +
+(trackOn
+  ? ' * את לשונית Clicks, ושולחת מייל בדיקה. למעקב קליקים פרסמו גם כ-Web App.\n'
+  : ' * ושולחת אליכם מייל בדיקה.\n') +
 ' */\n' +
 '\nvar SENDER_NAME = ' + JSON.stringify(cfg.senderName) + ';  // שם השולח (תיבת דואר + חתימה)\n' +
 'var EMAIL_FONT  = ' + JSON.stringify(fontStack(cfg.emailFont)) + ';  // גופן המייל\n' +
@@ -1818,7 +1880,8 @@ mlCallManual + '\n' +
 '  }\n' +
 '  Logger.log("נשלח ל-" + successCount + " אנשים.");\n' +
 '}\n' +
-followUpFns
+followUpFns +
+setupFn
       );
     }
 
