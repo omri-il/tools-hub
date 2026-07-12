@@ -758,11 +758,12 @@
           <li>בשדה <code>Execute as</code> בחרו <code>Me</code> (זה אתם).</li>
           <li>בשדה <code>Who has access</code> בחרו <code>Anyone</code> (כל אחד).</li>
           <li>לחצו על <code>Deploy</code>, ואם תתבקשו — אשרו את ההרשאות.</li>
-          <li>תופיע כתובת <strong>Web app URL</strong> שמסתיימת ב-<code>/exec</code> — לחצו <code>Copy</code> כדי להעתיק אותה.</li>
+          <li>בחלון שנפתח תופיע כתובת <strong>Web app URL</strong> שמסתיימת ב-<code>/exec</code> — לחצו על כפתור ה-<code>Copy</code> <strong>שלצד הכתובת עצמה</strong> (לא להעתיק משורת הכתובת של הדפדפן).</li>
           <li>חזרו לעורך, הדביקו את הכתובת בין המרכאות בשורה <code>var WEBAPP_URL = "";</code> שבראש הקוד, ולחצו 💾 לשמירה.</li>
-          <li>הריצו שוב את <code>setup</code> — אמורה להופיע ההודעה "✅ מעקב קליקים פעיל".</li>
+          <li>הריצו שוב את <code>setup</code> — אמורה להופיע ההודעה "✅ מעקב קליקים פעיל". שלחו לעצמכם מייל בדיקה חדש ולחצו על כפתור — הפעם הוא יעביר אתכם ליעד.</li>
         </ol>
         <p style="margin-top:10px;font-size:0.85rem;color:var(--ink-faint);">💡 זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד — לכן צריך את הלחיצות האלה פעם אחת.<br>
+        🛟 קיבלתם "Sorry, unable to open the file"? כמעט תמיד הכתובת שהודבקה כללה קטע כמו <code>/u/1/</code> (כתובת שנעולה לחשבון שלכם). הכלי מנקה אותו אוטומטית — פשוט העתיקו מחדש את הקוד המעודכן מכאן, הדביקו בעורך, הדביקו שוב את כתובת ה-<code>/exec</code>, והריצו <code>setup</code>.<br>
         🔁 אם בעתיד תשנו את הקוד — פרסמו <strong>גרסה חדשה</strong> (Deploy ← Manage deployments ← ✏️ ← New version), אחרת הקוד הישן ימשיך לרוץ.<br>
         ℹ️ מייל הבדיקה שנשלח אליכם עשוי להוסיף בגיליון שורה אחת בתחתית עם האימייל שלכם — זה תקין.</p>
       </div>
@@ -1479,9 +1480,11 @@
       const trackedFn = trackOn
         ? '\n\n// כתובת ה-/exec של ה-Web App: קודם מה שהדבקתם ב-WEBAPP_URL, אחרת זיהוי אוטומטי — ורק אם מסתיים ב-/exec.\n' +
           'function _webAppBase_() {\n' +
-          '  if (WEBAPP_URL && /\\/exec$/.test(WEBAPP_URL)) return WEBAPP_URL;\n' +
-          '  try { var u = ScriptApp.getService().getUrl(); if (u && /\\/exec$/.test(u)) return u; } catch (e) {}\n' +
-          '  return "";\n' +
+          '  var u = "";\n' +
+          '  if (WEBAPP_URL && /\\/exec$/.test(WEBAPP_URL)) u = WEBAPP_URL;\n' +
+          '  else { try { var s = ScriptApp.getService().getUrl(); if (s && /\\/exec$/.test(s)) u = s; } catch (e) {} }\n' +
+          '  // מסירים /u/מספר/ מהכתובת — הוא נועל אותה לחשבון אחד וגורם לשגיאת "unable to open the file" אצל נמענים אחרים\n' +
+          '  return u.replace(/\\/macros\\/u\\/\\d+\\/s\\//, "/macros/s/");\n' +
           '}\n' +
           '\n' +
           'function trackedLink_(url, recipient, label) {\n' +
