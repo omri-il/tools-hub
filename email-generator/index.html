@@ -514,8 +514,12 @@
               <option value="update">עדכון / ניוזלטר קצר</option>
               <optgroup label="התבניות שלי" id="myTemplates" style="display:none;"></optgroup>
             </select>
-            <button id="saveTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 14px;font-size:0.82rem;">💾 שמור</button>
+            <button id="saveTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 14px;font-size:0.82rem;" title="שומר תבנית בדפדפן הזה בלבד">💾 שמור</button>
             <button id="delTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 12px;font-size:0.82rem;" title="מחק את התבנית הנבחרת">🗑</button>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px;">
+            <button id="saveLinkBtn" type="button" class="act act-ghost" style="white-space:nowrap;padding:8px 14px;font-size:0.82rem;">🔗 שמור כקישור</button>
+            <span class="hint" style="flex:1;min-width:150px;">שומר את כל העבודה בקישור — פתחו אותו בכל מחשב כדי להמשיך לערוך.</span>
           </div>
         </div>
 
@@ -888,6 +892,108 @@
     const fu2 = { days: $('fu2Days'), cond: $('fu2Cond'), subject: $('fu2Subject'), blocks: $('fu2Blocks') };
     // Admin mode is shared site-wide via localStorage (unlocked on the hub or here).
     const ADMIN = (function(){ try { return localStorage.getItem('omri_admin') === '1'; } catch(_){ return false; } })();
+    // Admin-only prefill for sender/contact (public sees blank placeholders). Edit here once.
+    const ADMIN_DEFAULTS = { sender: 'עומרי אירם', phone: '052-512-1007', website: 'omri-iram.co.il' };
+
+    // ----- LZString (URI-safe compress/decompress only) — MIT, pieroxy/lz-string. Used for shareable-draft links. -----
+    const LZString = (function(){
+      var f = String.fromCharCode;
+      var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+      var baseReverseDic = {};
+      function getBaseValue(alphabet, character){
+        if (!baseReverseDic[alphabet]) { baseReverseDic[alphabet] = {}; for (var i=0;i<alphabet.length;i++) baseReverseDic[alphabet][alphabet.charAt(i)] = i; }
+        return baseReverseDic[alphabet][character];
+      }
+      function _compress(uncompressed, bitsPerChar, getCharFromInt){
+        if (uncompressed == null) return "";
+        var i, value, context_dictionary = {}, context_dictionaryToCreate = {}, context_c = "", context_wc = "", context_w = "",
+            context_enlargeIn = 2, context_dictSize = 3, context_numBits = 2, context_data = [], context_data_val = 0, context_data_position = 0, ii;
+        for (ii = 0; ii < uncompressed.length; ii += 1) {
+          context_c = uncompressed.charAt(ii);
+          if (!Object.prototype.hasOwnProperty.call(context_dictionary, context_c)) { context_dictionary[context_c] = context_dictSize++; context_dictionaryToCreate[context_c] = true; }
+          context_wc = context_w + context_c;
+          if (Object.prototype.hasOwnProperty.call(context_dictionary, context_wc)) { context_w = context_wc; }
+          else {
+            if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+              if (context_w.charCodeAt(0) < 256) {
+                for (i = 0; i < context_numBits; i++) { context_data_val = (context_data_val << 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } }
+                value = context_w.charCodeAt(0);
+                for (i = 0; i < 8; i++) { context_data_val = (context_data_val << 1) | (value & 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = value >> 1; }
+              } else {
+                value = 1;
+                for (i = 0; i < context_numBits; i++) { context_data_val = (context_data_val << 1) | value; if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = 0; }
+                value = context_w.charCodeAt(0);
+                for (i = 0; i < 16; i++) { context_data_val = (context_data_val << 1) | (value & 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = value >> 1; }
+              }
+              context_enlargeIn--; if (context_enlargeIn == 0) { context_enlargeIn = Math.pow(2, context_numBits); context_numBits++; }
+              delete context_dictionaryToCreate[context_w];
+            } else {
+              value = context_dictionary[context_w];
+              for (i = 0; i < context_numBits; i++) { context_data_val = (context_data_val << 1) | (value & 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = value >> 1; }
+            }
+            context_enlargeIn--; if (context_enlargeIn == 0) { context_enlargeIn = Math.pow(2, context_numBits); context_numBits++; }
+            context_dictionary[context_wc] = context_dictSize++; context_w = String(context_c);
+          }
+        }
+        if (context_w !== "") {
+          if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate, context_w)) {
+            if (context_w.charCodeAt(0) < 256) {
+              for (i = 0; i < context_numBits; i++) { context_data_val = (context_data_val << 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } }
+              value = context_w.charCodeAt(0);
+              for (i = 0; i < 8; i++) { context_data_val = (context_data_val << 1) | (value & 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = value >> 1; }
+            } else {
+              value = 1;
+              for (i = 0; i < context_numBits; i++) { context_data_val = (context_data_val << 1) | value; if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = 0; }
+              value = context_w.charCodeAt(0);
+              for (i = 0; i < 16; i++) { context_data_val = (context_data_val << 1) | (value & 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = value >> 1; }
+            }
+            context_enlargeIn--; if (context_enlargeIn == 0) { context_enlargeIn = Math.pow(2, context_numBits); context_numBits++; }
+            delete context_dictionaryToCreate[context_w];
+          } else {
+            value = context_dictionary[context_w];
+            for (i = 0; i < context_numBits; i++) { context_data_val = (context_data_val << 1) | (value & 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = value >> 1; }
+          }
+          context_enlargeIn--; if (context_enlargeIn == 0) { context_enlargeIn = Math.pow(2, context_numBits); context_numBits++; }
+        }
+        value = 2;
+        for (i = 0; i < context_numBits; i++) { context_data_val = (context_data_val << 1) | (value & 1); if (context_data_position == bitsPerChar-1) { context_data_position = 0; context_data.push(getCharFromInt(context_data_val)); context_data_val = 0; } else { context_data_position++; } value = value >> 1; }
+        while (true) { context_data_val = (context_data_val << 1); if (context_data_position == bitsPerChar-1) { context_data.push(getCharFromInt(context_data_val)); break; } else context_data_position++; }
+        return context_data.join('');
+      }
+      function _decompress(length, resetValue, getNextValue){
+        var dictionary = [], next, enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [], i, w, bits, resb, maxpower, power, c,
+            data = { val: getNextValue(0), position: resetValue, index: 1 };
+        for (i = 0; i < 3; i += 1) dictionary[i] = i;
+        bits = 0; maxpower = Math.pow(2, 2); power = 1;
+        while (power != maxpower) { resb = data.val & data.position; data.position >>= 1; if (data.position == 0) { data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb > 0 ? 1 : 0) * power; power <<= 1; }
+        switch (next = bits) {
+          case 0: bits = 0; maxpower = Math.pow(2, 8); power = 1; while (power != maxpower) { resb = data.val & data.position; data.position >>= 1; if (data.position == 0) { data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb > 0 ? 1 : 0) * power; power <<= 1; } c = f(bits); break;
+          case 1: bits = 0; maxpower = Math.pow(2, 16); power = 1; while (power != maxpower) { resb = data.val & data.position; data.position >>= 1; if (data.position == 0) { data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb > 0 ? 1 : 0) * power; power <<= 1; } c = f(bits); break;
+          case 2: return "";
+        }
+        dictionary[3] = c; w = c; result.push(c);
+        while (true) {
+          if (data.index > length) return "";
+          bits = 0; maxpower = Math.pow(2, numBits); power = 1;
+          while (power != maxpower) { resb = data.val & data.position; data.position >>= 1; if (data.position == 0) { data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb > 0 ? 1 : 0) * power; power <<= 1; }
+          switch (c = bits) {
+            case 0: bits = 0; maxpower = Math.pow(2, 8); power = 1; while (power != maxpower) { resb = data.val & data.position; data.position >>= 1; if (data.position == 0) { data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb > 0 ? 1 : 0) * power; power <<= 1; } dictionary[dictSize++] = f(bits); c = dictSize - 1; enlargeIn--; break;
+            case 1: bits = 0; maxpower = Math.pow(2, 16); power = 1; while (power != maxpower) { resb = data.val & data.position; data.position >>= 1; if (data.position == 0) { data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb > 0 ? 1 : 0) * power; power <<= 1; } dictionary[dictSize++] = f(bits); c = dictSize - 1; enlargeIn--; break;
+            case 2: return result.join('');
+          }
+          if (enlargeIn == 0) { enlargeIn = Math.pow(2, numBits); numBits++; }
+          if (dictionary[c]) { entry = dictionary[c]; } else { if (c === dictSize) { entry = w + w.charAt(0); } else { return null; } }
+          result.push(entry);
+          dictionary[dictSize++] = w + entry.charAt(0);
+          enlargeIn--; w = entry;
+          if (enlargeIn == 0) { enlargeIn = Math.pow(2, numBits); numBits++; }
+        }
+      }
+      return {
+        compressToEncodedURIComponent: function(input){ if (input == null) return ""; return _compress(input, 6, function(a){ return keyStrUriSafe.charAt(a); }); },
+        decompressFromEncodedURIComponent: function(input){ if (input == null) return ""; if (input == "") return null; input = input.replace(/ /g, "+"); return _decompress(input.length, 32, function(index){ return getBaseValue(keyStrUriSafe, input.charAt(index)); }); }
+      };
+    })();
 
     // ----- light / dark theme toggle (early head script already set data-theme) -----
     (function(){
@@ -2245,6 +2351,52 @@ setupFn
       setBlocks(blocksEl, toBlocks(cfg));
       update();
     }
+
+    // ---------- shareable draft link ----------
+    // Encode the full form state into a #t=… hash so a teacher can bookmark / self-email it
+    // and reopen on any device to keep editing. Uploaded logo image + MailerLite webhook are
+    // stripped (too big for a URL / admin-private); a pasted logo URL is kept.
+    function configToLink(){
+      const cfg = readConfig();
+      cfg.logoData = '';
+      cfg.webhook = '';
+      const packed = LZString.compressToEncodedURIComponent(JSON.stringify(cfg));
+      return location.origin + location.pathname + '#t=' + packed;
+    }
+    // Restore every field from a decoded config (superset of applyConfig — also follow-ups,
+    // personalize, tracking). Mirrors the reset handler's field list.
+    function loadConfigFromLink(cfg){
+      if (!cfg || typeof cfg !== 'object') return;
+      applyConfig(cfg);  // subject, sender/phone/website, logo(URL), attach, font, accent, main blocks
+      // personalize + columns
+      personalizeEl.checked = !!cfg.personalize;
+      nameRevealEl.classList.toggle('show', !!cfg.personalize);
+      if (cfg.nameColumn != null && !isNaN(cfg.nameColumn)) nameColEl.value = String(cfg.nameColumn);
+      if (cfg.emailColumn != null && !isNaN(cfg.emailColumn)) emailColEl.value = String(cfg.emailColumn);
+      // click tracking
+      trackEl.checked = !!cfg.trackClicks;
+      trackRevealEl.classList.toggle('show', !!cfg.trackClicks);
+      campaignEl.value = cfg.campaign || '';
+      // follow-ups
+      const f1 = cfg.followUp1 || {}, f2 = cfg.followUp2 || {};
+      followUpEl.checked = !!f1.enabled;
+      followUp2El.checked = !!(f1.enabled && f2.enabled);
+      followRevealEl.classList.toggle('show', !!f1.enabled);
+      fu2Block.style.display = (followUpEl.checked && followUp2El.checked) ? 'block' : 'none';
+      if (f1.days != null) fu1.days.value = String(f1.days);
+      if (f1.cond) fu1.cond.value = f1.cond;
+      fu1.subject.value = f1.subject || '';
+      setBlocks(fu1.blocks, (f1.blocks && f1.blocks.length) ? f1.blocks : [{ type:'text', content:'' }]);
+      if (f2.days != null) fu2.days.value = String(f2.days);
+      if (f2.cond) fu2.cond.value = f2.cond;
+      fu2.subject.value = f2.subject || '';
+      setBlocks(fu2.blocks, (f2.blocks && f2.blocks.length) ? f2.blocks : [{ type:'text', content:'' }]);
+      // reveal advanced/follow-up panels so restored settings are visible
+      if (cfg.trackClicks || cfg.personalize) { const fa = $('foldAdvanced'); if (fa) fa.setAttribute('open',''); }
+      if (f1.enabled) { const ff = $('foldFollow'); if (ff) ff.setAttribute('open',''); }
+      update();
+    }
+
     templateEl.addEventListener('change', () => {
       const v = templateEl.value;
       if (v.indexOf('saved:') === 0) { const cfg = getMyTpls()[v.slice(6)]; if (cfg) applyConfig(cfg); return; }
@@ -2266,6 +2418,13 @@ setupFn
       if (v.indexOf('saved:') !== 0) { alert('בחרו קודם תבנית שלכם מהרשימה'); return; }
       const name = v.slice(6); if (!confirm('למחוק את התבנית "' + name + '"?')) return;
       const o = getMyTpls(); delete o[name]; setMyTpls(o); refreshMyTpls(); templateEl.value = '';
+    });
+    $('saveLinkBtn').addEventListener('click', async () => {
+      let link;
+      try { link = configToLink(); } catch(_){ alert('לא הצלחנו ליצור קישור'); return; }
+      const note = logoData ? ' (לוגו שהעליתם כקובץ אינו נכלל — השתמשו בקישור לתמונה כדי שיישמר)' : '';
+      try { await navigator.clipboard.writeText(link); showToast('🔗 הקישור הועתק — שמרו אותו כדי לחזור ולערוך' + note); }
+      catch(_) { prompt('העתיקו את הקישור לשמירה' + note + ':', link); }
     });
     refreshMyTpls();
 
@@ -2312,7 +2471,7 @@ setupFn
       setBlocks(fu2.blocks, [{ type:'text', content:'' }]);
       pvMode = 'main';
       setBlocks(blocksEl, defaultMainBlocks());
-      if (ADMIN) { senderEl.value = 'עומרי אירם'; phoneEl.value = '052-512-1007'; websiteEl.value = 'omri-iram.co.il'; }
+      if (ADMIN) { senderEl.value = ADMIN_DEFAULTS.sender; phoneEl.value = ADMIN_DEFAULTS.phone; websiteEl.value = ADMIN_DEFAULTS.website; }
       update();
     });
 
@@ -2363,9 +2522,9 @@ setupFn
     } catch(_){}
     if (ADMIN) {
       mlSection.style.display = 'block';
-      if (!senderEl.value)  senderEl.value  = 'עומרי אירם';
-      if (!phoneEl.value)   phoneEl.value   = '052-512-1007';
-      if (!websiteEl.value) websiteEl.value = 'omri-iram.co.il';
+      if (!senderEl.value)  senderEl.value  = ADMIN_DEFAULTS.sender;
+      if (!phoneEl.value)   phoneEl.value   = ADMIN_DEFAULTS.phone;
+      if (!websiteEl.value) websiteEl.value = ADMIN_DEFAULTS.website;
     }
     // hidden admin unlock here too (triple-click the "הכלים של עומרי אירם" kicker)
     (function(){
@@ -2379,6 +2538,12 @@ setupFn
           else if (v !== null) { alert('קוד שגוי'); }
         }
       });
+    })();
+    // restore a shared draft from the URL (#t=…), if present
+    (function(){
+      var m = location.hash.match(/^#t=(.+)$/);
+      if (!m) return;
+      try { loadConfigFromLink(JSON.parse(LZString.decompressFromEncodedURIComponent(m[1]))); } catch(_){}
     })();
     update();
   </script>
