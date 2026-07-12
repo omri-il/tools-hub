@@ -91,7 +91,10 @@
     html { scroll-behavior: smooth; }
     body, .sheet, .act, input, textarea, select, pre.code, details.guide, details.fold,
     .block-card, .btn-item, .fu-block, .preview-desk, .icon-trigger {
-      transition: background-color .28s ease, border-color .28s ease, color .28s ease, box-shadow .28s ease;
+      /* background-color intentionally excluded: transitioning it alongside a var()-driven
+         `background` shorthand (e.g. .act-primary) makes Chromium permanently freeze the
+         painted color after the first theme switch — background changes apply instantly instead. */
+      transition: border-color .28s ease, color .28s ease, box-shadow .28s ease;
     }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     body {
@@ -387,6 +390,27 @@
 
     .divider { border: none; border-top: 1px solid var(--line-soft); margin: 22px 0; }
 
+    /* shareable draft-link panel */
+    .save-link-panel {
+      background: rgba(244,181,63,0.08); border: 1px solid var(--line);
+      border-radius: 14px; padding: 16px 18px; margin-bottom: 22px;
+    }
+    .slp-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .slp-icon { font-size: 1.7rem; line-height: 1; flex: 0 0 auto; }
+    .slp-text { flex: 1 1 220px; }
+    .slp-title { font-weight: 700; font-size: 0.98rem; color: var(--ink); }
+    .slp-sub { font-size: 0.82rem; color: var(--ink-soft); margin-top: 3px; line-height: 1.5; }
+    .slp-row { display: flex; gap: 8px; margin-top: 13px; flex-wrap: wrap; }
+    .slp-row input {
+      flex: 1 1 220px; font-size: 0.8rem; padding: 9px 12px; color: var(--ink-soft);
+      background: var(--field-bg); border: 1px solid var(--line); border-radius: 10px;
+    }
+    .slp-row .act { padding: 9px 16px; font-size: 0.82rem; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; }
+    @media (max-width: 560px) {
+      .slp-top { flex-direction: column; align-items: stretch; text-align: center; }
+      .slp-top #saveLinkBtn { width: 100%; justify-content: center; }
+    }
+
     /* foldable sections inside the form */
     details.fold {
       border: 1px solid var(--line); border-radius: 12px; margin-top: 14px;
@@ -431,7 +455,11 @@
     .code-actions { display: flex; gap: 9px; }
     .act {
       font-family: var(--sans); font-weight: 700; border: 1px solid transparent; border-radius: 10px; cursor: pointer;
-      padding: 11px 18px; font-size: 0.9rem; transition: background .18s, transform .1s, border-color .18s, color .18s;
+      padding: 11px 18px; font-size: 0.9rem;
+      /* no `background` here: transitioning it while .act-primary's background is var(--accent)-driven
+         makes the color permanently freeze after a dark/light switch (Chromium quirk) — see the shared
+         transition rule above for details. Hover still fades via border-color/color. */
+      transition: transform .1s, border-color .18s, color .18s;
     }
     .act:active { transform: translateY(1px); }
     .act-primary { background: var(--accent); color: var(--on-accent); }
@@ -503,6 +531,22 @@
           <button id="resetAll" type="button" class="act act-ghost" style="margin-inline-start:auto;padding:6px 13px;font-size:0.8rem;">↺ אפס הכול</button>
         </div>
 
+        <div class="save-link-panel" id="saveLinkPanel">
+          <div class="slp-top">
+            <div class="slp-icon">🔗</div>
+            <div class="slp-text">
+              <div class="slp-title">שמרו קישור לעבודה שלכם</div>
+              <div class="slp-sub">קישור אחד שפותח את הטיוטה המלאה שלכם — בכל מחשב, בכל דפדפן, בכל זמן.</div>
+            </div>
+            <button id="saveLinkBtn" type="button" class="act act-primary" style="white-space:nowrap;">🔗 צור קישור לשמירה</button>
+          </div>
+          <div class="slp-row" id="slpRow" style="display:none;">
+            <input type="text" id="slpLinkOut" dir="ltr" readonly aria-label="קישור לשמירה" />
+            <button id="slpCopyBtn" type="button" class="act act-ghost">העתק</button>
+            <a id="slpEmailBtn" class="act act-ghost" href="#" target="_blank" rel="noopener">📧 שלח לעצמי במייל</a>
+          </div>
+        </div>
+
         <div class="field">
           <label for="template">התחל מתבנית <span class="hint">— ממלא נושא, גוף וכפתורים</span></label>
           <div style="display:flex;gap:8px;align-items:stretch;">
@@ -516,10 +560,6 @@
             </select>
             <button id="saveTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 14px;font-size:0.82rem;" title="שומר תבנית במחשב הזה בלבד — לא תופיע במחשב אחר">💾 שמור במחשב הזה</button>
             <button id="delTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 12px;font-size:0.82rem;" title="מחק את התבנית הנבחרת">🗑</button>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px;">
-            <button id="saveLinkBtn" type="button" class="act act-ghost" style="white-space:nowrap;padding:8px 14px;font-size:0.82rem;" title="קישור שעובד בכל מחשב ודפדפן">🔗 שמור כקישור (לכל מחשב)</button>
-            <span class="hint" style="flex:1;min-width:150px;">פתחו את הקישור בכל מחשב או דפדפן כדי להמשיך לערוך בדיוק מאותה נקודה.</span>
           </div>
         </div>
 
@@ -2422,9 +2462,28 @@ setupFn
     $('saveLinkBtn').addEventListener('click', async () => {
       let link;
       try { link = configToLink(); } catch(_){ alert('לא הצלחנו ליצור קישור'); return; }
+      const linkOut = $('slpLinkOut'), row = $('slpRow'), emailBtn = $('slpEmailBtn');
+      linkOut.value = link;
+      row.style.display = 'flex';
+      const subj = encodeURIComponent('הטיוטה שלי — מחולל אימייל אוטומטי');
+      const body = encodeURIComponent(
+        'קישור לטיוטה שלי — פותח אותה בדיוק במקום שהפסקתי, בכל מחשב:\n\n' + link +
+        '\n\nנוצר בכלי של עומרי אירם: https://tools.omri-iram.co.il/email-generator/'
+      );
+      emailBtn.href = 'mailto:?subject=' + subj + '&body=' + body;
       const note = logoData ? ' (לוגו שהעליתם כקובץ אינו נכלל — השתמשו בקישור לתמונה כדי שיישמר)' : '';
-      try { await navigator.clipboard.writeText(link); showToast('🔗 הקישור הועתק — שמרו אותו כדי לחזור ולערוך' + note); }
-      catch(_) { prompt('העתיקו את הקישור לשמירה' + note + ':', link); }
+      try { await navigator.clipboard.writeText(link); showToast('🔗 הקישור נוצר והועתק' + note); }
+      catch(_) { showToast('🔗 הקישור נוצר — העתיקו אותו מהתיבה למטה' + note); }
+      linkOut.focus(); linkOut.select();
+    });
+    $('slpCopyBtn').addEventListener('click', async () => {
+      const linkOut = $('slpLinkOut');
+      try { await navigator.clipboard.writeText(linkOut.value); showToast('הקישור הועתק'); }
+      catch(_) {
+        linkOut.focus(); linkOut.select();
+        try { document.execCommand('copy'); showToast('הקישור הועתק'); }
+        catch(_2) { alert('העתיקו את הקישור ידנית מהתיבה'); }
+      }
     });
     refreshMyTpls();
 
