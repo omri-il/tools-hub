@@ -1550,9 +1550,11 @@
           '  return HtmlService.createHtmlOutput(\n' +
           '    \'<!doctype html><meta charset="utf-8">\' +\n' +
           '    \'<meta http-equiv="refresh" content="0;url=\' + safe + \'">\' +\n' +
-          '    \'<script>location.replace(\' + JSON.stringify(safe) + \');<\\/script>\' +\n' +
+          // דף התוצאה של Apps Script רץ בתוך iframe מוגן — location.replace רגיל מנווט
+          // רק את ה-iframe, לא את חלון הדפדפן, ולכן חייבים לפרוץ במפורש ל-top.
+          '    \'<script>try{ window.top.location.replace(\' + JSON.stringify(safe) + \'); }catch(e){ location.replace(\' + JSON.stringify(safe) + \'); }<\\/script>\' +\n' +
           '    \'<p style="font-family:sans-serif;text-align:center;margin-top:40px">מעביר… \' +\n' +
-          '    \'אם לא הועברתם — <a href="\' + safe + \'">המשך ליעד</a></p>\'\n' +
+          '    \'אם לא הועברתם — <a href="\' + safe + \'" target="_top">המשך ליעד</a></p>\'\n' +
           '  );\n' +
           '}'
         : '';
