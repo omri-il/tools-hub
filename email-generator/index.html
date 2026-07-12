@@ -615,7 +615,7 @@
           <div class="reveal" id="trackReveal">
             <label for="campaign" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">שם הקמפיין <span class="hint">— מבדיל בין מיילים שונים באותו גיליון</span></label>
             <input type="text" id="campaign" placeholder="לדוגמה: סדנת AI מאי" />
-            <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, ייכתב לגיליון בלשונית <code>Clicks</code> (נמען · קישור · זמן), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App — ההוראות יופיעו מתחת לקוד.</p>
+            <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, והלחיצה תירשם ב<strong>עמודות מעקב לצד תשובות הטופס</strong> (לחצו? · כפתור אחרון + זמן · מספר לחיצות), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת — ההוראות יופיעו מתחת לקוד.</p>
           </div>
         </div>
 
@@ -750,7 +750,7 @@
       </details>
 
       <div id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
-        <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר יוצרת עבורכם את לשונית <code>Clicks</code> (זמן · קמפיין · נמען · כפתור · קישור). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
+        <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר מוסיפה עבורכם <strong>עמודות מעקב לצד תשובות הטופס</strong> (לחצו? · כפתור אחרון + זמן · מספר לחיצות). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
         <ol style="margin:0;padding-inline-start:22px;line-height:2;">
           <li>למעלה מימין לחצו על הכפתור <code>Deploy</code>.</li>
           <li>בתפריט שנפתח בחרו <code>New deployment</code>.</li>
@@ -758,9 +758,13 @@
           <li>בשדה <code>Execute as</code> בחרו <code>Me</code> (זה אתם).</li>
           <li>בשדה <code>Who has access</code> בחרו <code>Anyone</code> (כל אחד).</li>
           <li>לחצו על <code>Deploy</code>, ואם תתבקשו — אשרו את ההרשאות.</li>
-          <li>חזרו לעורך והריצו שוב את <code>setup</code> — אמורה להופיע ההודעה "✅ מעקב קליקים פעיל".</li>
+          <li>תופיע כתובת <strong>Web app URL</strong> שמסתיימת ב-<code>/exec</code> — לחצו <code>Copy</code> כדי להעתיק אותה.</li>
+          <li>חזרו לעורך, הדביקו את הכתובת בין המרכאות בשורה <code>var WEBAPP_URL = "";</code> שבראש הקוד, ולחצו 💾 לשמירה.</li>
+          <li>הריצו שוב את <code>setup</code> — אמורה להופיע ההודעה "✅ מעקב קליקים פעיל".</li>
         </ol>
-        <p style="margin-top:10px;font-size:0.85rem;color:var(--ink-faint);">💡 זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד — לכן צריך את הלחיצות האלה פעם אחת.</p>
+        <p style="margin-top:10px;font-size:0.85rem;color:var(--ink-faint);">💡 זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד — לכן צריך את הלחיצות האלה פעם אחת.<br>
+        🔁 אם בעתיד תשנו את הקוד — פרסמו <strong>גרסה חדשה</strong> (Deploy ← Manage deployments ← ✏️ ← New version), אחרת הקוד הישן ימשיך לרוץ.<br>
+        ℹ️ מייל הבדיקה שנשלח אליכם עשוי להוסיף בגיליון שורה אחת בתחתית עם האימייל שלכם — זה תקין.</p>
       </div>
 
       <p id="followUpNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
@@ -1462,40 +1466,90 @@
         : '  // אין תמונות מוטמעות בגוף המייל';
 
       // When tracking is on, button links are wrapped through this script's own
-      // web-app URL so each click is logged to a "Clicks" sheet, then forwarded.
+      // web-app URL so each click is logged beside the person's response row, then forwarded.
       const hrefJs = trackOn ? 'trackedLink_(b.url, recipientEmail, label)' : 'b.url';
 
       const trackHeader = trackOn
         ? '\n// ===== מעקב קליקים =====\n' +
-          'var CAMPAIGN = ' + JSON.stringify(cfg.campaign || 'default') + ';  // שם הקמפיין (עמודה בגיליון Clicks)\n' +
+          'var WEBAPP_URL = "";  // ← אחרי פרסום כ-Web App: הדביקו כאן את הכתובת שמסתיימת ב-/exec\n' +
+          'var CAMPAIGN = ' + JSON.stringify(cfg.campaign || 'default') + ';  // שם הקמפיין (ללוג בלבד)\n' +
           '// =======================\n'
         : '';
 
       const trackedFn = trackOn
-        ? '\n\nfunction trackedLink_(url, recipient, label) {\n' +
+        ? '\n\n// כתובת ה-/exec של ה-Web App: קודם מה שהדבקתם ב-WEBAPP_URL, אחרת זיהוי אוטומטי — ורק אם מסתיים ב-/exec.\n' +
+          'function _webAppBase_() {\n' +
+          '  if (WEBAPP_URL && /\\/exec$/.test(WEBAPP_URL)) return WEBAPP_URL;\n' +
+          '  try { var u = ScriptApp.getService().getUrl(); if (u && /\\/exec$/.test(u)) return u; } catch (e) {}\n' +
+          '  return "";\n' +
+          '}\n' +
+          '\n' +
+          'function trackedLink_(url, recipient, label) {\n' +
           '  try {\n' +
-          '    var base = ScriptApp.getService().getUrl();  // כתובת ה-Web App של הסקריפט הזה\n' +
-          '    if (!base) return url;  // עוד לא פורסם כ-Web App\n' +
-          '    return base + "?c=" + encodeURIComponent(CAMPAIGN) +\n' +
-          '      "&r=" + encodeURIComponent(recipient || "") + "&l=" + encodeURIComponent(label || "") + "&u=" + encodeURIComponent(url);\n' +
+          '    var base = _webAppBase_();\n' +
+          '    if (!base) return url;  // אין כתובת /exec תקינה — הקישור עובד ישירות (בלי מעקב)\n' +
+          '    return base + "?r=" + encodeURIComponent(recipient || "") +\n' +
+          '      "&l=" + encodeURIComponent(label || "") + "&u=" + encodeURIComponent(url);\n' +
           '  } catch (e) { return url; }\n' +
           '}\n' +
           '\n' +
-          '// נקרא כשנמען לוחץ על קישור: רושם שורה בגיליון Clicks (כולל שם הכפתור) ומעביר ליעד.\n' +
+          '// מוצא (או יוצר) את שלוש עמודות המעקב מימין לתשובות הטופס; מחזיר מספרי עמודות (1-based).\n' +
+          'function _clickCols_(sheet) {\n' +
+          '  var NAMES = ["לחצו?", "כפתור אחרון + זמן", "מספר לחיצות"];\n' +
+          '  var lastCol = sheet.getLastColumn();\n' +
+          '  var head = lastCol ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];\n' +
+          '  function findOrAdd(name) {\n' +
+          '    for (var i = 0; i < head.length; i++) { if (String(head[i]).trim() === name) return i + 1; }\n' +
+          '    lastCol += 1; sheet.getRange(1, lastCol).setValue(name); head.push(name); return lastCol;\n' +
+          '  }\n' +
+          '  return { clicked: findOrAdd(NAMES[0]), last: findOrAdd(NAMES[1]), count: findOrAdd(NAMES[2]) };\n' +
+          '}\n' +
+          '\n' +
+          '// רושם לחיצה: מאתר את שורת הנמען לפי אימייל ומעדכן את 3 התאים (עם נעילה לריבוי לחיצות).\n' +
+          'function _recordClick_(email, label) {\n' +
+          '  if (!email) return;\n' +
+          '  var lock = LockService.getScriptLock();\n' +
+          '  try { lock.waitLock(5000); } catch (e) { return; }\n' +
+          '  try {\n' +
+          '    var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
+          '    var sheet = getResponsesSheet_(ss);\n' +
+          '    if (!sheet) return;\n' +
+          '    var cols = _clickCols_(sheet);\n' +
+          '    var last = sheet.getLastRow();\n' +
+          '    var emailCol = EMAIL_COLUMN + 1;        // אינדקס 0-based → מספר עמודה 1-based\n' +
+          '    var target = 0;\n' +
+          '    if (last >= 2) {\n' +
+          '      var emails = sheet.getRange(2, emailCol, last - 1, 1).getValues();\n' +
+          '      var key = String(email).trim().toLowerCase();\n' +
+          '      for (var i = 0; i < emails.length; i++) {\n' +
+          '        if (String(emails[i][0]).trim().toLowerCase() === key) { target = i + 2; break; }\n' +
+          '      }\n' +
+          '    }\n' +
+          '    var when = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM HH:mm");\n' +
+          '    var stamp = (label || "קישור") + " · " + when;\n' +
+          '    if (!target) {                          // הנמען לא נמצא בתגובות — שורה חדשה בתחתית\n' +
+          '      target = last + 1;\n' +
+          '      sheet.getRange(target, emailCol).setValue(email);\n' +
+          '    }\n' +
+          '    var cur = Number(sheet.getRange(target, cols.count).getValue()) || 0;\n' +
+          '    sheet.getRange(target, cols.clicked).setValue("✓");\n' +
+          '    sheet.getRange(target, cols.last).setValue(stamp);\n' +
+          '    sheet.getRange(target, cols.count).setValue(cur + 1);\n' +
+          '  } finally { try { lock.releaseLock(); } catch (e) {} }\n' +
+          '}\n' +
+          '\n' +
+          '// נקרא כשנמען לוחץ על קישור: רושם את הלחיצה לצד שורת הנמען בגיליון התגובות ומעביר ליעד.\n' +
           'function doGet(e) {\n' +
           '  var p = (e && e.parameter) || {};\n' +
           '  var url = p.u || "";\n' +
-          '  try {\n' +
-          '    var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
-          '    var sheet = ss.getSheetByName("Clicks") || ss.insertSheet("Clicks");\n' +
-          '    if (sheet.getLastRow() === 0) sheet.appendRow(["זמן", "קמפיין", "נמען", "כפתור", "קישור"]);\n' +
-          '    sheet.appendRow([new Date(), p.c || "", p.r || "", p.l || "", url]);\n' +
-          '  } catch (err) {}\n' +
+          '  try { _recordClick_(p.r || "", p.l || ""); } catch (err) {}\n' +
           '  var safe = /^https?:\\/\\//i.test(url) ? url : (url ? "https://" + url.replace(/^\\/+/, "") : "https://omri-iram.co.il");\n' +
           '  return HtmlService.createHtmlOutput(\n' +
           '    \'<!doctype html><meta charset="utf-8">\' +\n' +
+          '    \'<meta http-equiv="refresh" content="0;url=\' + safe + \'">\' +\n' +
           '    \'<script>location.replace(\' + JSON.stringify(safe) + \');<\\/script>\' +\n' +
-          '    \'<meta http-equiv="refresh" content="0;url=\' + safe + \'">מעביר…\'\n' +
+          '    \'<p style="font-family:sans-serif;text-align:center;margin-top:40px">מעביר… \' +\n' +
+          '    \'אם לא הועברתם — <a href="\' + safe + \'">המשך ליעד</a></p>\'\n' +
           '  );\n' +
           '}'
         : '';
@@ -1559,17 +1613,6 @@ fuConfigItems.join(',\n') + '\n' +
 '  return null;\n' +
 '}\n' +
 '\n' +
-'// מחזיר את גיליון תגובות הטופס (מדלג על Clicks ו-FollowUps)\n' +
-'function getResponsesSheet_(ss) {\n' +
-'  var sheets = ss.getSheets();\n' +
-'  for (var i = 0; i < sheets.length; i++) {\n' +
-'    var sn = sheets[i].getName();\n' +
-'    if (sn === "Clicks" || sn === "FollowUps") continue;\n' +
-'    return sheets[i];\n' +
-'  }\n' +
-'  return null;\n' +
-'}\n' +
-'\n' +
 'function sendFollowUps() {\n' +
 '  var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
 '  var resp = getResponsesSheet_(ss);\n' +
@@ -1598,10 +1641,11 @@ fuConfigItems.join(',\n') + '\n' +
 '  for (var s = 1; s < sentRows.length; s++) { sent[String(sentRows[s][1]).toLowerCase() + "|" + sentRows[s][2]] = true; }\n' +
 '\n' +
 '  var clicked = {};\n' +
-'  var clickSheet = ss.getSheetByName("Clicks");\n' +
-'  if (clickSheet) {\n' +
-'    var cv = clickSheet.getDataRange().getValues();\n' +
-'    for (var c = 1; c < cv.length; c++) { if (cv[c][2]) clicked[String(cv[c][2]).toLowerCase()] = true; }\n' +
+'  var clickedIdx = data[0].indexOf("לחצו?");\n' +
+'  if (clickedIdx !== -1) {\n' +
+'    for (var c = 1; c < data.length; c++) {\n' +
+'      if (data[c][EMAIL_COLUMN] && data[c][clickedIdx]) clicked[String(data[c][EMAIL_COLUMN]).toLowerCase()] = true;\n' +
+'    }\n' +
 '  }\n' +
 '\n' +
 '  var now = new Date();\n' +
@@ -1645,16 +1689,31 @@ fuConfigItems.join(',\n') + '\n' +
 '}\n'
       );
 
+      // getResponsesSheet_ is shared by click-tracking and follow-ups; emit it exactly
+      // once whenever either feature is on (skips a stray old "Clicks"/"FollowUps" tab).
+      const responsesSheetFn = (trackOn || fuOn)
+        ? '\n\n\n' +
+          '// מחזיר את גיליון תגובות הטופס (מדלג על Clicks ו-FollowUps)\n' +
+          'function getResponsesSheet_(ss) {\n' +
+          '  var sheets = ss.getSheets();\n' +
+          '  for (var i = 0; i < sheets.length; i++) {\n' +
+          '    var sn = sheets[i].getName();\n' +
+          '    if (sn === "Clicks" || sn === "FollowUps") continue;\n' +
+          '    return sheets[i];\n' +
+          '  }\n' +
+          '  return null;\n' +
+          '}'
+        : '';
+
       // ----- one-click installer: setup() -----
       // Always generated. Auto-creates the form-submit trigger + (when relevant) the
-      // Clicks columns, the daily follow-up trigger + baseline, sends a test email, and
-      // reports whether the Web App is deployed. Idempotent — safe to re-run.
+      // click-tracking columns beside the responses, the daily follow-up trigger + baseline,
+      // sends a test email, and reports whether the Web App is deployed. Idempotent — safe to re-run.
       const setupClicks = trackOn
-        ? '  // לשונית Clicks — יוצרים את העמודות מראש (לא מחכים ללחיצה הראשונה)\n' +
-          '  var clk = ss.getSheetByName("Clicks");\n' +
-          '  if (!clk) clk = ss.insertSheet("Clicks");\n' +
-          '  if (clk.getLastRow() === 0) clk.appendRow(["זמן", "קמפיין", "נמען", "כפתור", "קישור"]);\n' +
-          '  msg.push("✅ לשונית Clicks מוכנה: זמן · קמפיין · נמען · כפתור · קישור");\n' +
+        ? '  // עמודות מעקב קליקים — יוצרים אותן מראש לצד תשובות הטופס (לא מחכים ללחיצה הראשונה)\n' +
+          '  var _rs = getResponsesSheet_(ss);\n' +
+          '  if (_rs) { _clickCols_(_rs); msg.push("✅ עמודות מעקב קליקים נוספו לצד תשובות הטופס"); }\n' +
+          '  else msg.push("⚠️ לא נמצא גיליון תגובות — ודאו שהסקריפט פתוח מהגיליון המחובר לטופס");\n' +
           '\n'
         : '';
 
@@ -1667,11 +1726,9 @@ fuConfigItems.join(',\n') + '\n' +
         : '';
 
       const setupTrackStatus = trackOn
-        ? '  // האם הסקריפט כבר פורסם כ-Web App? (חובה כדי שמעקב הקליקים ירשום נתונים)\n' +
-          '  var wa = "";\n' +
-          '  try { wa = ScriptApp.getService().getUrl(); } catch (e) {}\n' +
-          '  if (wa) msg.push("✅ מעקב קליקים פעיל — הכול מוכן!");\n' +
-          '  else msg.push("⚠️ נשאר צעד אחרון למעקב קליקים — פרסמו כ-Web App:\\nDeploy ← New deployment ← Web app ← Execute as: Me ← Who has access: Anyone ← Deploy");\n' +
+        ? '  // האם קיימת כתובת /exec תקינה? (חובה כדי שמעקב הקליקים ירשום נתונים)\n' +
+          '  if (_webAppBase_()) msg.push("✅ מעקב קליקים פעיל — הכול מוכן!");\n' +
+          '  else msg.push("⚠️ נשאר צעד אחרון למעקב קליקים:\\nDeploy ← New deployment ← Web app ← Execute as: Me ← Who has access: Anyone ← Deploy,\\nואז העתיקו את כתובת ה-/exec, הדביקו אותה בשורה WEBAPP_URL בראש הקוד, והריצו שוב setup");\n' +
           '\n'
         : '';
 
@@ -1683,7 +1740,7 @@ fuConfigItems.join(',\n') + '\n' +
 '\n\n\n' +
 '// ====================================================\n' +
 '//  התקנה בלחיצה אחת — הריצו פעם אחת את setup\n' +
-'//  יוצר את הטריגר' + (fuOn ? 'ים' : '') + (trackOn ? ' + לשונית Clicks' : '') + ', שולח מייל בדיקה, ומאשר הרשאות.\n' +
+'//  יוצר את הטריגר' + (fuOn ? 'ים' : '') + (trackOn ? ' + עמודות מעקב' : '') + ', שולח מייל בדיקה, ומאשר הרשאות.\n' +
 '//  אפשר להריץ שוב בכל עת — לא ייווצרו כפילויות.\n' +
 '// ====================================================\n' +
 'function setup() {\n' +
@@ -1704,7 +1761,7 @@ setupFollow +
 '  msg.push("✅ מייל בדיקה נשלח אליכם — בדקו את תיבת הדואר");\n' +
 '\n' +
 setupTrackStatus +
-'  Browser.msgBox("🎉 ההתקנה הושלמה", msg.join("\\n\\n"), Browser.Buttons.OK);\n' +
+'  try { ss.toast(msg.join("  ·  "), "🎉 ההתקנה הושלמה", 8); } catch (e) {}\n' +
 '  Logger.log(msg.join("\\n"));\n' +
 '}';
 
@@ -1716,7 +1773,7 @@ setupTrackStatus +
 ' * התקנה: Extensions → Apps Script בגיליון המחובר לטופס, הדביקו קוד זה,\n' +
 ' * הריצו פעם אחת את הפונקציה setup ואשרו הרשאות — היא יוצרת את הטריגר' + (fuOn ? 'ים' : '') + ',\n' +
 (trackOn
-  ? ' * את לשונית Clicks, ושולחת מייל בדיקה. למעקב קליקים פרסמו גם כ-Web App.\n'
+  ? ' * ומוסיפה עמודות מעקב לצד התשובות, ושולחת מייל בדיקה. למעקב קליקים פרסמו גם כ-Web App.\n'
   : ' * ושולחת אליכם מייל בדיקה.\n') +
 ' */\n' +
 '\nvar SENDER_NAME = ' + JSON.stringify(cfg.senderName) + ';  // שם השולח (תיבת דואר + חתימה)\n' +
@@ -1896,6 +1953,7 @@ mlCallManual + '\n' +
 '  }\n' +
 '  Logger.log("נשלח ל-" + successCount + " אנשים.");\n' +
 '}\n' +
+responsesSheetFn +
 followUpFns +
 setupFn
       );
