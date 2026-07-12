@@ -765,7 +765,7 @@
         <p style="margin-top:10px;font-size:0.85rem;color:var(--ink-faint);">💡 זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד — לכן צריך את הלחיצות האלה פעם אחת.<br>
         🛟 קיבלתם "Sorry, unable to open the file"? כמעט תמיד הכתובת שהודבקה כללה קטע כמו <code>/u/1/</code> (כתובת שנעולה לחשבון שלכם). הכלי מנקה אותו אוטומטית — פשוט העתיקו מחדש את הקוד המעודכן מכאן, הדביקו בעורך, הדביקו שוב את כתובת ה-<code>/exec</code>, והריצו <code>setup</code>.<br>
         🔁 אם בעתיד תשנו את הקוד — פרסמו <strong>גרסה חדשה</strong> (Deploy ← Manage deployments ← ✏️ ← New version), אחרת הקוד הישן ימשיך לרוץ.<br>
-        ➜ אחרי לחיצה על כפתור, חלק מהנמענים יועברו ליעד מיד ואחרים יראו לרגע עמוד ביניים עם כפתור <strong>"המשך ליעד"</strong> — זה תקין (מגבלת אבטחה של Google שלא מאפשרת הפניה אוטומטית מלאה). הלחיצה נרשמת בכל מקרה.<br>
+        ➜ אחרי לחיצה על כפתור במייל, הנמען מועבר ליעד אוטומטית (לרוב עם הבזק קצר של עמוד ביניים "מעבירים אתכם…"). בדפדפנים מחמירים עשוי להופיע כפתור <strong>"המשך ליעד"</strong> ללחיצה אחת — זה תקין. הלחיצה נרשמת בכל מקרה.<br>
         ℹ️ מייל הבדיקה שנשלח אליכם עשוי להוסיף בגיליון שורה אחת בתחתית עם האימייל שלכם — זה תקין.</p>
       </div>
 
@@ -1558,7 +1558,7 @@
           '    \'<p style="font-size:16px;color:#334155;margin-bottom:18px">מעבירים אתכם ליעד…</p>\' +\n' +
           '    \'<a href="\' + safe + \'" target="_top" style="display:inline-block;background:#1a73e8;color:#fff;padding:12px 30px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px">➜ המשך ליעד</a>\' +\n' +
           '    \'</div>\'\n' +
-          '  );\n' +
+          '  ).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);  // מאפשר ל-window.top לפרוץ מהסנדבוקס ולהפנות אוטומטית\n' +
           '}'
         : '';
 
