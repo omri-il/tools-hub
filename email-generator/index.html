@@ -615,7 +615,7 @@
           <div class="reveal" id="trackReveal">
             <label for="campaign" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">שם הקמפיין <span class="hint">— מבדיל בין מיילים שונים באותו גיליון</span></label>
             <input type="text" id="campaign" placeholder="לדוגמה: סדנת AI מאי" />
-            <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, והלחיצה תירשם ב<strong>עמודות מעקב לצד תשובות הטופס</strong> (לחצו? · כפתור אחרון + זמן · מספר לחיצות), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת — ההוראות יופיעו מתחת לקוד.</p>
+            <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, ולכל כפתור נפתחת <strong>עמודה משלו</strong> לצד תשובות הטופס (עמודת <code>לחצו?</code> לסימון כללי + עמודה לכל כפתור עם מספר הלחיצות והזמן), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת — ההוראות יופיעו מתחת לקוד.</p>
           </div>
         </div>
 
@@ -750,7 +750,7 @@
       </details>
 
       <div id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
-        <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר מוסיפה עבורכם <strong>עמודות מעקב לצד תשובות הטופס</strong> (לחצו? · כפתור אחרון + זמן · מספר לחיצות). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
+        <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר מוסיפה עבורכם <strong>עמודות מעקב לצד תשובות הטופס</strong> — עמודת <code>לחצו?</code> לסימון כללי, ו<strong>עמודה נפרדת לכל כפתור</strong> (כך שלחיצות על כפתורים שונים לא דורסות זו את זו). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
         <ol style="margin:0;padding-inline-start:22px;line-height:2;">
           <li>למעלה מימין לחצו על הכפתור <code>Deploy</code>.</li>
           <li>בתפריט שנפתח בחרו <code>New deployment</code>.</li>
@@ -1471,9 +1471,29 @@
       // web-app URL so each click is logged beside the person's response row, then forwarded.
       const hrefJs = trackOn ? 'trackedLink_(b.url, recipientEmail, label)' : 'b.url';
 
+      // Every button gets its OWN tracking column so clicks on different buttons don't
+      // overwrite each other. Collect each button's label (icon + text) exactly as
+      // trackedLink_ sends it in l=, so the column header matches at click time.
+      const collectBtnLabels = (blocks) => {
+        const out = [];
+        usefulBlocks(blocks || []).forEach(bl => {
+          if (bl.type === 'buttons') (bl.items || []).forEach(b => {
+            const lbl = ((b.icon ? b.icon + ' ' : '') + (b.text || '')).trim();
+            if (lbl && out.indexOf(lbl) === -1) out.push(lbl);
+          });
+        });
+        return out;
+      };
+      const btnLabels = [];
+      [cfg.blocks, (fuOn ? fu1c.blocks : []), (fu2c.enabled ? fu2c.blocks : [])].forEach(list => {
+        collectBtnLabels(list).forEach(l => { if (btnLabels.indexOf(l) === -1) btnLabels.push(l); });
+      });
+      const buttonLabelsLiteral = btnLabels.map(l => JSON.stringify(l)).join(', ');
+
       const trackHeader = trackOn
         ? '\n// ===== מעקב קליקים =====\n' +
           'var WEBAPP_URL = "";  // ← אחרי פרסום כ-Web App: הדביקו כאן את הכתובת שמסתיימת ב-/exec\n' +
+          'var BUTTON_LABELS = [' + buttonLabelsLiteral + '];  // שם כל כפתור — נוצרת עמודת מעקב נפרדת לכל אחד\n' +
           'var CAMPAIGN = ' + JSON.stringify(cfg.campaign || 'default') + ';  // שם הקמפיין (ללוג בלבד)\n' +
           '// =======================\n'
         : '';
@@ -1497,28 +1517,24 @@
           '  } catch (e) { return url; }\n' +
           '}\n' +
           '\n' +
-          '// מוצא (או יוצר) את שלוש עמודות המעקב מימין לתשובות הטופס; מחזיר מספרי עמודות (1-based).\n' +
-          'function _clickCols_(sheet) {\n' +
-          '  var NAMES = ["לחצו?", "כפתור אחרון + זמן", "מספר לחיצות"];\n' +
+          '// מוצא (או יוצר) עמודת מעקב לפי שם הכותרת; מחזיר מספר עמודה (1-based). fromIdx = מהיכן לחפש (0-based).\n' +
+          'function _findOrAddCol_(sheet, name, fromIdx) {\n' +
           '  var lastCol = sheet.getLastColumn();\n' +
           '  var head = lastCol ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];\n' +
-          '  function findOrAdd(name) {\n' +
-          '    for (var i = 0; i < head.length; i++) { if (String(head[i]).trim() === name) return i + 1; }\n' +
-          '    lastCol += 1; sheet.getRange(1, lastCol).setValue(name); head.push(name); return lastCol;\n' +
-          '  }\n' +
-          '  return { clicked: findOrAdd(NAMES[0]), last: findOrAdd(NAMES[1]), count: findOrAdd(NAMES[2]) };\n' +
+          '  for (var i = (fromIdx || 0); i < head.length; i++) { if (String(head[i]).trim() === name) return i + 1; }\n' +
+          '  var col = lastCol + 1; sheet.getRange(1, col).setValue(name); return col;\n' +
           '}\n' +
           '\n' +
-          '// רושם לחיצה: מאתר את שורת הנמען לפי אימייל ומעדכן את 3 התאים (עם נעילה לריבוי לחיצות).\n' +
+          '// רושם לחיצה: ✓ בעמודת הסיכום "לחצו?" + ספירה·זמן בעמודה הייעודית של הכפתור (נעילה לריבוי לחיצות).\n' +
           'function _recordClick_(email, label) {\n' +
           '  if (!email) return;\n' +
+          '  label = String(label || "כפתור").trim() || "כפתור";\n' +
           '  var lock = LockService.getScriptLock();\n' +
           '  try { lock.waitLock(5000); } catch (e) { return; }\n' +
           '  try {\n' +
           '    var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
           '    var sheet = getResponsesSheet_(ss);\n' +
           '    if (!sheet) return;\n' +
-          '    var cols = _clickCols_(sheet);\n' +
           '    var last = sheet.getLastRow();\n' +
           '    var emailCol = EMAIL_COLUMN + 1;        // אינדקס 0-based → מספר עמודה 1-based\n' +
           '    var target = 0;\n' +
@@ -1529,16 +1545,18 @@
           '        if (String(emails[i][0]).trim().toLowerCase() === key) { target = i + 2; break; }\n' +
           '      }\n' +
           '    }\n' +
-          '    var when = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM HH:mm");\n' +
-          '    var stamp = (label || "קישור") + " · " + when;\n' +
           '    if (!target) {                          // הנמען לא נמצא בתגובות — שורה חדשה בתחתית\n' +
           '      target = last + 1;\n' +
           '      sheet.getRange(target, emailCol).setValue(email);\n' +
           '    }\n' +
-          '    var cur = Number(sheet.getRange(target, cols.count).getValue()) || 0;\n' +
-          '    sheet.getRange(target, cols.clicked).setValue("✓");\n' +
-          '    sheet.getRange(target, cols.last).setValue(stamp);\n' +
-          '    sheet.getRange(target, cols.count).setValue(cur + 1);\n' +
+          '    var when = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "dd/MM HH:mm");\n' +
+          '    // עמודת סיכום: ✓ אם לחץ על כפתור כלשהו (משמשת גם את מייל המעקב "רק מי שלא לחץ")\n' +
+          '    var sumCol = _findOrAddCol_(sheet, "לחצו?", 0);\n' +
+          '    sheet.getRange(target, sumCol).setValue("✓");\n' +
+          '    // עמודה ייעודית לכפתור — מחפשים רק מעמודת הסיכום ואילך, כדי לא להתנגש בכותרת של שאלת טופס\n' +
+          '    var btnCol = _findOrAddCol_(sheet, label, sumCol - 1);\n' +
+          '    var prev = parseInt(String(sheet.getRange(target, btnCol).getValue() || ""), 10); if (isNaN(prev)) prev = 0;\n' +
+          '    sheet.getRange(target, btnCol).setValue((prev + 1) + " · " + when);\n' +
           '  } finally { try { lock.releaseLock(); } catch (e) {} }\n' +
           '}\n' +
           '\n' +
@@ -1718,10 +1736,13 @@ fuConfigItems.join(',\n') + '\n' +
       // click-tracking columns beside the responses, the daily follow-up trigger + baseline,
       // sends a test email, and reports whether the Web App is deployed. Idempotent — safe to re-run.
       const setupClicks = trackOn
-        ? '  // עמודות מעקב קליקים — יוצרים אותן מראש לצד תשובות הטופס (לא מחכים ללחיצה הראשונה)\n' +
+        ? '  // עמודות מעקב קליקים — עמודת סיכום "לחצו?" + עמודה לכל כפתור, מראש לצד תשובות הטופס\n' +
           '  var _rs = getResponsesSheet_(ss);\n' +
-          '  if (_rs) { _clickCols_(_rs); msg.push("✅ עמודות מעקב קליקים נוספו לצד תשובות הטופס"); }\n' +
-          '  else msg.push("⚠️ לא נמצא גיליון תגובות — ודאו שהסקריפט פתוח מהגיליון המחובר לטופס");\n' +
+          '  if (_rs) {\n' +
+          '    var _sc = _findOrAddCol_(_rs, "לחצו?", 0);\n' +
+          '    for (var _bi = 0; _bi < BUTTON_LABELS.length; _bi++) _findOrAddCol_(_rs, BUTTON_LABELS[_bi], _sc - 1);\n' +
+          '    msg.push("✅ עמודות מעקב מוכנות — \\"לחצו?\\" + עמודה לכל כפתור (" + BUTTON_LABELS.length + ")");\n' +
+          '  } else msg.push("⚠️ לא נמצא גיליון תגובות — ודאו שהסקריפט פתוח מהגיליון המחובר לטופס");\n' +
           '\n'
         : '';
 
