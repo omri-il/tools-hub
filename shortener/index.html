@@ -216,6 +216,7 @@
         $("create").textContent = btnLabel[mode];
         $("result").classList.remove("show");
         $("createMsg").textContent = "";
+        if (mode === "brand") loadList(); else loadTinyList();
       };
     });
 
@@ -238,7 +239,7 @@
         link.href = data.short; link.textContent = data.short;
         $("result").classList.add("show");
         $("url").value = ""; $("alias").value = "";
-        if (mode === "brand") loadList();
+        if (mode === "brand") loadList(); else loadTinyList();
       } catch (e) {
         $("createMsg").textContent = e.unauthorized ? "צריך להתחבר מחדש" : (e.msg || "שגיאה ביצירת הקישור");
       } finally {
@@ -249,7 +250,7 @@
     function logoutToGate() { localStorage.removeItem(SESS_KEY); token = ""; render(); }
 
     $("copyResult").onclick = () => copy($("resultLink").textContent, $("copyResult"));
-    $("refresh").onclick = () => loadList();
+    $("refresh").onclick = () => (mode === "brand" ? loadList() : loadTinyList());
 
     function copy(text, btn) {
       navigator.clipboard.writeText(text).then(() => {
@@ -289,6 +290,39 @@
     async function del(code) {
       if (!confirm("למחוק את הקישור הקצר הזה? לא ניתן לשחזר.")) return;
       try { await api("/api/delete", { method: "POST", body: JSON.stringify({ code }) }); loadList(); }
+      catch (e) { /* keep session — api() already re-prompted on 401 */ }
+    }
+
+    // --- TinyURL history ---
+    async function loadTinyList() {
+      const box = $("list");
+      try {
+        const links = await api("/api/tinyurl/list");
+        if (!links.length) { box.innerHTML = '<p class="empty">עדיין לא נוצרו קישורי TinyURL. צרו את הראשון למעלה ☝️</p>'; return; }
+        box.innerHTML = "";
+        links.forEach((l) => {
+          const item = document.createElement("div");
+          item.className = "link-item";
+          item.innerHTML =
+            '<a class="short" href="' + l.short + '" target="_blank" rel="noopener"></a>' +
+            '<span class="spacer"></span>' +
+            '<button class="icon-btn copy" title="העתק">📋</button>' +
+            '<button class="icon-btn del" title="הסר מההיסטוריה">🗑</button>' +
+            '<span class="dest"></span>';
+          item.querySelector(".short").textContent = l.short;
+          item.querySelector(".dest").textContent = l.url;
+          item.querySelector(".copy").onclick = (e) => copy(l.short, e.target);
+          item.querySelector(".del").onclick = () => delTiny(l.id);
+          box.appendChild(item);
+        });
+      } catch (e) {
+        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "צריך להתחבר מחדש — לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את ההיסטוריה.") + '</p>';
+      }
+    }
+
+    async function delTiny(id) {
+      if (!confirm("להסיר את הקישור הזה מההיסטוריה? (הקישור עצמו ב-TinyURL ימשיך לפעול)")) return;
+      try { await api("/api/tinyurl/delete", { method: "POST", body: JSON.stringify({ id }) }); loadTinyList(); }
       catch (e) { /* keep session — api() already re-prompted on 401 */ }
     }
 
