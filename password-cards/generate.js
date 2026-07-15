@@ -2,7 +2,6 @@
 (function () {
   'use strict';
 
-  const LOGIN_SITE = (window.PasswordCards && window.PasswordCards.LOGIN_SITE) || 'edu.gov.il';
   const PER_PAGE = 8; // 2 טורים × 4 שורות
 
   function esc(s) {
@@ -17,39 +16,55 @@
     return out;
   }
 
+  function initial(st) {
+    const s = (st.fullName || '').trim();
+    return s ? s[0] : '•';
+  }
+
+  // כל תו בתיבה משלו — כמו קוד גישה/כרטיס טיסה. ברור לקריאה גם בצילום/הדפסה.
+  function pinRow(value, extraClass) {
+    const chars = String(value == null ? '' : value).split('');
+    const small = chars.length > 8 ? ' small' : '';
+    return (
+      '<div class="pc-pinrow' + (extraClass ? ' ' + extraClass : '') + '">' +
+      chars.map((c) => '<span class="pc-pin' + small + '">' + esc(c) + '</span>').join('') +
+      '</div>'
+    );
+  }
+
   function frontCard(st, institution, className) {
     return (
       '<div class="pc-card">' +
-      '<div class="pc-head">הזדהות משרד החינוך</div>' +
+      '<div class="pc-band">כרטיס כניסה אישי</div>' +
       '<div class="pc-body">' +
-      '<div class="pc-line"><span class="pc-lbl">שם התלמיד</span><span class="pc-val pc-name">' +
-      esc(st.fullName) +
-      '</span></div>' +
-      '<div class="pc-line"><span class="pc-lbl">כיתה</span><span class="pc-val">' +
-      esc(className) +
-      '</span></div>' +
-      '<div class="pc-line"><span class="pc-lbl">מוסד</span><span class="pc-val">' +
-      esc(institution) +
-      '</span></div>' +
-      '</div></div>'
+      '<div class="pc-avatar">' + esc(initial(st)) + '</div>' +
+      '<div class="pc-idbox">' +
+      '<div class="pc-val pc-name">' + esc(st.fullName) + '</div>' +
+      '<div class="pc-meta">כיתה <b>' + esc(className) + '</b> · ' + esc(institution) + '</div>' +
+      '</div>' +
+      '</div>' +
+      '<div class="pc-seal">מס״ד</div>' +
+      '</div>'
     );
   }
 
   function backCard(st) {
     return (
-      '<div class="pc-card pc-card-back">' +
-      '<div class="pc-head">פרטי התחברות</div>' +
+      '<div class="pc-card">' +
+      '<div class="pc-band">פרטי התחברות</div>' +
       '<div class="pc-body">' +
-      '<div class="pc-line"><span class="pc-lbl">קוד משתמש</span><span class="pc-val pc-mono">' +
-      esc(st.userCode) +
-      '</span></div>' +
-      '<div class="pc-line"><span class="pc-lbl">סיסמה</span><span class="pc-val pc-mono pc-pw">' +
-      esc(st.password) +
-      '</span></div>' +
-      '<div class="pc-line pc-login"><span class="pc-lbl">אתר כניסה</span><span class="pc-val pc-mono">' +
-      esc(LOGIN_SITE) +
-      '</span></div>' +
-      '</div></div>'
+      '<div class="pc-creds">' +
+      '<div class="pc-field">' +
+      '<div class="pc-flabel">קוד משתמש</div>' +
+      pinRow(st.userCode) +
+      '</div>' +
+      '<div class="pc-field">' +
+      '<div class="pc-flabel">סיסמה</div>' +
+      pinRow(st.password, 'pc-pw') +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>'
     );
   }
 
@@ -69,15 +84,21 @@
     return sheet;
   }
 
-  // הקטנת גופן אוטומטית לשמות ארוכים כדי למנוע גלישה.
+  // הקטנת גופן אוטומטית לשמות ארוכים ולסיסמאות ארוכות כדי למנוע גלישה.
   function fitNames(container) {
-    container.querySelectorAll('.pc-name, .pc-pw').forEach((el) => {
+    container.querySelectorAll('.pc-name').forEach((el) => {
       let size = parseFloat(getComputedStyle(el).fontSize);
       let guard = 0;
-      while ((el.scrollWidth > el.clientWidth + 1) && size > 9 && guard < 40) {
+      while (el.scrollWidth > el.clientWidth + 1 && size > 9 && guard < 40) {
         size -= 1;
         el.style.fontSize = size + 'px';
         guard++;
+      }
+    });
+    container.querySelectorAll('.pc-pinrow.pc-pw').forEach((row) => {
+      const field = row.closest('.pc-field');
+      if (field && row.scrollWidth > field.clientWidth + 1) {
+        row.querySelectorAll('.pc-pin').forEach((p) => p.classList.add('tiny'));
       }
     });
   }

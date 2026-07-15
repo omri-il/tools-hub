@@ -1,77 +1,169 @@
-/* ===== פונט מקומי (offline, ללא קריאת רשת) ===== */
+/* ===== פונטים מקומיים (offline, ללא קריאת רשת) ===== */
+@font-face{font-family:'Rubik';font-weight:300;font-display:swap;src:url('fonts/rubik-300.woff2') format('woff2');}
 @font-face{font-family:'Rubik';font-weight:400;font-display:swap;src:url('fonts/rubik-400.woff2') format('woff2');}
 @font-face{font-family:'Rubik';font-weight:500;font-display:swap;src:url('fonts/rubik-500.woff2') format('woff2');}
+@font-face{font-family:'Rubik';font-weight:600;font-display:swap;src:url('fonts/rubik-600.woff2') format('woff2');}
 @font-face{font-family:'Rubik';font-weight:700;font-display:swap;src:url('fonts/rubik-700.woff2') format('woff2');}
-
-/* ===== theme (כמו שאר הכלים) ===== */
-:root{
-  --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
-  --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#38bdf8; --accent2:#0ea5e9;
-  --ok:#34d399; --warn:#fbbf24; --err:#f87171;
-  font-family:'Rubik',system-ui,sans-serif;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:radial-gradient(90% 60% at 50% -10%,rgba(56,189,248,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.55}
-.wrap{max-width:760px;margin:0 auto}
-.back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:18px}
-.back:hover{color:var(--accent)}
-.masthead{text-align:center;margin-bottom:26px}
-.kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent)}
-h1{font-weight:700;font-size:clamp(1.9rem,5vw,2.6rem);margin-top:10px}
-h1 .em{color:var(--accent)}
-.lede{color:var(--muted);font-weight:400;margin:14px auto 0;max-width:560px}
-
-.sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px}
-
-/* אזור הבטחת הפרטיות */
-.privacy{display:flex;gap:10px;align-items:flex-start;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:12px;padding:13px 15px;margin-bottom:20px;font-size:.9rem;color:#bfeeda}
-.privacy b{color:var(--ok)}
-
-/* Dropzone */
-.drop{border:2px dashed var(--line);border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;transition:.18s;background:var(--panel)}
-.drop:hover,.drop.drag{border-color:var(--accent);background:rgba(56,189,248,0.06)}
-.drop .ico{font-size:2.4rem}
-.drop .big{font-weight:700;font-size:1.05rem;margin-top:8px}
-.drop .sub{color:var(--faint);font-size:.86rem;margin-top:6px}
-.drop input{display:none}
-
-.status{margin-top:16px;font-size:.92rem;min-height:1.2em}
-.status.ok{color:var(--ok)}
-.status.err{color:var(--err)}
-.status.work{color:var(--accent)}
-
-/* בחירת כיתות */
-.summary{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:6px}
-.summary h3{font-size:1rem;margin-bottom:10px}
-.cls-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-top:1px solid var(--line)}
-.cls-row:first-of-type{border-top:none}
-.cls-row label{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1}
-.cls-row input{width:18px;height:18px;accent-color:var(--accent)}
-.cls-name{font-weight:600}
-.cls-count{color:var(--faint);font-size:.85rem}
-
-/* טבלת תצוגה מקדימה */
-.preview-wrap{overflow-x:auto;margin-top:6px}
-table{width:100%;border-collapse:collapse;font-size:.86rem}
-th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--card)}
-td.mono{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
-.tbl-scroll{max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:12px}
-
-.btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:14px 24px;font-size:1rem}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-primary{background:var(--accent);color:#04222e;width:100%;margin-top:16px}
-.btn-primary:hover:not(:disabled){background:var(--accent2)}
-.hidden{display:none!important}
-
-.progress{margin-top:12px;font-size:.9rem;color:var(--accent);text-align:center}
-
-footer{margin-top:40px;color:var(--faint);font-size:.82rem;text-align:center;line-height:1.9}
-footer a{color:var(--muted)}
+@font-face{font-family:'Rubik';font-weight:800;font-display:swap;src:url('fonts/rubik-800.woff2') format('woff2');}
+@font-face{font-family:'Rubik';font-weight:900;font-display:swap;src:url('fonts/rubik-900.woff2') format('woff2');}
 
 /* ============================================================
-   גיליונות A4 להדפסה — מרונדרים מחוץ למסך ומצולמים ל-PDF.
-   שוליים זהים מכל צד; שיקוף אופקי לדפי הגב (dir).
+   THEME — "כרטיס-מדבקה" (sticker badge). מוצר שמנפיק תגי-כניסה
+   אישיים לילדים, אז הממשק עצמו מתנהג כמו לוח מדבקות: מסגרות
+   עבות, צללים קשיחים (offset, בלי blur), צבעים רוויים וחמים,
+   טיפוגרפיה שמנה. הכרטיסים המודפסים בהמשך הקובץ הם שפה נפרדת
+   לגמרי — שחור-לבן, כי מדפסת בית-ספר לרוב לא צבעונית.
+   ============================================================ */
+:root{
+  --ink:#17213B;         /* טקסט ראשי + מסגרות */
+  --ink-soft:#4b5677;    /* טקסט משני */
+  --paper:#FFF7E8;       /* רקע העמוד — קרם חם, לא לבן סטרילי */
+  --card:#FFFDF8;        /* רקע כרטיסי הממשק */
+  --line:rgba(23,33,59,0.14);
+
+  --sun:#FFC94A;         /* צהוב */
+  --bubble:#FF6B8B;      /* ורוד-אדום — CTA ראשי */
+  --bubble-dark:#F0466C;
+  --sky:#3FA9F5;         /* כחול */
+  --mint:#17C3A2;        /* ירוק */
+  --grape:#8B5CF6;       /* סגול */
+
+  --ok:#0E9F72; --err:#E0335B; --work:#3FA9F5;
+
+  font-family:'Rubik',system-ui,sans-serif;
+  font-size:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(46px 46px at 92% 6%, rgba(255,201,74,.55) 0 40%, transparent 42%),
+    radial-gradient(30px 30px at 6% 14%, rgba(63,169,245,.35) 0 40%, transparent 42%),
+    radial-gradient(34px 34px at 85% 92%, rgba(139,92,246,.3) 0 40%, transparent 42%),
+    var(--paper);
+  color:var(--ink);min-height:100vh;padding:38px 20px 80px;line-height:1.55;
+}
+.wrap{max-width:800px;margin:0 auto}
+
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:.92rem;margin-bottom:22px}
+.back:hover{color:var(--bubble-dark)}
+
+/* ---------- masthead ---------- */
+.masthead{text-align:center;margin-bottom:30px}
+.badge-mark{width:62px;height:62px;margin:0 auto 14px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;background:var(--sun);color:var(--ink);
+  font-weight:800;font-size:.78rem;letter-spacing:.02em;padding:7px 16px;border-radius:999px;
+  border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+}
+h1{font-weight:900;font-size:clamp(2.3rem,7vw,3.4rem);margin-top:16px;letter-spacing:-.01em}
+h1 .em{color:var(--bubble-dark);position:relative;display:inline-block}
+.lede{color:var(--ink-soft);font-weight:500;font-size:1.15rem;margin:16px auto 0;max-width:560px}
+
+/* ---------- sticker card ---------- */
+.sheet{
+  background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:28px;
+  margin-bottom:22px;box-shadow:6px 6px 0 var(--ink);
+}
+.sheet h3{font-size:1.2rem;font-weight:800;margin-bottom:14px}
+
+/* אזור הבטחת הפרטיות */
+.privacy{
+  display:flex;gap:12px;align-items:flex-start;background:#EAFBF4;border:3px solid var(--ok);
+  border-radius:18px;padding:16px 18px;margin-bottom:22px;font-size:1rem;font-weight:500;color:#0B6B4F;
+  box-shadow:5px 5px 0 rgba(14,159,114,.35);
+}
+.privacy .pico{flex:0 0 auto;font-size:1.6rem;line-height:1}
+.privacy b{color:var(--ok)}
+
+/* ---------- Dropzone ---------- */
+.drop{
+  border:3px dashed var(--ink);border-radius:20px;padding:46px 20px;text-align:center;cursor:pointer;
+  transition:transform .15s, box-shadow .15s, background .15s;background:repeating-linear-gradient(135deg,#FFF3D6 0 14px,#FFFBEF 14px 28px);
+}
+.drop:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--sky)}
+.drop.drag{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--mint);background:#EAFBF4;border-color:var(--mint)}
+.drop .ico{font-size:3rem;display:block;filter:drop-shadow(2px 2px 0 rgba(23,33,59,.15))}
+.drop .big{font-weight:800;font-size:1.25rem;margin-top:10px}
+.drop .sub{color:var(--ink-soft);font-weight:500;font-size:.95rem;margin-top:6px}
+.drop input{display:none}
+
+.status{margin-top:18px;font-size:1.05rem;font-weight:700;min-height:1.3em}
+.status.ok{color:var(--ok)}
+.status.err{color:var(--err)}
+.status.work{color:var(--work)}
+
+/* ---------- בחירת כיתות ---------- */
+.summary{background:#FFF3D6;border:3px solid var(--ink);border-radius:18px;padding:18px;margin-top:4px}
+.summary h3{font-size:1.1rem}
+.cls-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.cls-chip{
+  --chip:var(--sky);
+  display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;
+  background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px;
+  box-shadow:3px 3px 0 var(--ink);transition:transform .12s, box-shadow .12s, opacity .12s;
+}
+.cls-chip:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.cls-chip.off{opacity:.4;box-shadow:none;transform:none}
+.cls-chip input{width:20px;height:20px;accent-color:var(--chip);flex:0 0 auto}
+.cls-dot{width:12px;height:12px;border-radius:50%;background:var(--chip);flex:0 0 auto;border:1.5px solid var(--ink)}
+.cls-name{font-weight:800;font-size:1.02rem}
+.cls-count{color:var(--ink-soft);font-weight:600;font-size:.86rem}
+
+/* ---------- תצוגה מקדימה — "רשימת כיתה" ---------- */
+.preview-wrap{overflow-x:auto;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:11px 12px;text-align:right;border-bottom:2px solid var(--line);white-space:nowrap}
+th{color:var(--ink-soft);font-weight:800;font-size:.82rem;letter-spacing:.02em;position:sticky;top:0;background:var(--card)}
+tr:nth-child(even) td{background:#FFF7E8}
+td.mono{direction:ltr;text-align:left;font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.03em}
+.edit-hint{color:var(--ink-soft);font-weight:600;font-size:.86rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.edit-cell{
+  font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit;
+  background:transparent;border:none;border-bottom:2px dashed rgba(23,33,59,.28);
+  padding:2px 2px;width:100%;min-width:6ch;border-radius:2px;
+}
+.edit-cell:hover{border-bottom-color:var(--sky)}
+.edit-cell:focus{outline:none;border-bottom:2px solid var(--bubble-dark);background:#FFF3D6}
+td.mono .edit-cell{direction:ltr;text-align:left}
+.avatar{
+  display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
+  background:var(--chip,var(--sky));color:#fff;font-weight:800;font-size:.85rem;border:2px solid var(--ink);
+  margin-inline-end:8px;vertical-align:middle;
+}
+.tbl-scroll{max-height:380px;overflow-y:auto;border:3px solid var(--ink);border-radius:16px}
+.tbl-scroll table{font-size:.92rem}
+
+.btn{font-family:inherit;font-weight:800;border:3px solid var(--ink);border-radius:16px;cursor:pointer;padding:17px 26px;font-size:1.15rem;transition:transform .12s, box-shadow .12s}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none!important;transform:none!important}
+.btn-primary{background:var(--bubble);color:#fff;width:100%;margin-top:18px;box-shadow:5px 5px 0 var(--ink)}
+.btn-primary:hover:not(:disabled){background:var(--bubble-dark);transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+.btn-primary:active:not(:disabled){transform:translate(0,0);box-shadow:2px 2px 0 var(--ink)}
+.hidden{display:none!important}
+
+.progress{margin-top:14px;font-size:1rem;font-weight:700;color:var(--sky);text-align:center}
+
+footer{margin-top:44px;color:var(--ink-soft);font-weight:500;font-size:.88rem;text-align:center;line-height:1.9}
+footer a{color:var(--ink);font-weight:700;text-decoration:underline}
+
+@media (max-width:520px){
+  :root{font-size:16px}
+  .sheet{padding:20px;border-radius:18px}
+  .drop{padding:34px 14px}
+}
+
+/* תג גרסה — פינה קטנה ולא פולשנית, כמו בשאר הכלים */
+.version-tag{
+  position:fixed;bottom:8px;inset-inline-start:10px;z-index:40;
+  font-size:.68rem;color:rgba(23,33,59,.4);font-weight:600;
+  pointer-events:none;user-select:none;font-variant-numeric:tabular-nums;
+}
+
+/* ============================================================
+   הכרטיסים המודפסים — "דרכון כניסה" (grayscale-native).
+   מודפסים לרוב בשחור-לבן במדפסת בית-ספר, אז ההיררכיה כאן
+   נבנית מניגודיות, משקל טיפוגרפי ותבניות — לא מצבע. גיליונות
+   A4 מרונדרים מחוץ למסך ומצולמים ל-PDF. שוליים זהים מכל צד;
+   שיקוף אופקי לדפי הגב (dir) כדי שהגב יתלכד בדיוק עם החזית.
    ============================================================ */
 .pc-stage{position:fixed;left:-99999px;top:0;pointer-events:none}
 .pc-sheet{
@@ -84,23 +176,53 @@ footer a{color:var(--muted)}
 .pc-sheet-back{direction:ltr}          /* שיקוף מיקומי הכרטיסיות */
 
 .pc-card{
-  border:1px dashed #b8b8b8;           /* קווי גזירה */
-  padding:6mm 7mm;box-sizing:border-box;overflow:hidden;
-  direction:rtl;text-align:right;      /* תוכן תמיד RTL */
-  display:flex;flex-direction:column;
+  margin:1.6mm;border:1.75pt solid #111;border-radius:5mm;
+  padding:0;box-sizing:border-box;overflow:hidden;position:relative;
+  direction:rtl;text-align:right;display:flex;flex-direction:column;background:#fff;
 }
-.pc-blank{border:1px dashed #d8d8d8}
-.pc-head{
-  font-size:9pt;font-weight:700;color:#0e7490;text-align:center;
-  border-bottom:1px solid #e3e3e3;padding-bottom:2mm;margin-bottom:2mm;letter-spacing:.02em;
+.pc-card::before{
+  /* קו-כפול פנימי דק — תחושת "דרכון/תעודה", לא תלוי צבע */
+  content:"";position:absolute;inset:1.3mm;border:.6pt solid #ccc;border-radius:3.6mm;pointer-events:none;
 }
-.pc-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2.4mm}
-.pc-line{display:flex;gap:2.5mm;align-items:baseline}
-.pc-lbl{flex:0 0 auto;color:#777;font-size:8.5pt;font-weight:500}
-.pc-val{flex:1 1 0;min-width:0;overflow:hidden;white-space:nowrap;font-weight:700;color:#111;font-size:11pt}
-.pc-name{font-size:12.5pt}
-.pc-mono{direction:ltr;text-align:right;letter-spacing:.6px;font-variant-numeric:tabular-nums}
-.pc-back .pc-mono{text-align:right}
-.pc-pw{font-size:13pt;color:#047857}
-.pc-login{margin-top:1mm}
-.pc-login .pc-lbl,.pc-login .pc-val{font-size:8.5pt;color:#555;font-weight:500}
+.pc-blank{border:1.4pt dashed #bbb;background:none}
+.pc-blank::before{display:none}
+.pc-blank::after{
+  content:"";position:absolute;inset:0;margin:auto;width:9mm;height:9mm;
+  background:
+    linear-gradient(45deg,transparent 47%,#ddd 47% 53%,transparent 53%),
+    linear-gradient(-45deg,transparent 47%,#ddd 47% 53%,transparent 53%);
+}
+
+.pc-band{
+  background:#111;color:#fff;text-align:center;padding:2.2mm 3mm;
+  font-size:8.6pt;font-weight:800;letter-spacing:.06em;flex:0 0 auto;
+}
+
+.pc-body{flex:1;display:flex;padding:3.4mm 4mm 3mm;gap:3mm;align-items:center}
+
+/* ---- צד א׳: שם + זהות ---- */
+.pc-avatar{
+  flex:0 0 auto;width:13mm;height:13mm;border-radius:50%;border:1.6pt solid #111;
+  display:flex;align-items:center;justify-content:center;font-size:15pt;font-weight:900;
+}
+.pc-idbox{flex:1;min-width:0;display:flex;flex-direction:column;gap:1.4mm}
+.pc-name{font-size:14.5pt;font-weight:800;line-height:1.15;overflow:hidden;white-space:nowrap}
+.pc-meta{font-size:8.6pt;color:#444;font-weight:600}
+.pc-meta b{color:#111;font-weight:800}
+.pc-seal{
+  position:absolute;left:2.6mm;bottom:2.4mm;width:8mm;height:8mm;border-radius:50%;
+  border:1pt dashed #999;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:6pt;
+}
+
+/* ---- צד ב׳: פרטי התחברות ---- */
+.pc-creds{flex:1;display:flex;flex-direction:column;gap:3.4mm;align-items:flex-start;justify-content:center}
+.pc-field{width:100%}
+.pc-flabel{font-size:7.6pt;font-weight:800;letter-spacing:.08em;color:#666;margin-bottom:1mm;display:flex;align-items:center;gap:1.4mm}
+.pc-pinrow{display:flex;gap:1mm;direction:ltr;flex-wrap:wrap}
+.pc-pin{
+  border:1.3pt solid #111;border-radius:1.6mm;min-width:5.6mm;height:7mm;
+  display:flex;align-items:center;justify-content:center;font-size:11pt;font-weight:800;
+  font-variant-numeric:tabular-nums;padding:0 .6mm;
+}
+.pc-pin.small{height:6mm;font-size:9pt;min-width:4.6mm}
+.pc-pin.tiny{height:5.4mm;font-size:7.5pt;min-width:3.6mm}

@@ -18,6 +18,11 @@
     statusEl.textContent = msg;
   }
 
+  // צבע קבוע לכל כיתה — אותו צבע חוזר על התג ועל בועות השם בתצוגה המקדימה.
+  const PALETTE = ['--sky', '--bubble', '--mint', '--sun', '--grape'];
+  const classColor = (i) => 'var(' + PALETTE[i % PALETTE.length] + ')';
+  const initial = (name) => (name || '•').trim()[0] || '•';
+
   // ---- העלאה ----
   drop.addEventListener('click', () => fileInput.click());
   drop.addEventListener('dragover', (e) => {
@@ -80,13 +85,15 @@
     clsList.innerHTML = res.classes
       .map(
         (c, i) =>
-          '<div class="cls-row"><label><input type="checkbox" class="cls-cb" data-i="' +
+          '<label class="cls-chip" style="--chip:' +
+          classColor(i) +
+          '"><input type="checkbox" class="cls-cb" data-i="' +
           i +
-          '" checked><span class="cls-name">כיתה ' +
+          '" checked><span class="cls-dot"></span><span class="cls-name">כיתה ' +
           escapeHtml(c.name) +
           '</span><span class="cls-count">' +
           c.students.length +
-          ' תלמידים</span></label></div>'
+          ' תלמידים</span></label>'
       )
       .join('');
 
@@ -95,34 +102,63 @@
 
     renderPreview(res);
     resultSection.classList.remove('hidden');
-    clsList.querySelectorAll('.cls-cb').forEach((cb) => cb.addEventListener('change', () => renderPreview(res)));
+    clsList.querySelectorAll('.cls-cb').forEach((cb) =>
+      cb.addEventListener('change', () => {
+        cb.closest('.cls-chip').classList.toggle('off', !cb.checked);
+        renderPreview(res);
+      })
+    );
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function checkedIndexes() {
+    return Array.from(clsList.querySelectorAll('.cls-cb'))
+      .filter((cb) => cb.checked)
+      .map((cb) => +cb.dataset.i);
   }
 
   function selectedClasses() {
     if (!parsed) return [];
-    const checked = new Set(
-      Array.from(clsList.querySelectorAll('.cls-cb'))
-        .filter((cb) => cb.checked)
-        .map((cb) => +cb.dataset.i)
+    const idxs = new Set(checkedIndexes());
+    return parsed.classes.filter((_, i) => idxs.has(i));
+  }
+
+  function editCell(ci, si, field, value, extraClass) {
+    return (
+      '<input class="edit-cell' +
+      (extraClass ? ' ' + extraClass : '') +
+      '" data-ci="' +
+      ci +
+      '" data-si="' +
+      si +
+      '" data-field="' +
+      field +
+      '" value="' +
+      escapeHtml(value) +
+      '" autocomplete="off" spellcheck="false">'
     );
-    return parsed.classes.filter((_, i) => checked.has(i));
   }
 
   function renderPreview(res) {
-    const classes = selectedClasses();
+    const idxs = checkedIndexes();
     const rows = [];
-    classes.forEach((c) => {
-      c.students.forEach((s) => {
+    idxs.forEach((i) => {
+      const c = res.classes[i];
+      if (!c) return;
+      c.students.forEach((s, si) => {
         rows.push(
           '<tr><td>' +
             escapeHtml(c.name) +
-            '</td><td>' +
-            escapeHtml(s.fullName) +
+            '</td><td><span class="avatar" style="--chip:' +
+            classColor(i) +
+            '">' +
+            escapeHtml(initial(s.fullName)) +
+            '</span>' +
+            editCell(i, si, 'fullName', s.fullName) +
             '</td><td class="mono">' +
-            escapeHtml(s.userCode) +
+            editCell(i, si, 'userCode', s.userCode) +
             '</td><td class="mono">' +
-            escapeHtml(s.password) +
+            editCell(i, si, 'password', s.password) +
             '</td><td class="mono">' +
             escapeHtml(s.birthDate || '') +
             '</td></tr>'
@@ -139,6 +175,24 @@
       ? 'הפק PDF להדפסה דו-צדדית (' + total + ' כרטיסיות)'
       : 'לא נבחרו תלמידים';
   }
+
+  // עריכה חיה: כל שינוי בתא נשמר ישירות באובייקט התלמיד, כך שהכרטיס המופק
+  // וגם בועת האות הראשונה מתעדכנים מיד ונשמרים גם אחרי סינון כיתות מחדש.
+  previewWrap.addEventListener('input', (e) => {
+    const el = e.target;
+    if (!el.classList.contains('edit-cell')) return;
+    const ci = +el.dataset.ci;
+    const si = +el.dataset.si;
+    const field = el.dataset.field;
+    const cls = parsed && parsed.classes[ci];
+    const st = cls && cls.students[si];
+    if (!st) return;
+    st[field] = el.value;
+    if (field === 'fullName') {
+      const avatar = el.closest('tr').querySelector('.avatar');
+      if (avatar) avatar.textContent = initial(el.value);
+    }
+  });
 
   // ---- ייצוא ----
   exportBtn.addEventListener('click', async () => {

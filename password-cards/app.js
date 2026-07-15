@@ -6,7 +6,6 @@
   const pdfjsLib = window['pdfjsLib'];
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
 
-  const LOGIN_SITE = 'edu.gov.il';
   const DEBUG = false; // נחשף גם ב-window.__pcDebug אחרי פענוח
 
   // ---------------------------------------------------------------------------
@@ -301,6 +300,5 @@
   window.PasswordCards = Object.assign(window.PasswordCards || {}, {
     parse,
     fixHebrew,
-    LOGIN_SITE,
   });
 })();

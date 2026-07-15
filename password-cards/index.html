@@ -12,20 +12,28 @@
 <body>
   <div class="wrap">
     <a class="back" href="../">→ חזרה לכל הכלים</a>
+
     <div class="masthead">
-      <div class="kicker">הכלים של עומרי אירם</div>
+      <svg class="badge-mark" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="6" y="16" width="50" height="34" rx="9" fill="#FFFDF8" stroke="#17213B" stroke-width="3.2"/>
+        <circle cx="20" cy="33" r="7.5" fill="#3FA9F5" stroke="#17213B" stroke-width="2.4"/>
+        <rect x="33" y="27" width="17" height="4.4" rx="2.2" fill="#17213B"/>
+        <rect x="33" y="35" width="12" height="4.4" rx="2.2" fill="#4b5677"/>
+        <path d="M50 2 L52.6 8.6 L59.4 11 L52.6 13.4 L50 20 L47.4 13.4 L40.6 11 L47.4 8.6 Z" fill="#FF6B8B" stroke="#17213B" stroke-width="2"/>
+      </svg>
+      <span class="eyebrow">✨ כרטיס אישי לכל תלמיד/ה</span>
       <h1>מחולל כרטיסי <span class="em">סיסמה</span></h1>
-      <p class="lede">העלו את קובץ ה-PDF שקיבלתם ממערכת הסיסמאות של משרד החינוך, וקבלו כרטיסיות אישיות דו-צדדיות מוכנות להדפסה וגזירה — כרטיסייה לכל תלמיד, בלי לחשוף את פרטי השאר.</p>
+      <p class="lede">מעלים את קובץ הסיסמאות שקיבלתם ממשרד החינוך, ומקבלים כרטיסיות דו-צדדיות מוכנות להדפסה וגזירה — כרטיסייה לכל תלמיד, בלי לחשוף את פרטי השאר.</p>
     </div>
 
     <div class="privacy">
-      <span>🔒</span>
+      <span class="pico">🔒</span>
       <div><b>הפרטיות נשמרת במלואה.</b> כל הפענוח וההפקה קורים בדפדפן שלכם בלבד. הקובץ ופרטי התלמידים <b>לא נשלחים לשום שרת</b> — הכלי עובד גם בלי חיבור לאינטרנט.</div>
     </div>
 
     <div class="sheet">
       <div class="drop" id="drop">
-        <div class="ico">📄</div>
+        <span class="ico">📄</span>
         <div class="big">גררו לכאן את קובץ ה-PDF או לחצו לבחירה</div>
         <div class="sub">קובץ הסיסמאות המקורי שהורדתם ממערכת משרד החינוך</div>
         <input type="file" id="file" accept="application/pdf,.pdf" />
@@ -37,12 +45,13 @@
       <div class="sheet" id="clsCard">
         <div class="summary">
           <h3 id="summaryHead"></h3>
-          <div id="clsList"></div>
+          <div class="cls-list" id="clsList"></div>
         </div>
       </div>
 
       <div class="sheet">
-        <h3 style="margin-bottom:12px">תצוגה מקדימה — בדקו שהזיהוי תקין</h3>
+        <h3>תצוגה מקדימה — בדקו שהזיהוי תקין</h3>
+        <p class="edit-hint">✏️ טעות בזיהוי? אפשר ללחוץ על כל שם, קוד או סיסמה ולתקן ישירות כאן — התיקון ייכנס לכרטיס.</p>
         <div class="preview-wrap" id="previewWrap"></div>
         <button class="btn btn-primary" id="exportBtn" type="button" disabled>הפק PDF להדפסה דו-צדדית</button>
         <div class="progress hidden" id="progress"></div>
@@ -54,6 +63,8 @@
       <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
     </footer>
   </div>
+
+  <div class="version-tag" title="גרסת הכלי">גרסה 1.1.0 · 2026-07-15</div>
 
   <!-- ספריות מקומיות (offline, ללא קריאות רשת חיצוניות) -->
   <script src="vendor/pdf.min.js"></script>
