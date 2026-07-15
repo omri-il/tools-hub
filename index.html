@@ -36,6 +36,14 @@
     .cat { font-size: 1.12rem; font-weight: 700; margin: 0 0 16px; padding-bottom: 9px; opacity: .92;
            border-bottom: 1px solid rgba(255,255,255,0.10); }
     body:not(.admin) .cat-section.admin-only { display: none !important; }
+    #statsPanel .stats-msg { opacity: .7; font-family: 'Heebo', sans-serif; }
+    .stats-table { width: 100%; border-collapse: collapse; font-family: 'Heebo', sans-serif; }
+    .stats-table th, .stats-table td { text-align: right; padding: 9px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08); font-size: .92rem; white-space: nowrap; }
+    .stats-table th { opacity: .7; font-weight: 600; font-size: .82rem; }
+    .stats-table td.num { font-variant-numeric: tabular-nums; }
+    .stats-table .spark { stroke: #a78bfa; fill: none; stroke-width: 1.5; }
+    .stats-table tbody tr:hover { background: rgba(255,255,255,0.03); }
   </style>
 </head>
 <body>
@@ -51,6 +59,11 @@
   </header>
 
   <main aria-label="כלים">
+
+    <section id="statsPanel" class="cat-section admin-only" aria-label="סטטיסטיקה">
+      <h2 class="cat">📊 סטטיסטיקה — שימוש בכלים</h2>
+      <div id="statsBody"><p class="stats-msg">טוען…</p></div>
+    </section>
 
     <section class="cat-section">
       <h2 class="cat">🎬 וידאו ויוטיוב</h2>
@@ -294,6 +307,73 @@
           card.addEventListener('click', function () { track(card.getAttribute('data-tool')); });
         })(cards[i]);
       }
+    })();
+  </script>
+
+  <script>
+    // Admin-only: render the usage table from /api/stats. Runs only when admin
+    // mode is on. Hand-rolled SVG sparkline (last 30 days), no chart library.
+    (function () {
+      var STATS_URL = 'https://go.omri-iram.co.il/api/stats';
+      function isAdmin() { try { return localStorage.getItem('omri_admin') === '1'; } catch (_) { return false; } }
+      if (!isAdmin()) return;
+
+      // id -> Hebrew name, read from the cards so it stays in sync.
+      var names = {};
+      var cards = document.querySelectorAll('.tool-card[data-tool]');
+      for (var i = 0; i < cards.length; i++) {
+        var t = cards[i].querySelector('.tool-title');
+        names[cards[i].getAttribute('data-tool')] = t ? t.textContent.trim() : cards[i].getAttribute('data-tool');
+      }
+      function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+      function sparkline(daily) {
+        var pts = (daily || []).slice(-30).map(function (d) { return d.total; });
+        if (pts.length < 2) return '';
+        var w = 90, h = 22, max = Math.max.apply(null, pts) || 1;
+        var step = w / (pts.length - 1);
+        var d = pts.map(function (v, i) {
+          var x = (i * step).toFixed(1);
+          var y = (h - 2 - (v / max) * (h - 4)).toFixed(1);
+          return (i ? 'L' : 'M') + x + ' ' + y;
+        }).join(' ');
+        return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h +
+               '" aria-hidden="true"><path class="spark" d="' + d + '"/></svg>';
+      }
+
+      function render(tools) {
+        var body = document.getElementById('statsBody');
+        if (!tools || !tools.length) { body.innerHTML = '<p class="stats-msg">אין עדיין נתונים.</p>'; return; }
+        var rows = tools.map(function (t) {
+          return '<tr><td>' + esc(names[t.tool] || t.tool) + '</td>' +
+            '<td class="num">' + t.total + '</td>' +
+            '<td class="num">' + t.me + '</td>' +
+            '<td class="num">' + t.visitors + '</td>' +
+            '<td>' + sparkline(t.daily) + '</td></tr>';
+        }).join('');
+        body.innerHTML = '<table class="stats-table"><thead><tr>' +
+          '<th>כלי</th><th>סה״כ</th><th>שלי</th><th>מבקרים</th><th>מגמה (30 ימים)</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table>';
+      }
+
+      var session = '';
+      try { session = localStorage.getItem('omri_session') || ''; } catch (_) {}
+      var headers = {};
+      if (session) headers['X-Session'] = session;
+      fetch(STATS_URL, { headers: headers })
+        .then(function (r) {
+          if (r.status === 401) { throw new Error('unauth'); }
+          return r.json();
+        })
+        .then(function (j) { render(j.tools); })
+        .catch(function (e) {
+          var body = document.getElementById('statsBody');
+          body.innerHTML = '<p class="stats-msg">' +
+            (e && e.message === 'unauth'
+              ? 'צריך להתחבר עם Google כדי לראות סטטיסטיקה.'
+              : 'לא ניתן לטעון סטטיסטיקה כרגע.') + '</p>';
+        });
     })();
   </script>
 
