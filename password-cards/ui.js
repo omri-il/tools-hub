@@ -160,6 +160,19 @@
     if (tsVal) tsVal.textContent = Math.round(cardOpts.textScale * 100) + '%';
   }
 
+  // הודעת ה"קשת" מתארת את הסגנון שנבחר בפועל — בסגנונות עם סט אייקונים
+  // מתחלף (חיות/דינוזאורים/ים/תחבורה/אוכל) גם האייקון משתנה, לא רק הצבע.
+  const HINTS = {
+    animals: '🐾 כל תלמיד/ה מקבל/ת חיה וצבע משלו/ה',
+    dinosaurs: '🦕 כל תלמיד/ה מקבל/ת דינוזאור וצבע משלו/ה',
+    sea: '🐙 כל תלמיד/ה מקבל/ת יצור ים וצבע משלו/ה',
+    vehicles: '🚗 כל תלמיד/ה מקבל/ת כלי רכב וצבע משלו/ה',
+    food: '🍓 כל תלמיד/ה מקבל/ת מאכל וצבע משלו/ה',
+    space: '🚀 כל תלמיד/ה מקבל/ת צבע חלל משלו/ה',
+    heroes: '🦸 כל תלמיד/ה מקבל/ת צבע גיבור/ה משלו/ה',
+    rainbow: '🌈 כל תלמיד/ה מקבל/ת גוון קשת משלו/ה',
+  };
+
   const DEMO = { fullName: 'ישראל ישראלי', userCode: '7000000', password: '123456', birthDate: '' };
   function sampleStudent() {
     const cls = selectedClasses()[0] || (parsed && parsed.classes[0]);
@@ -181,7 +194,7 @@
     const sw = pal.map((c) => '<span class="pc-swatch" style="background:' + c.accent + '"></span>').join('');
     const strip = document.createElement('div');
     strip.innerHTML =
-      '<div class="pc-hint">🌈 כיתת קשת — כל תלמיד/ה מקבל/ת צבע אחר אוטומטית</div>' +
+      '<div class="pc-hint">' + (HINTS[cardOpts.template] || HINTS.animals) + '</div>' +
       '<div class="pc-swatches">' + sw + '</div>';
     cardPreview.appendChild(strip);
     window.PasswordCards.fitCards(cardPreview);
