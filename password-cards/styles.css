@@ -1,0 +1,106 @@
+/* ===== פונט מקומי (offline, ללא קריאת רשת) ===== */
+@font-face{font-family:'Rubik';font-weight:400;font-display:swap;src:url('fonts/rubik-400.woff2') format('woff2');}
+@font-face{font-family:'Rubik';font-weight:500;font-display:swap;src:url('fonts/rubik-500.woff2') format('woff2');}
+@font-face{font-family:'Rubik';font-weight:700;font-display:swap;src:url('fonts/rubik-700.woff2') format('woff2');}
+
+/* ===== theme (כמו שאר הכלים) ===== */
+:root{
+  --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
+  --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#38bdf8; --accent2:#0ea5e9;
+  --ok:#34d399; --warn:#fbbf24; --err:#f87171;
+  font-family:'Rubik',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(90% 60% at 50% -10%,rgba(56,189,248,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto}
+.back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:18px}
+.back:hover{color:var(--accent)}
+.masthead{text-align:center;margin-bottom:26px}
+.kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+h1{font-weight:700;font-size:clamp(1.9rem,5vw,2.6rem);margin-top:10px}
+h1 .em{color:var(--accent)}
+.lede{color:var(--muted);font-weight:400;margin:14px auto 0;max-width:560px}
+
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px}
+
+/* אזור הבטחת הפרטיות */
+.privacy{display:flex;gap:10px;align-items:flex-start;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:12px;padding:13px 15px;margin-bottom:20px;font-size:.9rem;color:#bfeeda}
+.privacy b{color:var(--ok)}
+
+/* Dropzone */
+.drop{border:2px dashed var(--line);border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;transition:.18s;background:var(--panel)}
+.drop:hover,.drop.drag{border-color:var(--accent);background:rgba(56,189,248,0.06)}
+.drop .ico{font-size:2.4rem}
+.drop .big{font-weight:700;font-size:1.05rem;margin-top:8px}
+.drop .sub{color:var(--faint);font-size:.86rem;margin-top:6px}
+.drop input{display:none}
+
+.status{margin-top:16px;font-size:.92rem;min-height:1.2em}
+.status.ok{color:var(--ok)}
+.status.err{color:var(--err)}
+.status.work{color:var(--accent)}
+
+/* בחירת כיתות */
+.summary{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:6px}
+.summary h3{font-size:1rem;margin-bottom:10px}
+.cls-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-top:1px solid var(--line)}
+.cls-row:first-of-type{border-top:none}
+.cls-row label{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1}
+.cls-row input{width:18px;height:18px;accent-color:var(--accent)}
+.cls-name{font-weight:600}
+.cls-count{color:var(--faint);font-size:.85rem}
+
+/* טבלת תצוגה מקדימה */
+.preview-wrap{overflow-x:auto;margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--card)}
+td.mono{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.tbl-scroll{max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:12px}
+
+.btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:14px 24px;font-size:1rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#04222e;width:100%;margin-top:16px}
+.btn-primary:hover:not(:disabled){background:var(--accent2)}
+.hidden{display:none!important}
+
+.progress{margin-top:12px;font-size:.9rem;color:var(--accent);text-align:center}
+
+footer{margin-top:40px;color:var(--faint);font-size:.82rem;text-align:center;line-height:1.9}
+footer a{color:var(--muted)}
+
+/* ============================================================
+   גיליונות A4 להדפסה — מרונדרים מחוץ למסך ומצולמים ל-PDF.
+   שוליים זהים מכל צד; שיקוף אופקי לדפי הגב (dir).
+   ============================================================ */
+.pc-stage{position:fixed;left:-99999px;top:0;pointer-events:none}
+.pc-sheet{
+  width:210mm;height:297mm;background:#fff;color:#111;
+  padding:8mm;box-sizing:border-box;
+  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);gap:0;
+  font-family:'Rubik',sans-serif;
+}
+.pc-sheet-front{direction:rtl}
+.pc-sheet-back{direction:ltr}          /* שיקוף מיקומי הכרטיסיות */
+
+.pc-card{
+  border:1px dashed #b8b8b8;           /* קווי גזירה */
+  padding:6mm 7mm;box-sizing:border-box;overflow:hidden;
+  direction:rtl;text-align:right;      /* תוכן תמיד RTL */
+  display:flex;flex-direction:column;
+}
+.pc-blank{border:1px dashed #d8d8d8}
+.pc-head{
+  font-size:9pt;font-weight:700;color:#0e7490;text-align:center;
+  border-bottom:1px solid #e3e3e3;padding-bottom:2mm;margin-bottom:2mm;letter-spacing:.02em;
+}
+.pc-body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2.4mm}
+.pc-line{display:flex;gap:2.5mm;align-items:baseline}
+.pc-lbl{flex:0 0 auto;color:#777;font-size:8.5pt;font-weight:500}
+.pc-val{flex:1 1 0;min-width:0;overflow:hidden;white-space:nowrap;font-weight:700;color:#111;font-size:11pt}
+.pc-name{font-size:12.5pt}
+.pc-mono{direction:ltr;text-align:right;letter-spacing:.6px;font-variant-numeric:tabular-nums}
+.pc-back .pc-mono{text-align:right}
+.pc-pw{font-size:13pt;color:#047857}
+.pc-login{margin-top:1mm}
+.pc-login .pc-lbl,.pc-login .pc-val{font-size:8.5pt;color:#555;font-weight:500}

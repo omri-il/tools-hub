@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מחולל כרטיסי סיסמה לתלמידים</title>
+  <meta name="description" content="העלו את קובץ הסיסמאות של משרד החינוך וקבלו כרטיסיות אישיות דו-צדדיות מוכנות להדפסה וגזירה. הכל רץ בדפדפן — שום מידע לא נשלח לשרת." />
+  <meta property="og:title" content="מחולל כרטיסי סיסמה לתלמידים" />
+  <meta property="og:locale" content="he_IL" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="../">→ חזרה לכל הכלים</a>
+    <div class="masthead">
+      <div class="kicker">הכלים של עומרי אירם</div>
+      <h1>מחולל כרטיסי <span class="em">סיסמה</span></h1>
+      <p class="lede">העלו את קובץ ה-PDF שקיבלתם ממערכת הסיסמאות של משרד החינוך, וקבלו כרטיסיות אישיות דו-צדדיות מוכנות להדפסה וגזירה — כרטיסייה לכל תלמיד, בלי לחשוף את פרטי השאר.</p>
+    </div>
+
+    <div class="privacy">
+      <span>🔒</span>
+      <div><b>הפרטיות נשמרת במלואה.</b> כל הפענוח וההפקה קורים בדפדפן שלכם בלבד. הקובץ ופרטי התלמידים <b>לא נשלחים לשום שרת</b> — הכלי עובד גם בלי חיבור לאינטרנט.</div>
+    </div>
+
+    <div class="sheet">
+      <div class="drop" id="drop">
+        <div class="ico">📄</div>
+        <div class="big">גררו לכאן את קובץ ה-PDF או לחצו לבחירה</div>
+        <div class="sub">קובץ הסיסמאות המקורי שהורדתם ממערכת משרד החינוך</div>
+        <input type="file" id="file" accept="application/pdf,.pdf" />
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div id="result" class="hidden">
+      <div class="sheet" id="clsCard">
+        <div class="summary">
+          <h3 id="summaryHead"></h3>
+          <div id="clsList"></div>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <h3 style="margin-bottom:12px">תצוגה מקדימה — בדקו שהזיהוי תקין</h3>
+        <div class="preview-wrap" id="previewWrap"></div>
+        <button class="btn btn-primary" id="exportBtn" type="button" disabled>הפק PDF להדפסה דו-צדדית</button>
+        <div class="progress hidden" id="progress"></div>
+      </div>
+    </div>
+
+    <footer>
+      <p>הכלי אינו שומר ואינו שולח שום מידע. מומלץ להשמיד את הקובץ המקורי לאחר השימוש, כפי שמנחה משרד החינוך.</p>
+      <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
+    </footer>
+  </div>
+
+  <!-- ספריות מקומיות (offline, ללא קריאות רשת חיצוניות) -->
+  <script src="vendor/pdf.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/html2canvas.min.js"></script>
+  <script src="app.js"></script>
+  <script src="generate.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
