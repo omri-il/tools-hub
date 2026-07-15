@@ -158,34 +158,61 @@ footer a{color:var(--ink);font-weight:700;text-decoration:underline}
   pointer-events:none;user-select:none;font-variant-numeric:tabular-nums;
 }
 
+/* ---------- פאנל עיצוב הכרטיס (בחירת סגנון/גודל + תצוגה חיה) ---------- */
+.opt-group{margin-bottom:16px}
+.opt-label{font-weight:800;font-size:.92rem;margin-bottom:9px}
+.opt-chips{display:flex;flex-wrap:wrap;gap:9px}
+.opt-chip{
+  display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;user-select:none;
+  background:var(--card);border:2.5px solid var(--ink);border-radius:13px;padding:9px 15px;
+  font-weight:800;font-size:.98rem;box-shadow:2px 2px 0 var(--ink);transition:transform .12s, box-shadow .12s, background .12s;
+}
+.opt-chip small{font-weight:600;font-size:.72rem;color:var(--ink-soft)}
+.opt-chip:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+.opt-chip.sel{background:var(--sun);box-shadow:3px 3px 0 var(--ink);transform:translate(-1px,-1px)}
+.opt-chip.sel small{color:var(--ink)}
+
+.pc-preview-wrap{
+  margin-top:6px;background:repeating-linear-gradient(135deg,#EFE7D2 0 12px,#F5EEDD 12px 24px);
+  border:2.5px solid var(--ink);border-radius:16px;padding:20px 16px;
+  display:flex;justify-content:center;
+}
+.pc-preview-row{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.pc-preview-holder{position:relative;display:flex;flex-direction:column;align-items:center}
+.pc-preview{filter:drop-shadow(3px 4px 0 rgba(23,33,59,.28))}
+.pc-preview-cap{margin-top:9px;font-weight:800;font-size:.82rem;color:var(--ink-soft)}
+
 /* ============================================================
-   הכרטיסים המודפסים — "דרכון כניסה" (grayscale-native).
-   מודפסים לרוב בשחור-לבן במדפסת בית-ספר, אז ההיררכיה כאן
-   נבנית מניגודיות, משקל טיפוגרפי ותבניות — לא מצבע. גיליונות
-   A4 מרונדרים מחוץ למסך ומצולמים ל-PDF. שוליים זהים מכל צד;
-   שיקוף אופקי לדפי הגב (dir) כדי שהגב יתלכד בדיוק עם החזית.
+   הכרטיסים המודפסים — grayscale-native. מודפסים לרוב בשחור-לבן,
+   אז ההיררכיה נבנית מניגודיות, משקל וטיפוגרפיה — לא מצבע.
+   מבנה HTML אחד; הסגנון (pc-tpl-*) והגודל (pc-size-*) מעצבים.
+   כל המידות הפנימיות נגזרות מ---u (יחידה לכל גודל) → הכרטיס גדל
+   פרופורציונלית. גיליונות A4 מצולמים ל-PDF; שוליים זהים מכל צד;
+   שיקוף אופקי לדפי הגב (dir) כדי שהגב יתלכד עם החזית.
    ============================================================ */
 .pc-stage{position:fixed;left:-99999px;top:0;pointer-events:none}
 .pc-sheet{
   width:210mm;height:297mm;background:#fff;color:#111;
-  padding:8mm;box-sizing:border-box;
-  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);gap:0;
+  padding:8mm;box-sizing:border-box;display:grid;gap:0;
   font-family:'Rubik',sans-serif;
 }
 .pc-sheet-front{direction:rtl}
 .pc-sheet-back{direction:ltr}          /* שיקוף מיקומי הכרטיסיות */
 
+/* יחידת-מידה לכל גודל (נמנע היקוף em מצטבר) */
+.pc-size-large .pc-card{--u:15px}
+.pc-size-medium .pc-card{--u:12px}
+.pc-size-small .pc-card{--u:8.6px}
+.pc-preview .pc-card{}   /* התצוגה יורשת את אותו --u דרך pc-size-* */
+
+/* ---- שלד בסיס (ברירת מחדל = דרכון) ---- */
 .pc-card{
-  margin:1.6mm;border:1.75pt solid #111;border-radius:5mm;
-  padding:0;box-sizing:border-box;overflow:hidden;position:relative;
-  direction:rtl;text-align:right;display:flex;flex-direction:column;background:#fff;
-}
-.pc-card::before{
-  /* קו-כפול פנימי דק — תחושת "דרכון/תעודה", לא תלוי צבע */
-  content:"";position:absolute;inset:1.3mm;border:.6pt solid #ccc;border-radius:3.6mm;pointer-events:none;
+  margin:1.6mm;border:1.75pt solid #111;border-radius:calc(var(--u)*0.42);
+  box-sizing:border-box;overflow:hidden;position:relative;
+  direction:rtl;text-align:right;display:flex;flex-direction:column;
+  background:#fff;color:#111;font-family:'Rubik',sans-serif;
 }
 .pc-blank{border:1.4pt dashed #bbb;background:none}
-.pc-blank::before{display:none}
 .pc-blank::after{
   content:"";position:absolute;inset:0;margin:auto;width:9mm;height:9mm;
   background:
@@ -194,35 +221,96 @@ footer a{color:var(--ink);font-weight:700;text-decoration:underline}
 }
 
 .pc-band{
-  background:#111;color:#fff;text-align:center;padding:2.2mm 3mm;
-  font-size:8.6pt;font-weight:800;letter-spacing:.06em;flex:0 0 auto;
+  background:#111;color:#fff;text-align:center;
+  padding:calc(var(--u)*0.5) calc(var(--u)*0.9);
+  font-size:calc(var(--u)*0.82);font-weight:800;letter-spacing:.05em;flex:0 0 auto;
 }
+.pc-body{flex:1;display:flex;padding:calc(var(--u)*1) calc(var(--u)*1.2);gap:calc(var(--u)*0.9);align-items:center;min-height:0}
 
-.pc-body{flex:1;display:flex;padding:3.4mm 4mm 3mm;gap:3mm;align-items:center}
-
-/* ---- צד א׳: שם + זהות ---- */
+/* צד א׳ */
 .pc-avatar{
-  flex:0 0 auto;width:13mm;height:13mm;border-radius:50%;border:1.6pt solid #111;
-  display:flex;align-items:center;justify-content:center;font-size:15pt;font-weight:900;
+  flex:0 0 auto;width:calc(var(--u)*3.6);height:calc(var(--u)*3.6);border-radius:50%;
+  border:1.6pt solid #111;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--u)*1.9);font-weight:900;line-height:1;
 }
-.pc-idbox{flex:1;min-width:0;display:flex;flex-direction:column;gap:1.4mm}
-.pc-name{font-size:14.5pt;font-weight:800;line-height:1.15;overflow:hidden;white-space:nowrap}
-.pc-meta{font-size:8.6pt;color:#444;font-weight:600}
+.pc-idbox{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(var(--u)*0.25)}
+.pc-name{font-size:calc(var(--u)*1.55);font-weight:800;line-height:1.12;overflow:hidden;white-space:nowrap}
+.pc-meta{font-size:calc(var(--u)*0.82);color:#333;font-weight:600;line-height:1.2}
 .pc-meta b{color:#111;font-weight:800}
 .pc-seal{
-  position:absolute;left:2.6mm;bottom:2.4mm;width:8mm;height:8mm;border-radius:50%;
-  border:1pt dashed #999;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:6pt;
+  position:absolute;inset-inline-start:calc(var(--u)*0.6);bottom:calc(var(--u)*0.5);
+  width:calc(var(--u)*2.1);height:calc(var(--u)*2.1);border-radius:50%;
+  border:1pt dashed #999;display:none;align-items:center;justify-content:center;color:#aaa;font-size:calc(var(--u)*0.5);
 }
 
-/* ---- צד ב׳: פרטי התחברות ---- */
-.pc-creds{flex:1;display:flex;flex-direction:column;gap:3.4mm;align-items:flex-start;justify-content:center}
+/* צד ב׳ */
+.pc-creds{flex:1;display:flex;flex-direction:column;gap:calc(var(--u)*1.1);align-items:flex-start;justify-content:center}
 .pc-field{width:100%}
-.pc-flabel{font-size:7.6pt;font-weight:800;letter-spacing:.08em;color:#666;margin-bottom:1mm;display:flex;align-items:center;gap:1.4mm}
-.pc-pinrow{display:flex;gap:1mm;direction:ltr;flex-wrap:wrap}
+.pc-flabel{font-size:calc(var(--u)*0.7);font-weight:800;letter-spacing:.07em;color:#666;margin-bottom:calc(var(--u)*0.3)}
+.pc-pinrow{display:flex;gap:calc(var(--u)*0.26);direction:ltr;flex-wrap:wrap}
 .pc-pin{
-  border:1.3pt solid #111;border-radius:1.6mm;min-width:5.6mm;height:7mm;
-  display:flex;align-items:center;justify-content:center;font-size:11pt;font-weight:800;
-  font-variant-numeric:tabular-nums;padding:0 .6mm;
+  border:1.3pt solid #111;border-radius:calc(var(--u)*0.16);
+  min-width:calc(var(--u)*1.2);height:calc(var(--u)*1.65);
+  display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--u)*1);font-weight:800;font-variant-numeric:tabular-nums;padding:0 calc(var(--u)*0.12);
 }
-.pc-pin.small{height:6mm;font-size:9pt;min-width:4.6mm}
-.pc-pin.tiny{height:5.4mm;font-size:7.5pt;min-width:3.6mm}
+.pc-pin.small{font-size:calc(var(--u)*0.82);min-width:calc(var(--u)*1)}
+.pc-pin.tiny{font-size:calc(var(--u)*0.66);min-width:calc(var(--u)*0.82);height:calc(var(--u)*1.4)}
+
+/* ============ סגנון 1: דרכון (ברירת מחדל) — קו-כפול + חותם ============ */
+.pc-tpl-passport .pc-card::before{
+  content:"";position:absolute;inset:calc(var(--u)*0.55);border:.6pt solid #ccc;
+  border-radius:calc(var(--u)*1.5);pointer-events:none;
+}
+.pc-tpl-passport .pc-seal{display:flex}
+
+/* ============ סגנון 2: תג שם — פס עליון + שם ענק וממורכז ============ */
+.pc-tpl-badge .pc-card{border-width:2.4pt;border-radius:calc(var(--u)*0.6)}
+.pc-tpl-badge .pc-band{letter-spacing:.14em;text-transform:uppercase}
+.pc-tpl-badge .pc-body{flex-direction:column;justify-content:center;text-align:center;gap:calc(var(--u)*0.35)}
+.pc-tpl-badge .pc-avatar{display:none}
+.pc-tpl-badge .pc-idbox{align-items:center}
+.pc-tpl-badge .pc-name{font-size:calc(var(--u)*2.1);white-space:normal;line-height:1.05}
+.pc-tpl-badge .pc-meta{text-align:center}
+.pc-tpl-badge .pc-creds{align-items:center;text-align:center}
+.pc-tpl-badge .pc-flabel{text-align:center}
+.pc-tpl-badge .pc-pinrow{justify-content:center}
+
+/* ============ סגנון 3: כרטיס כניסה — פרפורציה מקווקוות (ticket) ============ */
+.pc-tpl-ticket .pc-card{border-radius:calc(var(--u)*0.3)}
+.pc-tpl-ticket .pc-band{border-bottom:1.6pt dashed #fff}
+.pc-tpl-ticket .pc-card::before{
+  /* קו תלישה אנכי — תחושת ספח כרטיס */
+  content:"";position:absolute;top:0;bottom:0;inset-inline-start:22%;
+  border-inline-start:1.4pt dashed #999;pointer-events:none;
+}
+.pc-tpl-ticket .pc-card::after{
+  /* חורי ניקוב קטנים לאורך קו התלישה */
+  content:"";position:absolute;top:calc(var(--u)*0.6);bottom:calc(var(--u)*0.6);inset-inline-start:calc(22% - 0.7pt);
+  width:1.4pt;background:repeating-linear-gradient(#fff 0 2pt,transparent 2pt 5pt);pointer-events:none;
+}
+.pc-tpl-ticket .pc-avatar{border-radius:calc(var(--u)*0.3)}
+
+/* ============ סגנון 4: כיפי — פינות עגולות, מסגרת מנוקדת, אווטאר גדול ============ */
+.pc-tpl-playful .pc-card{border:2.2pt solid #111;border-radius:calc(var(--u)*1.5)}
+.pc-tpl-playful .pc-card::before{
+  content:"";position:absolute;inset:calc(var(--u)*0.6);border:1.4pt dashed #999;
+  border-radius:calc(var(--u)*1);pointer-events:none;
+}
+.pc-tpl-playful .pc-band{border-radius:0;letter-spacing:.1em}
+.pc-tpl-playful .pc-avatar{
+  width:calc(var(--u)*4.1);height:calc(var(--u)*4.1);border:2pt dashed #111;font-size:calc(var(--u)*2.3);
+}
+.pc-tpl-playful .pc-pin{border-radius:calc(var(--u)*0.4);border-width:1.6pt}
+.pc-tpl-playful .pc-name{font-size:calc(var(--u)*1.6)}
+
+/* ============ סגנון 5: מינימלי — בלי פס, קו שיער, תווים בקו תחתון ============ */
+.pc-tpl-minimal .pc-card{border:0.9pt solid #111;border-radius:calc(var(--u)*0.3)}
+.pc-tpl-minimal .pc-band{display:none}
+.pc-tpl-minimal .pc-body{padding-top:calc(var(--u)*1.5);align-items:center}
+.pc-tpl-minimal .pc-avatar{display:none}
+.pc-tpl-minimal .pc-name{font-size:calc(var(--u)*1.75);font-weight:700}
+.pc-tpl-minimal .pc-meta{color:#666}
+.pc-tpl-minimal .pc-flabel{color:#999;letter-spacing:.14em;text-transform:uppercase}
+.pc-tpl-minimal .pc-pin{border:none;border-bottom:1.2pt solid #111;border-radius:0;height:calc(var(--u)*1.5);min-width:calc(var(--u)*0.95)}
+.pc-tpl-minimal .pc-pin.tiny{min-width:calc(var(--u)*0.7)}

@@ -12,6 +12,12 @@
   const previewWrap = $('previewWrap');
   const exportBtn = $('exportBtn');
   const progressEl = $('progress');
+  const tplChooser = $('tplChooser');
+  const sizeChooser = $('sizeChooser');
+  const cardPreview = $('cardPreview');
+
+  // בחירת עיצוב הכרטיס (נשלחת ל-generate ומזינה את התצוגה החיה)
+  const cardOpts = { template: 'passport', size: 'medium' };
 
   function setStatus(msg, kind) {
     statusEl.className = 'status' + (kind ? ' ' + kind : '');
@@ -101,14 +107,64 @@
     else $('clsCard').classList.remove('hidden');
 
     renderPreview(res);
+    buildChoosers();
+    renderCardPreview();
     resultSection.classList.remove('hidden');
     clsList.querySelectorAll('.cls-cb').forEach((cb) =>
       cb.addEventListener('change', () => {
         cb.closest('.cls-chip').classList.toggle('off', !cb.checked);
         renderPreview(res);
+        renderCardPreview();
       })
     );
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ---- עיצוב הכרטיס: בוחרים + תצוגה חיה ----
+  let choosersBuilt = false;
+  function chip(kind, item, selId) {
+    const sub = item.note ? '<small>' + escapeHtml(item.note) + '</small>' : '';
+    return (
+      '<button type="button" class="opt-chip' +
+      (item.id === selId ? ' sel' : '') +
+      '" data-kind="' + kind + '" data-id="' + item.id + '">' +
+      escapeHtml(item.label) + sub +
+      '</button>'
+    );
+  }
+  function buildChoosers() {
+    if (choosersBuilt) return;
+    tplChooser.innerHTML = window.PasswordCards.TEMPLATES.map((t) => chip('template', t, cardOpts.template)).join('');
+    sizeChooser.innerHTML = window.PasswordCards.SIZES.map((s) => chip('size', s, cardOpts.size)).join('');
+    [tplChooser, sizeChooser].forEach((box) =>
+      box.addEventListener('click', (e) => {
+        const btn = e.target.closest('.opt-chip');
+        if (!btn) return;
+        cardOpts[btn.dataset.kind] = btn.dataset.id;
+        box.querySelectorAll('.opt-chip').forEach((c) => c.classList.toggle('sel', c === btn));
+        renderCardPreview();
+      })
+    );
+    choosersBuilt = true;
+  }
+
+  const DEMO = { fullName: 'ישראל ישראלי', userCode: '7000000', password: '123456', birthDate: '' };
+  function sampleStudent() {
+    const cls = selectedClasses()[0] || (parsed && parsed.classes[0]);
+    const st = cls && cls.students[0];
+    return {
+      student: st || DEMO,
+      inst: (parsed && parsed.institution) || 'בית הספר',
+      cls: (cls && cls.name) || 'א',
+    };
+  }
+  function renderCardPreview() {
+    if (!parsed) return;
+    const s = sampleStudent();
+    cardPreview.innerHTML = '';
+    const row = window.PasswordCards.buildPreview(s.student, s.inst, s.cls, cardOpts);
+    cardPreview.appendChild(row);
+    window.PasswordCards.fitCards(cardPreview);
   }
 
   function checkedIndexes() {
@@ -192,6 +248,7 @@
       const avatar = el.closest('tr').querySelector('.avatar');
       if (avatar) avatar.textContent = initial(el.value);
     }
+    renderCardPreview(); // שיהיה תואם אם ערכתם את התלמיד שמוצג בתצוגה
   });
 
   // ---- ייצוא ----
@@ -202,9 +259,13 @@
     progressEl.classList.remove('hidden');
     progressEl.textContent = 'מכין את הקובץ…';
     try {
-      await window.PasswordCards.generate(classes, (done, total) => {
-        progressEl.textContent = 'מעבד עמוד ' + done + ' מתוך ' + total + '…';
-      });
+      await window.PasswordCards.generate(
+        classes,
+        (done, total) => {
+          progressEl.textContent = 'מעבד עמוד ' + done + ' מתוך ' + total + '…';
+        },
+        { template: cardOpts.template, size: cardOpts.size }
+      );
       progressEl.textContent = 'הקובץ הורד בהצלחה ✓';
     } catch (err) {
       console.error(err);
