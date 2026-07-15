@@ -14,6 +14,7 @@
     { id: 'space', label: '🚀 חלל' },
     { id: 'heroes', label: '🦸 גיבורים' },
     { id: 'rainbow', label: '🌈 קשת' },
+    { id: 'plain', label: '⬜ פשוט' },
   ];
   const SIZES = [
     { id: 'xl', label: 'ענק', note: '4 בעמוד', cols: 2, rows: 2 },
@@ -418,6 +419,12 @@
         '<div class="pc-info">' + nameBlock(st, x.cls, x.inst) + '</div>'),
       back: (st, x) => card('rainbow', x,
         '<div class="pc-deco">' + sparkle(x.c.accent) + sparkle('#F5B012') + sparkle(x.c.deep) + '</div>' + head('הקסם שלי') + creds(st), true),
+    },
+    // ⬜ פשוט — בלי איורים, מסגרת נקייה בצבע התלמיד. לילדים גדולים יותר / מי שרוצה משהו שקט.
+    plain: {
+      front: (st, x) => card('plain', x,
+        '<div class="pc-info">' + nameBlock(st, x.cls, x.inst) + '</div>'),
+      back: (st, x) => card('plain', x, head('פרטי התחברות') + creds(st), true),
     },
   };
 

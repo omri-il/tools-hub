@@ -324,3 +324,12 @@ footer a{color:var(--ink);font-weight:700;text-decoration:underline}
 .pc-tpl-rainbow .pc-deco .pc-sparkle:nth-child(3){left:16%;top:82%}
 .pc-tpl-rainbow .pc-backhead{color:var(--c-deep)}
 .pc-tpl-rainbow .pc-field{border:2pt solid var(--c-accent)}
+
+/* ============ ⬜ פשוט — בלי איורים, מסגרת נקייה בצבע התלמיד ============ */
+.pc-card.pc-tpl-plain{background:#fff;border:2pt solid var(--c-accent);justify-content:center}
+.pc-tpl-plain .pc-info{width:100%;text-align:center;padding:0 calc(var(--u)*1.4)}
+.pc-tpl-plain .pc-name{color:var(--c-ink);font-size:calc(var(--u)*2.05*var(--text-scale,1))}
+.pc-tpl-plain .pc-meta{color:var(--c-deep)}
+.pc-card.pc-tpl-plain.pc-back{justify-content:center}
+.pc-tpl-plain .pc-backhead{color:var(--c-deep);text-align:center}
+.pc-tpl-plain .pc-field{border:2pt solid var(--c-accent)}
