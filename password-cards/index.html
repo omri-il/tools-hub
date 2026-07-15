@@ -31,7 +31,12 @@
       <div><b>הפרטיות נשמרת במלואה.</b> כל הפענוח וההפקה קורים בדפדפן שלכם בלבד. הקובץ ופרטי התלמידים <b>לא נשלחים לשום שרת</b> — הכלי עובד גם בלי חיבור לאינטרנט.</div>
     </div>
 
-    <div class="sheet">
+    <div class="mode-toggle">
+      <button type="button" class="mode-btn active" id="modePdf">📄 מקובץ PDF</button>
+      <button type="button" class="mode-btn" id="modeManual">✏️ הזנה ידנית</button>
+    </div>
+
+    <div class="sheet" id="pdfPane">
       <div class="drop" id="drop">
         <span class="ico">📄</span>
         <div class="big">גררו לכאן את קובץ ה-PDF או לחצו לבחירה</div>
@@ -39,6 +44,20 @@
         <input type="file" id="file" accept="application/pdf,.pdf" />
       </div>
       <div class="status" id="status"></div>
+    </div>
+
+    <div class="sheet hidden" id="manualPane">
+      <h3>הזנה ידנית</h3>
+      <p class="edit-hint">מושלם לתיקון ילד בודד או להכנת רשימה קצרה — מקלידים ומפיקים כרטיסים, בלי קובץ.</p>
+      <div class="manual-head">
+        <div><label for="mClass">שם הכיתה</label><input id="mClass" type="text" placeholder="למשל: א'1" /></div>
+        <div><label for="mInst">מוסד <span class="opt-note">(רשות)</span></label><input id="mInst" type="text" placeholder="שם בית הספר" /></div>
+      </div>
+      <div class="m-rows-head"><span>שם התלמיד/ה</span><span>קוד משתמש</span><span>סיסמה</span><span></span></div>
+      <div id="mRows"></div>
+      <button class="btn btn-ghost" id="mAdd" type="button">➕ הוסף תלמיד/ה</button>
+      <button class="btn btn-primary" id="mBuild" type="button">צור כרטיסים ←</button>
+      <div class="status" id="mStatus"></div>
     </div>
 
     <div id="result" class="hidden">
@@ -56,8 +75,12 @@
           <div class="opt-chips" id="tplChooser"></div>
         </div>
         <div class="opt-group">
-          <div class="opt-label">בחרו גודל</div>
+          <div class="opt-label">בחרו גודל <span class="opt-note">(כמה כרטיסים בעמוד)</span></div>
           <div class="opt-chips" id="sizeChooser"></div>
+        </div>
+        <div class="opt-group">
+          <div class="opt-label">גודל הטקסט — גררו לשינוי <span class="ts-val" id="tsVal"></span></div>
+          <input type="range" class="ts-slider" id="textScale" min="0.8" max="1.7" step="0.05" value="1.15" />
         </div>
         <div class="pc-preview-wrap" id="cardPreview"></div>
       </div>
@@ -77,7 +100,7 @@
     </footer>
   </div>
 
-  <div class="version-tag" title="גרסת הכלי">גרסה 1.2.0 · 2026-07-15</div>
+  <div class="version-tag" title="גרסת הכלי">גרסה 1.4.0 · 2026-07-16</div>
 
   <!-- ספריות מקומיות (offline, ללא קריאות רשת חיצוניות) -->
   <script src="vendor/pdf.min.js"></script>

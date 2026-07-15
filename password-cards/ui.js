@@ -15,9 +15,11 @@
   const tplChooser = $('tplChooser');
   const sizeChooser = $('sizeChooser');
   const cardPreview = $('cardPreview');
+  const textScaleEl = $('textScale');
+  const tsVal = $('tsVal');
 
   // בחירת עיצוב הכרטיס (נשלחת ל-generate ומזינה את התצוגה החיה)
-  const cardOpts = { template: 'passport', size: 'medium' };
+  const cardOpts = { template: 'animals', size: 'medium', textScale: 1.15 };
 
   function setStatus(msg, kind) {
     statusEl.className = 'status' + (kind ? ' ' + kind : '');
@@ -145,7 +147,17 @@
         renderCardPreview();
       })
     );
+    textScaleEl.value = String(cardOpts.textScale);
+    updateTsLabel();
+    textScaleEl.addEventListener('input', () => {
+      cardOpts.textScale = parseFloat(textScaleEl.value);
+      updateTsLabel();
+      renderCardPreview();
+    });
     choosersBuilt = true;
+  }
+  function updateTsLabel() {
+    if (tsVal) tsVal.textContent = Math.round(cardOpts.textScale * 100) + '%';
   }
 
   const DEMO = { fullName: 'ישראל ישראלי', userCode: '7000000', password: '123456', birthDate: '' };
@@ -162,8 +174,16 @@
     if (!parsed) return;
     const s = sampleStudent();
     cardPreview.innerHTML = '';
-    const row = window.PasswordCards.buildPreview(s.student, s.inst, s.cls, cardOpts);
+    const row = window.PasswordCards.buildPreview(s.student, s.inst, s.cls, cardOpts, 0);
     cardPreview.appendChild(row);
+    // רצועת "כיתת קשת" — כל תלמיד מקבל צבע אחר
+    const pal = window.PasswordCards.PALETTE || [];
+    const sw = pal.map((c) => '<span class="pc-swatch" style="background:' + c.accent + '"></span>').join('');
+    const strip = document.createElement('div');
+    strip.innerHTML =
+      '<div class="pc-hint">🌈 כיתת קשת — כל תלמיד/ה מקבל/ת צבע אחר אוטומטית</div>' +
+      '<div class="pc-swatches">' + sw + '</div>';
+    cardPreview.appendChild(strip);
     window.PasswordCards.fitCards(cardPreview);
   }
 
@@ -264,7 +284,7 @@
         (done, total) => {
           progressEl.textContent = 'מעבד עמוד ' + done + ' מתוך ' + total + '…';
         },
-        { template: cardOpts.template, size: cardOpts.size }
+        { template: cardOpts.template, size: cardOpts.size, textScale: cardOpts.textScale }
       );
       progressEl.textContent = 'הקובץ הורד בהצלחה ✓';
     } catch (err) {
@@ -273,6 +293,55 @@
     } finally {
       exportBtn.disabled = false;
     }
+  });
+
+  // ---- מצב קלט: PDF / הזנה ידנית ----
+  const modePdf = $('modePdf'), modeManual = $('modeManual');
+  const pdfPane = $('pdfPane'), manualPane = $('manualPane');
+  const mRows = $('mRows'), mAdd = $('mAdd'), mBuild = $('mBuild');
+  const mStatus = $('mStatus'), mClass = $('mClass'), mInst = $('mInst');
+
+  function setMode(manual) {
+    modeManual.classList.toggle('active', manual);
+    modePdf.classList.toggle('active', !manual);
+    manualPane.classList.toggle('hidden', !manual);
+    pdfPane.classList.toggle('hidden', manual);
+    resultSection.classList.add('hidden');
+    parsed = null;
+    if (manual && !mRows.children.length) { addManualRow(); addManualRow(); addManualRow(); }
+  }
+  modePdf.addEventListener('click', () => setMode(false));
+  modeManual.addEventListener('click', () => setMode(true));
+
+  function addManualRow(st) {
+    const row = document.createElement('div');
+    row.className = 'm-row';
+    row.innerHTML =
+      '<input type="text" class="m-name" placeholder="שם מלא" value="' + escapeHtml((st && st.fullName) || '') + '">' +
+      '<input type="text" class="m-code mono" placeholder="קוד" value="' + escapeHtml((st && st.userCode) || '') + '">' +
+      '<input type="text" class="m-pass mono" placeholder="סיסמה" value="' + escapeHtml((st && st.password) || '') + '">' +
+      '<button type="button" class="m-del" title="מחיקה">✕</button>';
+    row.querySelector('.m-del').addEventListener('click', () => row.remove());
+    mRows.appendChild(row);
+  }
+  mAdd.addEventListener('click', () => addManualRow());
+  mBuild.addEventListener('click', () => {
+    const cls = mClass.value.trim();
+    if (!cls) { mStatus.className = 'status err'; mStatus.textContent = 'צריך למלא שם כיתה.'; return; }
+    const students = [];
+    mRows.querySelectorAll('.m-row').forEach((r) => {
+      const fullName = r.querySelector('.m-name').value.trim();
+      const userCode = r.querySelector('.m-code').value.trim();
+      const password = r.querySelector('.m-pass').value.trim();
+      if (fullName || userCode || password) students.push({ fullName: fullName, userCode: userCode, password: password, birthDate: '' });
+    });
+    if (!students.length) { mStatus.className = 'status err'; mStatus.textContent = 'צריך להזין לפחות תלמיד/ה אחד/ת.'; return; }
+    mStatus.className = 'status ok';
+    mStatus.textContent = 'נוצרו ' + students.length + ' כרטיסים ✓';
+    const inst = mInst.value.trim();
+    const res = { institution: inst, classes: [{ name: cls, institution: inst, students: students }], totalStudents: students.length, valid: true };
+    parsed = res;
+    renderResult(res);
   });
 
   function escapeHtml(s) {

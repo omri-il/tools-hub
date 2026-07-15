@@ -6,6 +6,7 @@
 @font-face{font-family:'Rubik';font-weight:700;font-display:swap;src:url('fonts/rubik-700.woff2') format('woff2');}
 @font-face{font-family:'Rubik';font-weight:800;font-display:swap;src:url('fonts/rubik-800.woff2') format('woff2');}
 @font-face{font-family:'Rubik';font-weight:900;font-display:swap;src:url('fonts/rubik-900.woff2') format('woff2');}
+@font-face{font-family:'Suez One';font-weight:400;font-display:swap;src:url('fonts/suez-one-400.woff2') format('woff2');}
 
 /* ============================================================
    THEME — "כרטיס-מדבקה" (sticker badge). מוצר שמנפיק תגי-כניסה
@@ -158,8 +159,36 @@ footer a{color:var(--ink);font-weight:700;text-decoration:underline}
   pointer-events:none;user-select:none;font-variant-numeric:tabular-nums;
 }
 
+/* ---------- מתג מצב + הזנה ידנית ---------- */
+.mode-toggle{display:flex;gap:10px;margin-bottom:18px}
+.mode-btn{flex:1;font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer;
+  background:var(--card);color:var(--ink-soft);border:2.5px solid var(--ink);border-radius:14px;padding:12px;
+  box-shadow:3px 3px 0 var(--ink);transition:transform .12s, box-shadow .12s, background .12s}
+.mode-btn:hover{transform:translate(-1px,-1px)}
+.mode-btn.active{background:var(--sun);color:var(--ink)}
+.opt-note{font-weight:500;font-size:.78rem;color:var(--ink-soft)}
+
+.manual-head{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.manual-head>div{flex:1;min-width:150px}
+.manual-head label{display:block;font-weight:800;font-size:.86rem;margin-bottom:5px}
+.manual-head input,.m-row input{width:100%;font-family:inherit;font-size:.98rem;background:var(--paper);
+  border:2.5px solid var(--ink);border-radius:11px;padding:10px 12px;color:var(--ink)}
+.m-rows-head{display:grid;grid-template-columns:2fr 1.3fr 1.3fr 34px;gap:8px;font-weight:800;font-size:.78rem;color:var(--ink-soft);margin-bottom:6px;padding:0 2px}
+.m-row{display:grid;grid-template-columns:2fr 1.3fr 1.3fr 34px;gap:8px;margin-bottom:8px;align-items:center}
+.m-row input{direction:rtl}
+.m-row input.mono{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.m-del{cursor:pointer;border:2.5px solid var(--err);background:#fff;color:var(--err);border-radius:10px;font-weight:800;height:42px;font-size:1.1rem;line-height:1}
+.btn-ghost{background:var(--card);color:var(--ink);border:2.5px dashed var(--ink);box-shadow:none;border-radius:14px;padding:12px 20px;font-size:1rem;margin-top:6px}
+.btn-ghost:hover{background:var(--sun)}
+
 /* ---------- פאנל עיצוב הכרטיס (בחירת סגנון/גודל + תצוגה חיה) ---------- */
 .opt-group{margin-bottom:16px}
+.ts-val{font-weight:800;color:var(--bubble-dark)}
+.ts-slider{width:100%;height:26px;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+.ts-slider::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:var(--sun);border:2.5px solid var(--ink)}
+.ts-slider::-moz-range-track{height:10px;border-radius:999px;background:var(--sun);border:2.5px solid var(--ink)}
+.ts-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;margin-top:-11px;border-radius:50%;background:var(--bubble);border:3px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.ts-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--bubble);border:3px solid var(--ink)}
 .opt-label{font-weight:800;font-size:.92rem;margin-bottom:9px}
 .opt-chips{display:flex;flex-wrap:wrap;gap:9px}
 .opt-chip{
@@ -173,144 +202,125 @@ footer a{color:var(--ink);font-weight:700;text-decoration:underline}
 .opt-chip.sel small{color:var(--ink)}
 
 .pc-preview-wrap{
-  margin-top:6px;background:repeating-linear-gradient(135deg,#EFE7D2 0 12px,#F5EEDD 12px 24px);
-  border:2.5px solid var(--ink);border-radius:16px;padding:20px 16px;
-  display:flex;justify-content:center;
+  margin-top:6px;background:linear-gradient(135deg,#FFF3D6,#FFE7F0 55%,#E4F1FF);
+  border:3px solid var(--ink);border-radius:22px;padding:30px 20px;
+  display:flex;justify-content:center;box-shadow:inset 0 2px 0 rgba(255,255,255,.55);
 }
-.pc-preview-row{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.pc-preview-row{display:flex;gap:30px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
 .pc-preview-holder{position:relative;display:flex;flex-direction:column;align-items:center}
-.pc-preview{filter:drop-shadow(3px 4px 0 rgba(23,33,59,.28))}
-.pc-preview-cap{margin-top:9px;font-weight:800;font-size:.82rem;color:var(--ink-soft)}
+.pc-preview{filter:drop-shadow(5px 6px 0 rgba(23,33,59,.20))}
+.pc-preview-cap{margin-top:12px;font-weight:800;font-size:.95rem;color:var(--ink-soft)}
+.pc-hint{margin-top:14px;text-align:center;font-weight:600;font-size:.86rem;color:var(--ink-soft)}
+.pc-swatches{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.pc-swatch{width:20px;height:20px;border-radius:6px;border:2px solid var(--ink)}
 
 /* ============================================================
-   הכרטיסים המודפסים — grayscale-native. מודפסים לרוב בשחור-לבן,
-   אז ההיררכיה נבנית מניגודיות, משקל וטיפוגרפיה — לא מצבע.
-   מבנה HTML אחד; הסגנון (pc-tpl-*) והגודל (pc-size-*) מעצבים.
-   כל המידות הפנימיות נגזרות מ---u (יחידה לכל גודל) → הכרטיס גדל
-   פרופורציונלית. גיליונות A4 מצולמים ל-PDF; שוליים זהים מכל צד;
-   שיקוף אופקי לדפי הגב (dir) כדי שהגב יתלכד עם החזית.
+   הכרטיסים המודפסים — צבעוני לילדים. 4 עולמות (‎pc-tpl-*‎),
+   "כיתת קשת": צבע לכל תלמיד דרך ‎--c-*‎ על הכרטיס. הגודל דרך ‎--u‎.
+   כל האיורים SVG שטוח (בטוח ל-html2canvas). שיקוף אופקי לגב (dir).
    ============================================================ */
 .pc-stage{position:fixed;left:-99999px;top:0;pointer-events:none}
 .pc-sheet{
-  width:210mm;height:297mm;background:#fff;color:#111;
-  padding:8mm;box-sizing:border-box;display:grid;gap:0;
-  font-family:'Rubik',sans-serif;
+  width:210mm;height:297mm;background:#fff;
+  padding:8mm;box-sizing:border-box;display:grid;gap:0;font-family:'Rubik',sans-serif;
 }
 .pc-sheet-front{direction:rtl}
-.pc-sheet-back{direction:ltr}          /* שיקוף מיקומי הכרטיסיות */
+.pc-sheet-back{direction:ltr}
 
-/* יחידת-מידה לכל גודל (נמנע היקוף em מצטבר) */
+.pc-size-xl .pc-card{--u:20px}
 .pc-size-large .pc-card{--u:15px}
 .pc-size-medium .pc-card{--u:12px}
-.pc-size-small .pc-card{--u:8.6px}
-.pc-preview .pc-card{}   /* התצוגה יורשת את אותו --u דרך pc-size-* */
+.pc-size-small .pc-card{--u:9px}
+.pc-size-mini .pc-card{--u:6.4px}
+.pc-size-micro .pc-card{--u:4.6px}
 
-/* ---- שלד בסיס (ברירת מחדל = דרכון) ---- */
 .pc-card{
-  margin:1.6mm;border:1.75pt solid #111;border-radius:calc(var(--u)*0.42);
+  --c-bg:#eee;--c-accent:#888;--c-deep:#555;--c-ink:#222;
+  margin:1.6mm;border-radius:calc(var(--u)*1.15);
   box-sizing:border-box;overflow:hidden;position:relative;
-  direction:rtl;text-align:right;display:flex;flex-direction:column;
-  background:#fff;color:#111;font-family:'Rubik',sans-serif;
+  direction:rtl;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  background:#fff;color:var(--c-ink);font-family:'Rubik',sans-serif;
 }
-.pc-blank{border:1.4pt dashed #bbb;background:none}
-.pc-blank::after{
-  content:"";position:absolute;inset:0;margin:auto;width:9mm;height:9mm;
-  background:
-    linear-gradient(45deg,transparent 47%,#ddd 47% 53%,transparent 53%),
-    linear-gradient(-45deg,transparent 47%,#ddd 47% 53%,transparent 53%);
-}
+.pc-blank{background:#FAFAFA;border:1.4pt dashed #ccc}
 
-.pc-band{
-  background:#111;color:#fff;text-align:center;
-  padding:calc(var(--u)*0.5) calc(var(--u)*0.9);
-  font-size:calc(var(--u)*0.82);font-weight:800;letter-spacing:.05em;flex:0 0 auto;
-}
-.pc-body{flex:1;display:flex;padding:calc(var(--u)*1) calc(var(--u)*1.2);gap:calc(var(--u)*0.9);align-items:center;min-height:0}
+/* ---- SVG + קישוט משותפים ---- */
+.pc-svg{width:100%;height:100%;display:block}
+.pc-deco{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.pc-dot{position:absolute;width:calc(var(--u)*0.55);height:calc(var(--u)*0.55);border-radius:50%;opacity:.45;transform:translate(-50%,-50%)}
+.pc-star{position:absolute;width:calc(var(--u)*1.15);height:calc(var(--u)*1.15);opacity:.92}
+.pc-sparkle{position:absolute;width:calc(var(--u)*1.6);height:calc(var(--u)*1.6)}
 
-/* צד א׳ */
-.pc-avatar{
-  flex:0 0 auto;width:calc(var(--u)*3.6);height:calc(var(--u)*3.6);border-radius:50%;
-  border:1.6pt solid #111;display:flex;align-items:center;justify-content:center;
-  font-size:calc(var(--u)*1.9);font-weight:900;line-height:1;
-}
-.pc-idbox{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(var(--u)*0.25)}
-.pc-name{font-size:calc(var(--u)*1.55);font-weight:800;line-height:1.12;overflow:hidden;white-space:nowrap}
-.pc-meta{font-size:calc(var(--u)*0.82);color:#333;font-weight:600;line-height:1.2}
-.pc-meta b{color:#111;font-weight:800}
-.pc-seal{
-  position:absolute;inset-inline-start:calc(var(--u)*0.6);bottom:calc(var(--u)*0.5);
-  width:calc(var(--u)*2.1);height:calc(var(--u)*2.1);border-radius:50%;
-  border:1pt dashed #999;display:none;align-items:center;justify-content:center;color:#aaa;font-size:calc(var(--u)*0.5);
-}
+/* ---- טקסט משותף ---- */
+.pc-hero{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*0.5)}
+.pc-info{position:relative;z-index:2;width:100%;padding:0 calc(var(--u)*0.7)}
+.pc-name{font-family:'Suez One','Rubik',sans-serif;font-weight:400;font-size:calc(var(--u)*1.9*var(--text-scale,1));line-height:1.03;overflow:hidden;white-space:nowrap}
+.pc-meta{font-size:calc(var(--u)*0.9*var(--text-scale,1));font-weight:600;margin-top:calc(var(--u)*0.26)}
+.pc-meta b{font-weight:800}
+.pc-eyebrow{position:relative;z-index:2;font-weight:800;font-size:calc(var(--u)*0.86*var(--text-scale,1));letter-spacing:.03em}
+.pc-badge{background:#fff;border-radius:50%;box-shadow:0 calc(var(--u)*0.28) 0 rgba(0,0,0,.10);
+  padding:calc(var(--u)*0.55);width:calc(var(--u)*5.8);height:calc(var(--u)*5.8);flex:0 0 auto}
 
-/* צד ב׳ */
-.pc-creds{flex:1;display:flex;flex-direction:column;gap:calc(var(--u)*1.1);align-items:flex-start;justify-content:center}
-.pc-field{width:100%}
-.pc-flabel{font-size:calc(var(--u)*0.7);font-weight:800;letter-spacing:.07em;color:#666;margin-bottom:calc(var(--u)*0.3)}
-.pc-pinrow{display:flex;gap:calc(var(--u)*0.26);direction:ltr;flex-wrap:wrap}
+/* ---- פרטי התחברות (גב) — תיבות בניגודיות גבוהה ---- */
+.pc-backhead{position:relative;z-index:2;font-family:'Suez One','Rubik',sans-serif;font-size:calc(var(--u)*1.28*var(--text-scale,1));margin:calc(var(--u)*0.5) 0 calc(var(--u)*0.7)}
+.pc-creds{position:relative;z-index:2;width:100%;padding:0 calc(var(--u)*0.9);display:flex;flex-direction:column;gap:calc(var(--u)*0.7);align-items:stretch}
+.pc-field{width:100%;background:rgba(255,255,255,.94);border-radius:calc(var(--u)*0.7);padding:calc(var(--u)*0.45) calc(var(--u)*0.5);box-shadow:0 calc(var(--u)*0.14) 0 rgba(0,0,0,.08)}
+.pc-flabel{font-size:calc(var(--u)*0.72*var(--text-scale,1));font-weight:800;letter-spacing:.04em;color:#666;margin-bottom:calc(var(--u)*0.26);text-align:center}
+.pc-pinrow{display:flex;gap:calc(var(--u)*0.22);direction:ltr;flex-wrap:nowrap;justify-content:center}
 .pc-pin{
-  border:1.3pt solid #111;border-radius:calc(var(--u)*0.16);
-  min-width:calc(var(--u)*1.2);height:calc(var(--u)*1.65);
-  display:flex;align-items:center;justify-content:center;
-  font-size:calc(var(--u)*1);font-weight:800;font-variant-numeric:tabular-nums;padding:0 calc(var(--u)*0.12);
+  border:1.4pt solid var(--c-deep);border-radius:calc(var(--u)*0.22);
+  min-width:calc(var(--u)*1.12*var(--text-scale,1));height:calc(var(--u)*1.55*var(--text-scale,1));
+  display:flex;align-items:center;justify-content:center;background:#fff;color:#20223A;
+  font-size:calc(var(--u)*1.05*var(--text-scale,1));font-weight:800;font-variant-numeric:tabular-nums;padding:0 calc(var(--u)*0.1);
 }
-.pc-pin.small{font-size:calc(var(--u)*0.82);min-width:calc(var(--u)*1)}
-.pc-pin.tiny{font-size:calc(var(--u)*0.66);min-width:calc(var(--u)*0.82);height:calc(var(--u)*1.4)}
+.pc-pin.small{font-size:calc(var(--u)*0.85*var(--text-scale,1));min-width:calc(var(--u)*0.98*var(--text-scale,1))}
+.pc-pin.tiny{font-size:calc(var(--u)*0.66*var(--text-scale,1));min-width:calc(var(--u)*0.82*var(--text-scale,1));height:calc(var(--u)*1.34*var(--text-scale,1))}
 
-/* ============ סגנון 1: דרכון (ברירת מחדל) — קו-כפול + חותם ============ */
-.pc-tpl-passport .pc-card::before{
-  content:"";position:absolute;inset:calc(var(--u)*0.55);border:.6pt solid #ccc;
-  border-radius:calc(var(--u)*1.5);pointer-events:none;
-}
-.pc-tpl-passport .pc-seal{display:flex}
+/* ============ 🐾 חיות ============ */
+.pc-card.pc-tpl-badgestyle{background:var(--c-bg)}
+.pc-tpl-badgestyle .pc-top{position:absolute;top:0;left:0;right:0;height:45%;background:var(--c-accent);border-radius:0 0 46% 46%/0 0 20% 20%;z-index:1}
+.pc-tpl-badgestyle .pc-hero{margin-top:calc(var(--u)*0.9)}
+.pc-tpl-badgestyle .pc-badge{width:calc(var(--u)*6.4);height:calc(var(--u)*6.4)}
+.pc-tpl-badgestyle .pc-info{flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:calc(var(--u)*0.2)}
+.pc-tpl-badgestyle .pc-name{color:var(--c-ink)}
+.pc-tpl-badgestyle .pc-meta{color:var(--c-deep)}
+.pc-card.pc-tpl-badgestyle.pc-back{justify-content:center}
+.pc-tpl-badgestyle .pc-backhead{color:var(--c-deep)}
+.pc-tpl-badgestyle .pc-field{border:2pt solid var(--c-accent)}
 
-/* ============ סגנון 2: תג שם — פס עליון + שם ענק וממורכז ============ */
-.pc-tpl-badge .pc-card{border-width:2.4pt;border-radius:calc(var(--u)*0.6)}
-.pc-tpl-badge .pc-band{letter-spacing:.14em;text-transform:uppercase}
-.pc-tpl-badge .pc-body{flex-direction:column;justify-content:center;text-align:center;gap:calc(var(--u)*0.35)}
-.pc-tpl-badge .pc-avatar{display:none}
-.pc-tpl-badge .pc-idbox{align-items:center}
-.pc-tpl-badge .pc-name{font-size:calc(var(--u)*2.1);white-space:normal;line-height:1.05}
-.pc-tpl-badge .pc-meta{text-align:center}
-.pc-tpl-badge .pc-creds{align-items:center;text-align:center}
-.pc-tpl-badge .pc-flabel{text-align:center}
-.pc-tpl-badge .pc-pinrow{justify-content:center}
+/* ============ 🚀 חלל ============ */
+.pc-card.pc-tpl-space{background:radial-gradient(125% 90% at 50% 12%,var(--c-deep),#0B1030 92%);color:#fff;justify-content:center;gap:calc(var(--u)*0.35)}
+.pc-tpl-space .pc-planet{position:absolute;width:calc(var(--u)*3);height:calc(var(--u)*3);top:calc(var(--u)*0.5);inset-inline-end:calc(var(--u)*0.5);opacity:.92}
+.pc-tpl-space .pc-rocket{width:calc(var(--u)*4.6);height:calc(var(--u)*4.6);display:block}
+.pc-tpl-space .pc-eyebrow{color:#FFD23F}
+.pc-tpl-space .pc-name{color:#fff}
+.pc-tpl-space .pc-meta{color:#C9D4FF}
+.pc-tpl-space .pc-star{opacity:.85}
+.pc-card.pc-tpl-space.pc-back{justify-content:center}
+.pc-tpl-space .pc-backhead{color:#FFD23F}
+.pc-tpl-space .pc-flabel{color:#555}
 
-/* ============ סגנון 3: כרטיס כניסה — פרפורציה מקווקוות (ticket) ============ */
-.pc-tpl-ticket .pc-card{border-radius:calc(var(--u)*0.3)}
-.pc-tpl-ticket .pc-band{border-bottom:1.6pt dashed #fff}
-.pc-tpl-ticket .pc-card::before{
-  /* קו תלישה אנכי — תחושת ספח כרטיס */
-  content:"";position:absolute;top:0;bottom:0;inset-inline-start:22%;
-  border-inline-start:1.4pt dashed #999;pointer-events:none;
-}
-.pc-tpl-ticket .pc-card::after{
-  /* חורי ניקוב קטנים לאורך קו התלישה */
-  content:"";position:absolute;top:calc(var(--u)*0.6);bottom:calc(var(--u)*0.6);inset-inline-start:calc(22% - 0.7pt);
-  width:1.4pt;background:repeating-linear-gradient(#fff 0 2pt,transparent 2pt 5pt);pointer-events:none;
-}
-.pc-tpl-ticket .pc-avatar{border-radius:calc(var(--u)*0.3)}
+/* ============ 🦸 גיבורים ============ */
+.pc-card.pc-tpl-heroes{background:var(--c-bg);justify-content:center;gap:calc(var(--u)*0.35)}
+.pc-tpl-heroes .pc-burst{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center}
+.pc-tpl-heroes .pc-burst .pc-svg{width:150%;height:150%}
+.pc-tpl-heroes .pc-emblem{position:relative;width:calc(var(--u)*5.2);height:calc(var(--u)*5.2);z-index:2}
+.pc-tpl-heroes .pc-emblem .pc-svg{position:absolute;inset:0}
+.pc-tpl-heroes .pc-initial{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Suez One','Rubik',sans-serif;font-size:calc(var(--u)*2.3*var(--text-scale,1));color:#fff;padding-bottom:calc(var(--u)*0.5)}
+.pc-tpl-heroes .pc-eyebrow{color:#fff;background:var(--c-deep);padding:calc(var(--u)*0.14) calc(var(--u)*0.7);border-radius:999px;letter-spacing:.04em;box-shadow:0 calc(var(--u)*0.12) 0 rgba(0,0,0,.15)}
+.pc-tpl-heroes .pc-name{color:var(--c-ink)}
+.pc-tpl-heroes .pc-meta{color:var(--c-deep)}
+.pc-tpl-heroes .pc-backhead{color:var(--c-deep)}
+.pc-tpl-heroes .pc-field{border:2pt solid var(--c-accent)}
 
-/* ============ סגנון 4: כיפי — פינות עגולות, מסגרת מנוקדת, אווטאר גדול ============ */
-.pc-tpl-playful .pc-card{border:2.2pt solid #111;border-radius:calc(var(--u)*1.5)}
-.pc-tpl-playful .pc-card::before{
-  content:"";position:absolute;inset:calc(var(--u)*0.6);border:1.4pt dashed #999;
-  border-radius:calc(var(--u)*1);pointer-events:none;
-}
-.pc-tpl-playful .pc-band{border-radius:0;letter-spacing:.1em}
-.pc-tpl-playful .pc-avatar{
-  width:calc(var(--u)*4.1);height:calc(var(--u)*4.1);border:2pt dashed #111;font-size:calc(var(--u)*2.3);
-}
-.pc-tpl-playful .pc-pin{border-radius:calc(var(--u)*0.4);border-width:1.6pt}
-.pc-tpl-playful .pc-name{font-size:calc(var(--u)*1.6)}
-
-/* ============ סגנון 5: מינימלי — בלי פס, קו שיער, תווים בקו תחתון ============ */
-.pc-tpl-minimal .pc-card{border:0.9pt solid #111;border-radius:calc(var(--u)*0.3)}
-.pc-tpl-minimal .pc-band{display:none}
-.pc-tpl-minimal .pc-body{padding-top:calc(var(--u)*1.5);align-items:center}
-.pc-tpl-minimal .pc-avatar{display:none}
-.pc-tpl-minimal .pc-name{font-size:calc(var(--u)*1.75);font-weight:700}
-.pc-tpl-minimal .pc-meta{color:#666}
-.pc-tpl-minimal .pc-flabel{color:#999;letter-spacing:.14em;text-transform:uppercase}
-.pc-tpl-minimal .pc-pin{border:none;border-bottom:1.2pt solid #111;border-radius:0;height:calc(var(--u)*1.5);min-width:calc(var(--u)*0.95)}
-.pc-tpl-minimal .pc-pin.tiny{min-width:calc(var(--u)*0.7)}
+/* ============ 🌈 קשת וקסם ============ */
+.pc-card.pc-tpl-rainbow{background:linear-gradient(165deg,#FFFAFE 6%,var(--c-bg) 70%,var(--c-accent) 180%);justify-content:center;gap:calc(var(--u)*0.5)}
+.pc-tpl-rainbow .pc-rainbow{width:calc(var(--u)*7.6);height:calc(var(--u)*5.4);display:block}
+.pc-tpl-rainbow .pc-name{color:var(--c-deep);font-size:calc(var(--u)*2*var(--text-scale,1))}
+.pc-tpl-rainbow .pc-meta{color:var(--c-accent)}
+.pc-tpl-rainbow .pc-sparkle{width:calc(var(--u)*1.9);height:calc(var(--u)*1.9)}
+.pc-tpl-rainbow .pc-deco .pc-sparkle:nth-child(1){left:10%;top:12%}
+.pc-tpl-rainbow .pc-deco .pc-sparkle:nth-child(2){left:82%;top:18%}
+.pc-tpl-rainbow .pc-deco .pc-sparkle:nth-child(3){left:16%;top:82%}
+.pc-tpl-rainbow .pc-backhead{color:var(--c-deep)}
+.pc-tpl-rainbow .pc-field{border:2pt solid var(--c-accent)}
