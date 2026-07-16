@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=1" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
   <style>
     /* Admin-only tools: hidden until admin mode is unlocked, then shown in a distinct purple identity */
     body:not(.admin) .admin-only { display: none !important; }
@@ -30,12 +30,18 @@
       font-family: 'Heebo', sans-serif; font-size: 0.82rem; font-weight: 600;
     }
     body.admin #adminChip { display: flex; }
-    #adminChip button { background: none; border: none; color: #fff; cursor: pointer; font-weight: 700; font-size: 0.82rem; }
+    #adminChip a, #adminChip button {
+      background: none; border: none; color: #fff; cursor: pointer;
+      font-weight: 700; font-size: 0.82rem; text-decoration: none;
+    }
+    #adminChip a:hover, #adminChip button:hover { opacity: .85; }
     /* tool categories */
     .cat-section { margin: 0 auto 30px; max-width: 1100px; }
     .cat { font-size: 1.12rem; font-weight: 700; margin: 0 0 16px; padding-bottom: 9px; opacity: .92;
            border-bottom: 1px solid rgba(255,255,255,0.10); }
     body:not(.admin) .cat-section.admin-only { display: none !important; }
+    #hubMsg { text-align: center; color: var(--text-dim); font-family: 'Heebo', sans-serif;
+              padding: 40px 20px; }
     #statsPanel .stats-msg { opacity: .7; font-family: 'Heebo', sans-serif; }
     .stats-table { width: 100%; border-collapse: collapse; font-family: 'Heebo', sans-serif; }
     .stats-table th, .stats-table td { text-align: right; padding: 9px 12px;
@@ -65,328 +71,169 @@
       <div id="statsBody"><p class="stats-msg">טוען…</p></div>
     </section>
 
-    <section class="cat-section">
-      <h2 class="cat">🎬 וידאו ויוטיוב</h2>
-      <div class="tools-grid">
-        <a class="tool-card" href="video-search/" rel="noopener" data-tool="video-search">
-          <div class="tool-icon" aria-hidden="true">🔎</div>
-          <h2 class="tool-title">מחפש סרטונים לפי נושא</h2>
-          <p class="tool-desc">כותבים נושא ומקבלים סרטונים רלוונטיים מיוטיוב — חינמי לגמרי, עם קישורים, תמונות וייצוא ל-CSV. טיקטוק/אינסטגרם/פייסבוק זמינים במצב אדמין.</p>
-          <span class="tool-tags"><span class="tag">מורים</span><span class="tag">חינמי</span><span class="tag">יוטיוב</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card" href="https://omri-il.github.io/chapter-bar-web/" target="_blank" rel="noopener" data-tool="chapter-bar">
-          <div class="tool-icon" aria-hidden="true">🎬</div>
-          <h2 class="tool-title">סרגל פרקים ליוטיוב</h2>
-          <p class="tool-desc">מחולל פס התקדמות פרקים לסרטוני יוטיוב — בלי תוכנות עריכה. מזינים פרקים, צובעים, מייצאים סרטון או שכבת אוברליי שקופה.</p>
-          <span class="tool-tags"><span class="tag">יוצרי תוכן</span><span class="tag">חינמי</span><span class="tag">רץ בדפדפן</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="http://147.79.114.195:8080" target="_blank" rel="noopener" data-tool="whisper">
-          <div class="tool-icon" aria-hidden="true">🎙️</div>
-          <h2 class="tool-title">תמלול אוטומטי לסרטונים</h2>
-          <p class="tool-desc">מתמלל אוטומטית סרטונים מגוגל דרייב ומיוטיוב בעזרת Whisper — תמלול מלא בעברית בלי להעלות קבצים ידנית.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">תמלול</span><span class="tag">AI</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="cat-section">
-      <h2 class="cat">🎓 TAU אוניברסיטה לנוער</h2>
-      <div class="tools-grid">
-        <a class="tool-card" href="https://biomimicry.omri-iram.co.il" target="_blank" rel="noopener" data-tool="biomimicry">
-          <div class="tool-icon" aria-hidden="true">🦎</div>
-          <h2 class="tool-title">תחנת מחקר ביומימיקרי</h2>
-          <p class="tool-desc">תחנה לתלמידים: בוחרים חפץ יומיומי, מגלים עם בוט סוקרטי איזה מנגנון ביולוגי נתן לו השראה, ממציאים המצאה חדשה משלכם ומקבלים שרטוט עבודה עם רשימת חומרים לבניית דגם — עם לוח תוצרים חי למליאה.</p>
-          <span class="tool-tags"><span class="tag">תלמידים</span><span class="tag">AI</span><span class="tag">יום שיא</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card" href="https://micropod.omri-iram.co.il" target="_blank" rel="noopener" data-tool="micropod">
-          <div class="tool-icon" aria-hidden="true">🦠</div>
-          <h2 class="tool-title">אולפן הפודקאסט המיקרוביאלי</h2>
-          <p class="tool-desc">תחנה לתלמידים: בוחרים שאלת מחקר במיקרוביולוגיה, חוקרים יחד עם בוט סוקרטי שלא כותב במקומכם, ומקליטים פודקאסט עם לוח אפקטים — הכל בדפדפן.</p>
-          <span class="tool-tags"><span class="tag">תלמידים</span><span class="tag">AI</span><span class="tag">יום שיא</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card" href="https://energy.omri-iram.co.il" target="_blank" rel="noopener" data-tool="energy">
-          <div class="tool-icon" aria-hidden="true">⚡</div>
-          <h2 class="tool-title">חדר הבריחה של האנרגיה</h2>
-          <p class="tool-desc">חדר בריחה דיגיטלי בזמן אמת ליום שיא: הכיתה מתחלקת לצוותים, כל צוות מפצח תחנת אנרגיה בטלפון דרך קוד QR, ולוח "מרכז השליטה" על המקרן נדלק בזמן אמת עד שכל התחנות נפתרות והאתגר המסכם נפתח.</p>
-          <span class="tool-tags"><span class="tag">תלמידים</span><span class="tag">זמן אמת</span><span class="tag">יום שיא</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="cat-section">
-      <h2 class="cat">✉️ אימייל</h2>
-      <div class="tools-grid">
-        <a class="tool-card" href="email-generator/" rel="noopener" data-tool="email-generator">
-          <div class="tool-icon" aria-hidden="true">📧</div>
-          <h2 class="tool-title">מחולל אימייל אוטומטי לטופס</h2>
-          <p class="tool-desc">בונה את הקוד לשליחת אימייל אוטומטי לכל מי שממלא טופס Google — מצגת, סרטון, קישורים. ממלאים, רואים תצוגה חיה, מעתיקים קוד מוכן.</p>
-          <span class="tool-tags"><span class="tag">מרצים</span><span class="tag">Google Forms</span><span class="tag">חוסך זמן</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="https://script.google.com/macros/s/AKfycbzHRDPpkaiO-0xplRWVGOJl8AKwTUk1anM85QlgPS0yFUsu3sFoVsyUlgZpAbCFr5xH/exec" target="_blank" rel="noopener" data-tool="gmail-mass-reply">
-          <div class="tool-icon" aria-hidden="true">📨</div>
-          <h2 class="tool-title">מערכת מענה המוני ב-Gmail</h2>
-          <p class="tool-desc">תשובה אחת לעשרות הודעות בבת אחת, או פיצול מייל תפוצה נסתרת (BCC) למיילים פרטיים נפרדים לכל נמען.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">Gmail</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="cat-section">
-      <h2 class="cat">🔗 קישורים וקודים</h2>
-      <div class="tools-grid">
-        <a class="tool-card" href="tinyurl/" rel="noopener" data-tool="tinyurl">
-          <div class="tool-icon" aria-hidden="true">⚡</div>
-          <h2 class="tool-title">מקצר קישורים מהיר</h2>
-          <p class="tool-desc">הדביקו קישור ארוך וקבלו קישור קצר של TinyURL — מהיר, בלי הרשמה, עם אפשרות לכינוי אישי.</p>
-          <span class="tool-tags"><span class="tag">קישורים</span><span class="tag">חינמי</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card" href="qr/" rel="noopener" data-tool="qr">
-          <div class="tool-icon" aria-hidden="true">🔳</div>
-          <h2 class="tool-title">מחולל קודי QR</h2>
-          <p class="tool-desc">קישור או טקסט → קוד QR מעוצב: צבעים, לוגו במרכז, כיתוב, והורדה כ-PNG או SVG. רץ בדפדפן.</p>
-          <span class="tool-tags"><span class="tag">חינמי</span><span class="tag">רץ בדפדפן</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card" href="qr-dynamic/" rel="noopener" data-tool="qr-dynamic">
-          <div class="tool-icon" aria-hidden="true">🔁</div>
-          <h2 class="tool-title">QR דינמי (גוגל שיטס)</h2>
-          <p class="tool-desc">קוד QR שאפשר לשנות לאן הוא מפנה בלי להדפיס מחדש — היעד נשמר בתא בגוגל שיטס שלכם. בונה לכם את הקוד מוכן. בלי שרת.</p>
-          <span class="tool-tags"><span class="tag">חינמי</span><span class="tag">Google Sheets</span><span class="tag">בלי שרת</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="utm/" rel="noopener" data-tool="utm">
-          <div class="tool-icon" aria-hidden="true">🏷️</div>
-          <h2 class="tool-title">בונה קישורי UTM</h2>
-          <p class="tool-desc">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין — וכך תדעו באנליטיקס מאיזה ערוץ הגיעו הקליקים.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">שיווק</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="shortener/" rel="noopener" data-tool="shortener">
-          <div class="tool-icon" aria-hidden="true">🔗</div>
-          <h2 class="tool-title">מקצר קישורים ממותג</h2>
-          <p class="tool-desc">קישורים קצרים עם הדומיין שלך (go.omri-iram.co.il) — כינוי אישי, ספירת לחיצות, ו-QR דינמי.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">דומיין משלי</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="cat-section">
-      <h2 class="cat">🎲 כללי</h2>
-      <div class="tools-grid">
-        <a class="tool-card" href="randomizer/" rel="noopener" data-tool="randomizer">
-          <div class="tool-icon" aria-hidden="true">🏆</div>
-          <h2 class="tool-title">הגרלת זוכה</h2>
-          <p class="tool-desc">מדביקים רשימת שמות או אימיילים ומגרילים זוכה הוגן — מושלם להגרלות ומתנות. אנימציה וקונפטי.</p>
-          <span class="tool-tags"><span class="tag">הגרלות</span><span class="tag">רץ בדפדפן</span><span class="tag">חינמי</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card" href="password-cards/" rel="noopener" data-tool="password-cards">
-          <div class="tool-icon" aria-hidden="true">🔐</div>
-          <h2 class="tool-title">כרטיסי סיסמה לתלמידים</h2>
-          <p class="tool-desc">מעלים את קובץ הסיסמאות של משרד החינוך ומקבלים כרטיסיות אישיות דו-צדדיות מוכנות להדפסה וגזירה — כרטיסייה לכל תלמיד, בלי לחשוף את פרטי השאר. הכל רץ בדפדפן; שום מידע לא נשלח לשרת.</p>
-          <span class="tool-tags"><span class="tag">מורים</span><span class="tag">רץ בדפדפן</span><span class="tag">חינמי</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="cat-section admin-only">
-      <h2 class="cat">🔒 אדמין</h2>
-      <div class="tools-grid">
-        <a class="tool-card admin-only" href="https://time.omri-iram.co.il" target="_blank" rel="noopener" data-tool="time-tracker">
-          <div class="tool-icon" aria-hidden="true">⏱️</div>
-          <h2 class="tool-title">מעקב זמן</h2>
-          <p class="tool-desc">מסך מלא של משבצות — לוחצים על משבצת כדי להתחיל לעקוב אחרי פעילות, לוחצים על אחרת כדי להחליף. פעילות אחת בכל רגע, קיבוץ לפי פרויקטים בצבעים, וסטטיסטיקה: זמן לפי פעילות/פרויקט, מפת יום ומפת חום שעתית. מותקן כאפליקציה (PWA), מסונכרן בין טלפון ומחשב. מוגן בקוד.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">פרודוקטיביות</span><span class="tag">PWA</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="https://plants.omri-iram.co.il" target="_blank" rel="noopener" data-tool="plant-care">
-          <div class="tool-icon" aria-hidden="true">🪴</div>
-          <h2 class="tool-title">העציצים שלי</h2>
-          <p class="tool-desc">מצלמים צמח בית והבינה מזהה את הסוג, מאבחנת את מצבו ובונה תוכנית טיפול — כמה מים, אור ודישון — עם תזכורות השקיה בטלגרם וביומן Google. מוגן בקוד.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">צמחים</span><span class="tag">AI</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="http://100.111.186.101:5112/" target="_blank" rel="noopener" data-tool="video-downloader">
-          <div class="tool-icon" aria-hidden="true">⬇️</div>
-          <h2 class="tool-title">מוריד וידאו</h2>
-          <p class="tool-desc">הורדת סרטונים מ-YouTube, Facebook, TikTok ו-Instagram כווידאו (mp4) או אודיו (mp3), עם כפתור תמלול אוטומטי. רץ במחשב הביתי, נגיש דרך Tailscale בלי סיסמה.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">וידאו</span><span class="tag">הורדה</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="http://100.111.186.101:5007/" target="_blank" rel="noopener" data-tool="davinci-control">
-          <div class="tool-icon" aria-hidden="true">🎛️</div>
-          <h2 class="tool-title">מרכז השליטה של DaVinci</h2>
-          <p class="tool-desc">לוח בקרה להפעלת אוטומציות עריכה ב-DaVinci Resolve במחשב הביתי. נגיש מהמכשירים שלך דרך Tailscale, בלי סיסמה.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">אוטומציה</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="http://100.111.186.101:5111/" target="_blank" rel="noopener" data-tool="notebooklm">
-          <div class="tool-icon" aria-hidden="true">📓</div>
-          <h2 class="tool-title">שאל את NotebookLM</h2>
-          <p class="tool-desc">בחרו פנקס NotebookLM ושאלו עליו שאלות בעברית — תשובה מבוססת מקורות עם ציטוטים. רץ במחשב הביתי, נגיש דרך Tailscale בלי סיסמה.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">AI</span><span class="tag">מחקר</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="http://100.111.186.101:5012/" target="_blank" rel="noopener" data-tool="gems">
-          <div class="tool-icon" aria-hidden="true">💎</div>
-          <h2 class="tool-title">סטודיו ה-Gems</h2>
-          <p class="tool-desc">סביבת פיתוח ל-Gems חינוכיים: בנייה לפי PARTS, בדיקות תקיפה בסנדבוקס, הערכה אוטומטית, ניהול גרסאות וייצוא. רץ במחשב הביתי, נגיש דרך Tailscale בלי סיסמה.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">AI</span><span class="tag">Gems</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="extra/" rel="noopener" data-tool="extra">
-          <div class="tool-icon" aria-hidden="true">📞</div>
-          <h2 class="tool-title">הקלטות שיחות (Extra)</h2>
-          <p class="tool-desc">חיפוש והאזנה להקלטות שיחות ממערכת אקסטרה — לפי טלפון, תאריך, שם, או אחרונות. הורדה כ-MP3.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">הקלטות</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="https://thanks.omri-iram.co.il/admin" target="_blank" rel="noopener" data-tool="thanks-letter">
-          <div class="tool-icon" aria-hidden="true">✍️</div>
-          <h2 class="tool-title">מחולל מכתבי תודה</h2>
-          <p class="tool-desc">יוצרים לינק אישי ללקוח — הוא מקליט או כותב כמה מילים, וה-AI מנסח מכתב תודה חם וחתום על נייר פירמה, עם הורדת PDF ועותק למייל. כניסה עם Google Authenticator.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">AI</span><span class="tag">המלצות</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="https://geg.omri-iram.co.il/admin" target="_blank" rel="noopener" data-tool="geg-events">
-          <div class="tool-icon" aria-hidden="true">🎟️</div>
-          <h2 class="tool-title">מנהל האירועים של GEG</h2>
-          <p class="tool-desc">יוצרים אירוע פעם אחת — המערכת פותחת קבוצה במיילרלייט, כותבת תזכורות בעברית ומתזמנת אותן (3 ימים / יום / שעה לפני ובתחילה), ומקימה עמוד הרשמה שנכתב ישירות למיילרלייט. כניסה עם Google Authenticator.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">אירועים</span><span class="tag">MailerLite</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-        <a class="tool-card admin-only" href="https://forms.omri-iram.co.il/admin/import" target="_blank" rel="noopener" data-tool="forms-mailerlite">
-          <div class="tool-icon" aria-hidden="true">📥</div>
-          <h2 class="tool-title">ייבוא טופס ל-MailerLite</h2>
-          <p class="tool-desc">מדביקים קישור של Google Form — המערכת שולפת את כל הנרשמים ומכניסה אותם לקבוצה (תגית) במיילרלייט, בלי גיליון. אפשר גם לתזמן מייל "איך היה?" בעברית שנשלח מ-Gmail יום-יומיים אחרי. כניסה עם Google Authenticator.</p>
-          <span class="tool-tags"><span class="tag">אדמין</span><span class="tag">טפסים</span><span class="tag">MailerLite</span></span>
-          <span class="tool-cta">פתח את הכלי ←</span>
-        </a>
-      </div>
-    </section>
+    <!-- Tool categories/cards render here from the editable hub config
+         (go-shortener /api/hub-config). Edit them at /admin/. -->
+    <div id="hubRoot"></div>
 
   </main>
 
   <footer class="site-footer">
     <p>בנוי בעברית, בשבילכם · <a href="mailto:hello@omri-iram.co.il">hello@omri-iram.co.il</a></p>
+    <p class="version-tag">גרסה 1.0.0</p>
   </footer>
 
-  <div id="adminChip">🔓 מצב אדמין <button id="adminExit" type="button">יציאה</button></div>
+  <div id="adminChip">🔓 מצב אדמין
+    <a href="admin/">✏️ עריכה</a>
+    <button id="adminExit" type="button">יציאה</button>
+  </div>
+
+  <script src="js/hub-render.js?v=1"></script>
 
   <script>
-    // Usage analytics: on a tool-card click, fire a fire-and-forget ping to
-    // go-shortener. The optional omri_session token attributes the click to
-    // Omri server-side (never a client flag). 5s per-tool debounce. Must never
-    // break the page — every path is guarded.
+    // ---- Bootstrap: fetch the editable hub config and render it. -----------
+    // Renders instantly from a localStorage cache (no blank flash), then
+    // refreshes from the backend. Sends the shared omri_session token when
+    // present so the admin sees admin/hidden-excluded content correctly.
     (function () {
-      var TRACK_URL = 'https://go.omri-iram.co.il/api/track';
-      var DEBOUNCE_MS = 5000;
-      function track(toolId) {
+      function lsGet0(k){ try { return localStorage.getItem(k); } catch (_) { return null; } }
+      var API_BASE = (lsGet0('hub_api_base') || 'https://go.omri-iram.co.il').replace(/\/$/, '');
+      var CONFIG_URL = API_BASE + '/api/hub-config';
+      var CACHE_KEY = 'hub_config_cache';
+      var hubRoot = document.getElementById('hubRoot');
+      var statsLoaded = false;
+
+      function lsGet(k){ try { return localStorage.getItem(k); } catch (_) { return null; } }
+      function lsSet(k, v){ try { localStorage.setItem(k, v); } catch (_) {} }
+
+      // A Google sign-in redirect may land back here with #omri_session=… .
+      (function captureToken(){
         try {
-          var key = 'tt_last_' + toolId, now = Date.now(), last = 0;
-          try { last = Number(localStorage.getItem(key) || 0); } catch (_) {}
-          if (now - last < DEBOUNCE_MS) return;
-          try { localStorage.setItem(key, String(now)); } catch (_) {}
-          var session = '';
-          try { session = localStorage.getItem('omri_session') || ''; } catch (_) {}
-          var headers = { 'Content-Type': 'application/json' };
-          if (session) headers['X-Session'] = session;
-          fetch(TRACK_URL, {
-            method: 'POST', keepalive: true, headers: headers,
-            body: JSON.stringify({ tool: toolId })
-          }).catch(function () {});
-        } catch (_) { /* analytics must never break the page */ }
-      }
-      var cards = document.querySelectorAll('.tool-card[data-tool]');
-      for (var i = 0; i < cards.length; i++) {
-        (function (card) {
-          card.addEventListener('click', function () { track(card.getAttribute('data-tool')); });
-        })(cards[i]);
-      }
-    })();
-  </script>
+          var m = (location.hash || '').match(/(?:^#|&)omri_session=([^&]+)/);
+          if (m) {
+            localStorage.setItem('omri_session', decodeURIComponent(m[1]));
+            history.replaceState(null, '', location.pathname + location.search);
+          }
+        } catch (_) {}
+      })();
 
-  <script>
-    // Admin-only: render the usage table from /api/stats. Runs only when admin
-    // mode is on. Hand-rolled SVG sparkline (last 30 days), no chart library.
-    (function () {
-      var STATS_URL = 'https://go.omri-iram.co.il/api/stats';
-      function isAdmin() { try { return localStorage.getItem('omri_admin') === '1'; } catch (_) { return false; } }
-      if (!isAdmin()) return;
-
-      // id -> Hebrew name, read from the cards so it stays in sync.
-      var names = {};
-      var cards = document.querySelectorAll('.tool-card[data-tool]');
-      for (var i = 0; i < cards.length; i++) {
-        var t = cards[i].querySelector('.tool-title');
-        names[cards[i].getAttribute('data-tool')] = t ? t.textContent.trim() : cards[i].getAttribute('data-tool');
-      }
-      function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-
-      function sparkline(daily) {
-        var pts = (daily || []).slice(-30).map(function (d) { return d.total; });
-        if (pts.length < 2) return '';
-        var w = 90, h = 22, max = Math.max.apply(null, pts) || 1;
-        var step = w / (pts.length - 1);
-        var d = pts.map(function (v, i) {
-          var x = (i * step).toFixed(1);
-          var y = (h - 2 - (v / max) * (h - 4)).toFixed(1);
-          return (i ? 'L' : 'M') + x + ' ' + y;
-        }).join(' ');
-        return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h +
-               '" aria-hidden="true"><path class="spark" d="' + d + '"/></svg>';
+      function renderConfig(cfg) {
+        if (!cfg || !cfg.categories) return false;
+        window.HubRender.applyLayout(hubRoot, cfg);
+        hubRoot.innerHTML = '';
+        hubRoot.appendChild(window.HubRender.renderHub(cfg));
+        maybeRenderStats();
+        return true;
       }
 
-      function render(tools) {
-        var body = document.getElementById('statsBody');
-        if (!tools || !tools.length) { body.innerHTML = '<p class="stats-msg">אין עדיין נתונים.</p>'; return; }
-        var rows = tools.map(function (t) {
-          return '<tr><td>' + esc(names[t.tool] || t.tool) + '</td>' +
-            '<td class="num">' + t.total + '</td>' +
-            '<td class="num">' + t.me + '</td>' +
-            '<td class="num">' + t.visitors + '</td>' +
-            '<td>' + sparkline(t.daily) + '</td></tr>';
-        }).join('');
-        body.innerHTML = '<table class="stats-table"><thead><tr>' +
-          '<th>כלי</th><th>סה״כ</th><th>שלי</th><th>מבקרים</th><th>מגמה (30 ימים)</th>' +
-          '</tr></thead><tbody>' + rows + '</tbody></table>';
+      function showMessage(msg) {
+        if (hubRoot.querySelector('.tool-card')) return;   // keep cached content
+        hubRoot.innerHTML = '<p id="hubMsg">' + msg + '</p>';
       }
 
-      var session = '';
-      try { session = localStorage.getItem('omri_session') || ''; } catch (_) {}
+      // 1) Immediate paint from cache.
+      var cached = lsGet(CACHE_KEY);
+      if (cached) { try { renderConfig(JSON.parse(cached)); } catch (_) {} }
+
+      // 2) Fresh fetch.
+      var session = lsGet('omri_session') || '';
       var headers = {};
       if (session) headers['X-Session'] = session;
-      fetch(STATS_URL, { headers: headers })
-        .then(function (r) {
-          if (r.status === 401) { throw new Error('unauth'); }
-          return r.json();
+      fetch(CONFIG_URL, { headers: headers })
+        .then(function (r) { return r.json(); })
+        .then(function (cfg) {
+          if (renderConfig(cfg)) { lsSet(CACHE_KEY, JSON.stringify(cfg)); }
         })
-        .then(function (j) { render(j.tools); })
-        .catch(function (e) {
-          var body = document.getElementById('statsBody');
-          body.innerHTML = '<p class="stats-msg">' +
-            (e && e.message === 'unauth'
-              ? 'צריך להתחבר עם Google כדי לראות סטטיסטיקה.'
-              : 'לא ניתן לטעון סטטיסטיקה כרגע.') + '</p>';
+        .catch(function () {
+          if (!cached) showMessage('לא ניתן לטעון את הכלים כרגע. נסו לרענן את הדף.');
         });
+
+      // ---- Usage analytics (event delegation → works for rendered cards) ----
+      var DEBOUNCE_MS = 5000;
+      var TRACK_URL = API_BASE + '/api/track';
+      document.addEventListener('click', function (e) {
+        var card = e.target && e.target.closest ? e.target.closest('.tool-card[data-tool]') : null;
+        if (!card) return;
+        var toolId = card.getAttribute('data-tool');
+        try {
+          var key = 'tt_last_' + toolId, now = Date.now(), last = Number(lsGet(key) || 0);
+          if (now - last < DEBOUNCE_MS) return;
+          lsSet(key, String(now));
+          var h = { 'Content-Type': 'application/json' };
+          var s = lsGet('omri_session') || '';
+          if (s) h['X-Session'] = s;
+          fetch(TRACK_URL, { method: 'POST', keepalive: true, headers: h,
+            body: JSON.stringify({ tool: toolId }) }).catch(function () {});
+        } catch (_) { /* analytics must never break the page */ }
+      });
+
+      // ---- Admin usage table (only in admin mode; runs once, post-render) ---
+      function maybeRenderStats() {
+        if (statsLoaded) return;
+        var isAdmin = false;
+        try { isAdmin = localStorage.getItem('omri_admin') === '1'; } catch (_) {}
+        if (!isAdmin) return;
+        statsLoaded = true;
+        renderStatsPanel();
+      }
+
+      function renderStatsPanel() {
+        var STATS_URL = API_BASE + '/api/stats';
+        var names = {};
+        var cards = document.querySelectorAll('.tool-card[data-tool]');
+        for (var i = 0; i < cards.length; i++) {
+          var t = cards[i].querySelector('.tool-title');
+          names[cards[i].getAttribute('data-tool')] =
+            t ? t.textContent.trim() : cards[i].getAttribute('data-tool');
+        }
+        function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+        function sparkline(daily) {
+          var pts = (daily || []).slice(-30).map(function (d) { return d.total; });
+          if (pts.length < 2) return '';
+          var w = 90, h = 22, max = Math.max.apply(null, pts) || 1;
+          var step = w / (pts.length - 1);
+          var d = pts.map(function (v, i) {
+            var x = (i * step).toFixed(1);
+            var y = (h - 2 - (v / max) * (h - 4)).toFixed(1);
+            return (i ? 'L' : 'M') + x + ' ' + y;
+          }).join(' ');
+          return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h +
+                 '" aria-hidden="true"><path class="spark" d="' + d + '"/></svg>';
+        }
+        function render(tools) {
+          var body = document.getElementById('statsBody');
+          if (!tools || !tools.length) { body.innerHTML = '<p class="stats-msg">אין עדיין נתונים.</p>'; return; }
+          var rows = tools.map(function (t) {
+            return '<tr><td>' + esc(names[t.tool] || t.tool) + '</td>' +
+              '<td class="num">' + t.total + '</td>' +
+              '<td class="num">' + t.me + '</td>' +
+              '<td class="num">' + t.visitors + '</td>' +
+              '<td>' + sparkline(t.daily) + '</td></tr>';
+          }).join('');
+          body.innerHTML = '<table class="stats-table"><thead><tr>' +
+            '<th>כלי</th><th>סה״כ</th><th>שלי</th><th>מבקרים</th><th>מגמה (30 ימים)</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>';
+        }
+        var s = lsGet('omri_session') || '';
+        var h = {};
+        if (s) h['X-Session'] = s;
+        fetch(STATS_URL, { headers: h })
+          .then(function (r) { if (r.status === 401) throw new Error('unauth'); return r.json(); })
+          .then(function (j) { render(j.tools); })
+          .catch(function (e) {
+            document.getElementById('statsBody').innerHTML = '<p class="stats-msg">' +
+              (e && e.message === 'unauth'
+                ? 'צריך להתחבר עם Google כדי לראות סטטיסטיקה.'
+                : 'לא ניתן לטעון סטטיסטיקה כרגע.') + '</p>';
+          });
+      }
     })();
   </script>
 
   <script>
     // Hidden admin unlock: triple-click the "OI" logo within ~1.2s → PIN → reveals admin tools.
-    // Client-side obscurity only; the private tools themselves are password-protected at their own endpoints.
+    // Client-side obscurity only; the private tools themselves are protected at their own endpoints,
+    // and admin/hidden cards are stripped server-side for anyone without a valid omri_session token.
     (function () {
       var KEY = 'omri_admin', CODE = '9464';
       function lsGet(k){ try { return localStorage.getItem(k); } catch (_) { return null; } }
@@ -402,7 +249,7 @@
             clicks = 0;
             if (document.body.classList.contains('admin')) return;
             var c = prompt('קוד אדמין:');
-            if (c === CODE) { lsSet(KEY, '1'); document.body.classList.add('admin'); }
+            if (c === CODE) { lsSet(KEY, '1'); document.body.classList.add('admin'); location.reload(); }
             else if (c !== null) { alert('קוד שגוי'); }
           }
         });

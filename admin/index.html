@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>עריכת מרכז הכלים · אדמין</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css?v=2" />
+  <style>
+    body { padding-bottom: 60px; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 24px; }
+    h1.page { font-size: 26px; margin: 18px 0 4px; }
+    .sub { color: var(--text-dim); font-size: 14px; margin: 0 0 18px; }
+
+    /* login gate */
+    #gate { max-width: 460px; margin: 80px auto; text-align: center;
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 40px 30px; }
+    #gate h2 { margin: 0 0 10px; }
+    #gate p { color: var(--text-dim); font-size: 15px; }
+    .g-btn { display: inline-flex; align-items: center; gap: 10px; margin-top: 20px;
+      background: #fff; color: #202124; font-weight: 700; font-size: 15px; border: none;
+      border-radius: 12px; padding: 12px 22px; cursor: pointer; }
+    .g-btn:hover { transform: translateY(-1px); }
+
+    /* toolbar */
+    .toolbar { position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; align-items: center;
+      gap: 12px; padding: 12px 16px; margin-bottom: 18px;
+      background: rgba(15,15,26,0.92); backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: 14px; }
+    .toolbar .grow { flex: 1; }
+    .toolbar label { font-size: 13px; color: var(--text-dim); display: inline-flex; align-items: center; gap: 6px; }
+    select, input[type=text], textarea {
+      background: rgba(0,0,0,0.28); border: 1px solid var(--border); color: var(--text);
+      border-radius: 10px; padding: 9px 11px; font-family: inherit; font-size: 14px; }
+    select:focus, input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    .btn { font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; border: none;
+      border-radius: 10px; padding: 10px 18px; color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .5; cursor: default; transform: none; }
+    .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+    .btn.ghost:hover { color: var(--text); border-color: var(--border-hover); }
+    .btn.danger { background: transparent; border: 1px solid rgba(248,113,113,0.5); color: #fca5a5; }
+    .status { font-size: 13px; color: var(--text-dim); }
+    .status.ok { color: #86efac; }
+    .status.err { color: #fca5a5; }
+
+    /* editor grid */
+    .editor { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; align-items: start; }
+    @media (max-width: 860px) { .editor { grid-template-columns: 1fr; } }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+    .panel h3 { margin: 0 0 12px; font-size: 16px; }
+
+    /* tree */
+    .cat-block { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+    .cat-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+      background: rgba(255,255,255,0.03); cursor: pointer; }
+    .cat-head.sel { background: rgba(167,139,250,0.14); }
+    .cat-head .drag { cursor: grab; color: var(--text-soft); font-size: 15px; }
+    .cat-head .c-title { font-weight: 700; flex: 1; }
+    .cat-head .c-badge { font-size: 11px; color: var(--text-soft); }
+    .card-list { padding: 6px; min-height: 12px; }
+    .card-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 9px;
+      cursor: pointer; }
+    .card-row:hover { background: rgba(255,255,255,0.04); }
+    .card-row.sel { background: rgba(167,139,250,0.16); }
+    .card-row .drag { cursor: grab; color: var(--text-soft); }
+    .card-row .r-icon { width: 22px; text-align: center; }
+    .card-row .r-title { flex: 1; font-size: 14px; }
+    .card-row .vis { border: none; background: none; cursor: pointer; font-size: 15px; padding: 2px 4px; border-radius: 6px; }
+    .card-row .vis:hover { background: rgba(255,255,255,0.08); }
+    .add-row { display: flex; gap: 8px; padding: 8px; }
+    .add-row .btn { font-size: 13px; padding: 7px 12px; }
+    .sortable-ghost { opacity: 0.4; }
+    .sortable-chosen { background: rgba(167,139,250,0.10); }
+
+    /* inspector */
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 5px; }
+    .field input[type=text], .field textarea, .field select { width: 100%; }
+    .field textarea { min-height: 72px; resize: vertical; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); }
+    .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    .empty { color: var(--text-soft); font-size: 14px; text-align: center; padding: 30px 10px; }
+
+    /* preview */
+    #previewWrap { margin-top: 22px; }
+    #preview { border: 1px dashed var(--border); border-radius: 16px; padding: 8px; }
+    #preview .cat-section { margin: 0 auto 18px; }
+    #preview .tool-card.hidden-card { opacity: 0.5; border-style: dashed; }
+    #preview .admin-only { display: flex !important; }
+    #preview .cat-section.admin-only { display: block !important; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <div id="gate" style="display:none">
+    <h2>עריכת מרכז הכלים</h2>
+    <p>אזור אדמין. יש להתחבר עם חשבון Google של hello@omri-iram.co.il.</p>
+    <button class="g-btn" id="signInBtn">🔐 התחבר עם Google</button>
+  </div>
+
+  <div class="wrap" id="app" style="display:none">
+    <h1 class="page">✏️ עריכת מרכז הכלים</h1>
+    <p class="sub">גררו כרטיסים וקטגוריות, ערכו טקסט, החליפו נראוּת (ציבורי / אדמין / מוסתר), ושַׁנו סגנון. שום דבר לא מתפרסם עד לחיצה על "שמור".</p>
+
+    <div class="toolbar">
+      <label>צפיפות
+        <select id="density"><option value="comfortable">מרווח</option><option value="compact">צפוף</option></select>
+      </label>
+      <label>גודל כרטיס
+        <select id="cardSize"><option value="small">קטן</option><option value="medium">בינוני</option><option value="large">גדול</option></select>
+      </label>
+      <label class="check"><input type="checkbox" id="showTags" /> הצג תגיות</label>
+      <span class="grow"></span>
+      <span class="status" id="status"></span>
+      <button class="btn ghost" id="undoBtn" title="שחזור הגרסה השמורה הקודמת">↩ בטל שינוי אחרון</button>
+      <button class="btn" id="saveBtn">💾 שמור</button>
+    </div>
+
+    <div class="editor">
+      <div class="panel">
+        <h3>קטגוריות וכרטיסים</h3>
+        <div id="tree"></div>
+        <div class="add-row">
+          <button class="btn ghost" id="addCat">➕ קטגוריה חדשה</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 id="inspTitle">עריכה</h3>
+        <div id="inspector"><p class="empty">בחרו כרטיס או קטגוריה מהרשימה כדי לערוך.</p></div>
+      </div>
+    </div>
+
+    <div id="previewWrap">
+      <h3 class="page" style="font-size:18px">👁️ תצוגה מקדימה</h3>
+      <p class="sub">כך זה ייראה במצב אדמין (כרטיסי אדמין בכתום, כרטיסים מוסתרים בשקיפות). מבקרים רגילים לא יראו כרטיסי אדמין/מוסתרים כלל.</p>
+      <div id="preview"></div>
+    </div>
+    <p class="version-tag">גרסת מערכת 1.0.0</p>
+  </div>
+
+  <script src="vendor/Sortable.min.js"></script>
+  <script src="../js/hub-render.js?v=1"></script>
+  <script>
+  (function () {
+    "use strict";
+    function lsGet(k){ try { return localStorage.getItem(k); } catch (_) { return null; } }
+    function lsSet(k,v){ try { localStorage.setItem(k,v); } catch (_) {} }
+    var API_BASE = (lsGet('hub_api_base') || 'https://go.omri-iram.co.il').replace(/\/$/, '');
+
+    // ---- auth ----------------------------------------------------------
+    (function captureToken(){
+      var m = (location.hash || '').match(/(?:^#|&)omri_session=([^&]+)/);
+      if (m) { lsSet('omri_session', decodeURIComponent(m[1])); history.replaceState(null,'',location.pathname); }
+      if ((location.hash||'').indexOf('auth_error') >= 0) { history.replaceState(null,'',location.pathname); }
+    })();
+    function token(){ return lsGet('omri_session') || ''; }
+    function signIn(){ location.href = API_BASE + '/api/auth/google/start?return=' + encodeURIComponent(location.origin + location.pathname); }
+    document.getElementById('signInBtn').addEventListener('click', signIn);
+
+    var gate = document.getElementById('gate'), appEl = document.getElementById('app');
+    function showGate(){ gate.style.display=''; appEl.style.display='none'; }
+    function showApp(){ gate.style.display='none'; appEl.style.display=''; }
+
+    // ---- state ---------------------------------------------------------
+    var state = { config: null, loadedVersion: 0, sel: null };  // sel: {type:'card'|'cat', catId, cardId}
+
+    function api(path, opts){
+      opts = opts || {};
+      var headers = Object.assign({ 'Content-Type': 'application/json', 'X-Session': token() }, opts.headers || {});
+      return fetch(API_BASE + path, Object.assign({}, opts, { headers: headers }));
+    }
+
+    function setStatus(msg, cls){
+      var s = document.getElementById('status');
+      s.textContent = msg || '';
+      s.className = 'status' + (cls ? ' ' + cls : '');
+    }
+
+    // ---- load ----------------------------------------------------------
+    function load(){
+      if (!token()) { showGate(); return; }
+      api('/api/hub-config').then(function(r){ return r.json(); }).then(function(cfg){
+        state.config = cfg;
+        state.loadedVersion = cfg.version || 0;
+        showApp();
+        syncToolbar();
+        renderTree();
+        renderPreview();
+        setStatus('נטען · גרסה ' + state.loadedVersion);
+      }).catch(function(){ setStatus('שגיאה בטעינה', 'err'); showGate(); });
+    }
+
+    // ---- helpers -------------------------------------------------------
+    function uid(prefix){
+      var s = prefix + '-';
+      for (var i=0;i<6;i++) s += 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random()*36)];
+      return s;
+    }
+    function allCardIds(){
+      var ids = {};
+      state.config.categories.forEach(function(c){ c.cards.forEach(function(k){ ids[k.id]=true; }); });
+      return ids;
+    }
+    function uniqueCardId(){ var ids = allCardIds(); var id; do { id = uid('tool'); } while (ids[id]); return id; }
+    function uniqueCatId(){
+      var used = {}; state.config.categories.forEach(function(c){ used[c.id]=true; });
+      var id; do { id = uid('cat'); } while (used[id]); return id;
+    }
+    function findCat(catId){ return state.config.categories.filter(function(c){ return c.id===catId; })[0]; }
+    function findCard(catId, cardId){
+      var c = findCat(catId); if (!c) return null;
+      return c.cards.filter(function(k){ return k.id===cardId; })[0];
+    }
+    var VIS_NEXT = { public:'admin', admin:'hidden', hidden:'public' };
+    var VIS_ICON = { public:'🌐', admin:'🔒', hidden:'👁️‍🗨️' };
+    var VIS_LABEL = { public:'ציבורי', admin:'אדמין', hidden:'מוסתר' };
+
+    function esc(s){ return String(s==null?'':s); }
+
+    // ---- toolbar (layout) ---------------------------------------------
+    function syncToolbar(){
+      var L = state.config.layout || (state.config.layout = {density:'comfortable',cardSize:'medium',showTags:true});
+      document.getElementById('density').value = L.density || 'comfortable';
+      document.getElementById('cardSize').value = L.cardSize || 'medium';
+      document.getElementById('showTags').checked = L.showTags !== false;
+    }
+    document.getElementById('density').addEventListener('change', function(){ state.config.layout.density=this.value; renderPreview(); });
+    document.getElementById('cardSize').addEventListener('change', function(){ state.config.layout.cardSize=this.value; renderPreview(); });
+    document.getElementById('showTags').addEventListener('change', function(){ state.config.layout.showTags=this.checked; renderPreview(); });
+
+    // ---- tree render ---------------------------------------------------
+    var treeEl = document.getElementById('tree');
+    function renderTree(){
+      treeEl.innerHTML = '';
+      state.config.categories.forEach(function(cat){
+        var block = document.createElement('div');
+        block.className = 'cat-block'; block.setAttribute('data-cat-id', cat.id);
+
+        var head = document.createElement('div');
+        head.className = 'cat-head' + (state.sel && state.sel.type==='cat' && state.sel.catId===cat.id ? ' sel' : '');
+        head.innerHTML = '<span class="drag cat-drag" title="גרירה">⋮⋮</span>' +
+          '<span class="c-title">' + esc(cat.icon) + ' ' + esc(cat.title) + '</span>' +
+          '<span class="c-badge">' + (cat.adminOnly ? '🔒 קטגוריית אדמין · ' : '') + cat.cards.length + ' כרטיסים</span>';
+        head.addEventListener('click', function(e){ if (e.target.classList.contains('cat-drag')) return; selectCat(cat.id); });
+        block.appendChild(head);
+
+        var list = document.createElement('div');
+        list.className = 'card-list'; list.setAttribute('data-cat-id', cat.id);
+        cat.cards.forEach(function(card){
+          var row = document.createElement('div');
+          row.className = 'card-row' + (state.sel && state.sel.type==='card' && state.sel.cardId===card.id ? ' sel' : '');
+          row.setAttribute('data-card-id', card.id);
+          row.innerHTML = '<span class="drag card-drag">⋮⋮</span>' +
+            '<span class="r-icon">' + esc(card.icon) + '</span>' +
+            '<span class="r-title">' + esc(card.title) + '</span>' +
+            '<button class="vis" title="' + VIS_LABEL[card.visibility] + '">' + VIS_ICON[card.visibility] + '</button>';
+          row.querySelector('.vis').addEventListener('click', function(e){
+            e.stopPropagation();
+            card.visibility = VIS_NEXT[card.visibility] || 'public';
+            this.textContent = VIS_ICON[card.visibility]; this.title = VIS_LABEL[card.visibility];
+            if (state.sel && state.sel.type==='card' && state.sel.cardId===card.id) renderInspector();
+            renderPreview();
+          });
+          row.addEventListener('click', function(e){ if (e.target.classList.contains('card-drag')) return; selectCard(cat.id, card.id); });
+          list.appendChild(row);
+        });
+        block.appendChild(list);
+
+        var addRow = document.createElement('div');
+        addRow.className = 'add-row';
+        addRow.innerHTML = '<button class="btn ghost add-card">➕ כרטיס</button>' +
+          '<button class="btn danger del-cat">🗑 מחק קטגוריה</button>';
+        addRow.querySelector('.add-card').addEventListener('click', function(){ addCard(cat.id); });
+        addRow.querySelector('.del-cat').addEventListener('click', function(){ delCat(cat.id); });
+        block.appendChild(addRow);
+
+        treeEl.appendChild(block);
+        makeCardSortable(list);
+      });
+      makeCatSortable();
+    }
+
+    // ---- drag & drop ---------------------------------------------------
+    function makeCardSortable(list){
+      new Sortable(list, {
+        group: 'cards', handle: '.card-drag', animation: 150,
+        ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen',
+        onEnd: function(){ syncOrderFromDOM(); renderTree(); renderPreview(); }
+      });
+    }
+    function makeCatSortable(){
+      new Sortable(treeEl, {
+        group: 'categories', handle: '.cat-drag', animation: 150,
+        ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen',
+        onEnd: function(){ syncOrderFromDOM(); renderTree(); renderPreview(); }
+      });
+    }
+    // Rebuild the data model from the DOM order after any drag.
+    function syncOrderFromDOM(){
+      var catBlocks = treeEl.querySelectorAll('.cat-block');
+      var newCats = [];
+      catBlocks.forEach(function(block){
+        var cat = findCat(block.getAttribute('data-cat-id'));
+        if (!cat) return;
+        var rows = block.querySelectorAll('.card-row');
+        var newCards = [];
+        rows.forEach(function(row){
+          // a card may have moved in from another category — search all cats
+          var cid = row.getAttribute('data-card-id');
+          var card = null;
+          state.config.categories.some(function(c){
+            var f = c.cards.filter(function(k){ return k.id===cid; })[0];
+            if (f) { card = f; return true; } return false;
+          });
+          if (card) newCards.push(card);
+        });
+        cat.cards = newCards;
+        newCats.push(cat);
+      });
+      state.config.categories = newCats;
+    }
+
+    // ---- selection + inspector ----------------------------------------
+    function selectCat(catId){ state.sel = {type:'cat', catId:catId}; renderTree(); renderInspector(); }
+    function selectCard(catId, cardId){ state.sel = {type:'card', catId:catId, cardId:cardId}; renderTree(); renderInspector(); }
+
+    var inspEl = document.getElementById('inspector');
+    function fieldText(label, val, oninput, hint){
+      var wrap = document.createElement('div'); wrap.className='field';
+      wrap.innerHTML = '<label>'+label+'</label>';
+      var inp = document.createElement('input'); inp.type='text'; inp.value = val==null?'':val;
+      inp.addEventListener('input', function(){ oninput(inp.value); });
+      wrap.appendChild(inp);
+      if (hint){ var h=document.createElement('div'); h.className='hint'; h.textContent=hint; wrap.appendChild(h); }
+      return wrap;
+    }
+    function fieldArea(label, val, oninput){
+      var wrap = document.createElement('div'); wrap.className='field';
+      wrap.innerHTML = '<label>'+label+'</label>';
+      var ta = document.createElement('textarea'); ta.value = val==null?'':val;
+      ta.addEventListener('input', function(){ oninput(ta.value); });
+      wrap.appendChild(ta); return wrap;
+    }
+
+    function renderInspector(){
+      inspEl.innerHTML = '';
+      var titleEl = document.getElementById('inspTitle');
+      if (!state.sel){ inspEl.innerHTML = '<p class="empty">בחרו כרטיס או קטגוריה מהרשימה כדי לערוך.</p>'; titleEl.textContent='עריכה'; return; }
+
+      if (state.sel.type === 'cat'){
+        var cat = findCat(state.sel.catId); if (!cat){ state.sel=null; return renderInspector(); }
+        titleEl.textContent = 'עריכת קטגוריה';
+        inspEl.appendChild(fieldText('שם הקטגוריה', cat.title, function(v){ cat.title=v; touchTree(); }));
+        inspEl.appendChild(fieldText('אייקון (אימוג׳י)', cat.icon, function(v){ cat.icon=v; touchTree(); }));
+        var accentWrap = document.createElement('div'); accentWrap.className='field';
+        accentWrap.innerHTML = '<label>צבע הדגשה (אופציונלי)</label>';
+        var colorRow = document.createElement('div'); colorRow.style.display='flex'; colorRow.style.gap='8px'; colorRow.style.alignItems='center';
+        var color = document.createElement('input'); color.type='color'; color.value = cat.accent || '#a78bfa';
+        color.style.width='44px'; color.style.height='38px'; color.style.padding='2px'; color.style.background='transparent';
+        var clearBtn = document.createElement('button'); clearBtn.className='btn ghost'; clearBtn.textContent='ברירת מחדל';
+        color.addEventListener('input', function(){ cat.accent = color.value; renderPreview(); });
+        clearBtn.addEventListener('click', function(){ cat.accent = null; renderPreview(); });
+        colorRow.appendChild(color); colorRow.appendChild(clearBtn); accentWrap.appendChild(colorRow);
+        var ah = document.createElement('div'); ah.className='hint'; ah.textContent='ריק = צבע ברירת המחדל של האתר.'; accentWrap.appendChild(ah);
+        inspEl.appendChild(accentWrap);
+
+        var adminWrap = document.createElement('div'); adminWrap.className='field';
+        var lbl = document.createElement('label'); lbl.className='check';
+        var cb = document.createElement('input'); cb.type='checkbox'; cb.checked = !!cat.adminOnly;
+        cb.addEventListener('change', function(){ cat.adminOnly = cb.checked; touchTree(); });
+        lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' קטגוריית אדמין (מוסתרת ממבקרים רגילים)'));
+        adminWrap.appendChild(lbl); inspEl.appendChild(adminWrap);
+        return;
+      }
+
+      // card
+      var cat2 = findCat(state.sel.catId);
+      var card = findCard(state.sel.catId, state.sel.cardId);
+      if (!card){ state.sel=null; return renderInspector(); }
+      titleEl.textContent = 'עריכת כרטיס';
+      inspEl.appendChild(fieldText('כותרת', card.title, function(v){ card.title=v; touchTree(); }));
+      inspEl.appendChild(fieldArea('תיאור', card.desc, function(v){ card.desc=v; renderPreview(); }));
+      var row2 = document.createElement('div'); row2.className='row2';
+      row2.appendChild(fieldText('אייקון (אימוג׳י)', card.icon, function(v){ card.icon=v; touchTree(); }));
+      // visibility select
+      var visWrap = document.createElement('div'); visWrap.className='field';
+      visWrap.innerHTML = '<label>נראוּת</label>';
+      var vsel = document.createElement('select');
+      ['public','admin','hidden'].forEach(function(v){ var o=document.createElement('option'); o.value=v; o.textContent=VIS_ICON[v]+' '+VIS_LABEL[v]; vsel.appendChild(o); });
+      vsel.value = card.visibility;
+      vsel.addEventListener('change', function(){ card.visibility=vsel.value; touchTree(); renderPreview(); });
+      visWrap.appendChild(vsel); row2.appendChild(visWrap);
+      inspEl.appendChild(row2);
+      inspEl.appendChild(fieldText('קישור (URL)', card.href, function(v){ card.href=v; renderPreview(); }));
+      var ntWrap = document.createElement('div'); ntWrap.className='field';
+      var ntl = document.createElement('label'); ntl.className='check';
+      var ntc = document.createElement('input'); ntc.type='checkbox'; ntc.checked = !!card.newTab;
+      ntc.addEventListener('change', function(){ card.newTab=ntc.checked; renderPreview(); });
+      ntl.appendChild(ntc); ntl.appendChild(document.createTextNode(' פתח בכרטיסייה חדשה'));
+      ntWrap.appendChild(ntl); inspEl.appendChild(ntWrap);
+      inspEl.appendChild(fieldText('תגיות (מופרדות בפסיק)', (card.tags||[]).join(', '), function(v){
+        card.tags = v.split(',').map(function(s){ return s.trim(); }).filter(Boolean).slice(0,8);
+        renderPreview();
+      }));
+      inspEl.appendChild(fieldText('מזהה לאנליטיקס', card.id, function(v){
+        card.id = v.trim();
+      }, 'אותיות/מספרים/מקף בלבד. משמש לספירת קליקים — עדיף לא לשנות אחרי פרסום.'));
+
+      var del = document.createElement('button'); del.className='btn danger'; del.textContent='🗑 מחק כרטיס';
+      del.style.marginTop='8px';
+      del.addEventListener('click', function(){ delCard(state.sel.catId, state.sel.cardId); });
+      inspEl.appendChild(del);
+    }
+
+    // update tree label live without losing selection/scroll
+    function touchTree(){ renderTree(); renderPreview(); }
+
+    // ---- add / delete --------------------------------------------------
+    function addCat(){
+      state.config.categories.push({ id: uniqueCatId(), title:'קטגוריה חדשה', icon:'📁', accent:null, adminOnly:false, cards:[] });
+      renderTree(); renderPreview();
+      selectCat(state.config.categories[state.config.categories.length-1].id);
+    }
+    function delCat(catId){
+      var cat = findCat(catId);
+      if (!confirm('למחוק את הקטגוריה "'+cat.title+'" וכל הכרטיסים שבה?')) return;
+      state.config.categories = state.config.categories.filter(function(c){ return c.id!==catId; });
+      if (state.sel && state.sel.catId===catId) state.sel = null;
+      renderTree(); renderInspector(); renderPreview();
+    }
+    function addCard(catId){
+      var cat = findCat(catId);
+      var card = { id: uniqueCardId(), title:'כלי חדש', desc:'תיאור קצר של הכלי.', icon:'🔧',
+        href:'https://', newTab:true, tags:[], visibility:'public' };
+      cat.cards.push(card); renderTree(); renderPreview(); selectCard(catId, card.id);
+    }
+    function delCard(catId, cardId){
+      var card = findCard(catId, cardId);
+      if (!confirm('למחוק את הכרטיס "'+card.title+'"?')) return;
+      var cat = findCat(catId);
+      cat.cards = cat.cards.filter(function(k){ return k.id!==cardId; });
+      state.sel = null; renderTree(); renderInspector(); renderPreview();
+    }
+    document.getElementById('addCat').addEventListener('click', addCat);
+
+    // ---- preview -------------------------------------------------------
+    var previewEl = document.getElementById('preview');
+    function renderPreview(){
+      window.HubRender.applyLayout(previewEl, state.config);
+      previewEl.innerHTML = '';
+      previewEl.appendChild(window.HubRender.renderHub(state.config, { includeHidden: true }));
+    }
+
+    // ---- client-side sanity check before save --------------------------
+    var SLUG = /^[A-Za-z0-9_-]{1,60}$/;
+    function clientValidate(){
+      var ids = {};
+      for (var i=0;i<state.config.categories.length;i++){
+        var cat = state.config.categories[i];
+        if (!cat.title.trim()) return 'לקטגוריה חסרה כותרת.';
+        for (var j=0;j<cat.cards.length;j++){
+          var k = cat.cards[j];
+          if (!SLUG.test(k.id)) return 'מזהה כרטיס לא תקין: "'+k.id+'" (אותיות/מספרים/מקף בלבד).';
+          if (ids[k.id]) return 'מזהה כרטיס כפול: '+k.id;
+          ids[k.id] = true;
+          if (!k.title.trim()) return 'לכרטיס חסרה כותרת.';
+          if (!/^https?:\/\//i.test(k.href) && !/^[\w.-]+\/?/.test(k.href)) return 'קישור לא תקין בכרטיס "'+k.title+'".';
+        }
+      }
+      return null;
+    }
+
+    // ---- save / undo ---------------------------------------------------
+    function doSave(force){
+      var err = clientValidate();
+      if (err){ setStatus(err, 'err'); return; }
+      setStatus('בודק גרסה…');
+      // stale-version check
+      api('/api/hub-config').then(function(r){ return r.json(); }).then(function(server){
+        if (!force && (server.version || 0) > state.loadedVersion){
+          if (!confirm('נשמרה גרסה חדשה יותר ממקום אחר (גרסה '+server.version+'). לשמור בכל זאת ולדרוס אותה?')){
+            setStatus('הביטול בוצע — לא נשמר.', 'err'); return;
+          }
+        }
+        setStatus('שומר…');
+        return api('/api/hub-config', { method:'POST', body: JSON.stringify(state.config) })
+          .then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); })
+          .then(function(res){
+            if (res.status === 401){ setStatus('פג התוקף — מתחבר מחדש…', 'err'); setTimeout(signIn, 800); return; }
+            if (res.status !== 200){ setStatus('שגיאה: ' + (res.j.error || res.status), 'err'); return; }
+            state.loadedVersion = res.j.version;
+            state.config.version = res.j.version;
+            setStatus('נשמר ✓ · גרסה ' + res.j.version, 'ok');
+          });
+      }).catch(function(){ setStatus('שגיאת רשת בשמירה', 'err'); });
+    }
+    document.getElementById('saveBtn').addEventListener('click', function(){ doSave(false); });
+
+    function doUndo(){
+      if (!confirm('לשחזר את הגרסה השמורה הקודמת? כל שינוי שלא נשמר יאבד.')) return;
+      setStatus('משחזר…');
+      api('/api/hub-config/undo', { method:'POST' })
+        .then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); })
+        .then(function(res){
+          if (res.status === 401){ setStatus('פג התוקף — מתחבר מחדש…', 'err'); setTimeout(signIn, 800); return; }
+          if (res.status !== 200){ setStatus('אין גרסה קודמת לשחזור.', 'err'); return; }
+          state.config = res.j; state.loadedVersion = res.j.version || 0; state.sel = null;
+          syncToolbar(); renderTree(); renderInspector(); renderPreview();
+          setStatus('שוחזר ✓ · גרסה ' + state.loadedVersion, 'ok');
+        }).catch(function(){ setStatus('שגיאת רשת בשחזור', 'err'); });
+    }
+    document.getElementById('undoBtn').addEventListener('click', doUndo);
+
+    // warn on unsaved navigation
+    window.addEventListener('beforeunload', function(e){
+      // best-effort; we don't track a precise dirty flag, so only warn if config loaded
+      if (state.config){ /* leave silent to avoid nagging */ }
+    });
+
+    load();
+  })();
+  </script>
+</body>
+</html>
