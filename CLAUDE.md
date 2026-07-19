@@ -102,6 +102,8 @@ Per-tool admin behaviour inside a tool (not just the card): read the same flag �
 
 **Hub layout:** categories/cards are config-driven now (see the "Editable Tools Hub" section above) and rendered by `js/hub-render.js` into `#hubRoot`; the **seed** (`go-shortener/hub_seed.py`) reproduces the original 6 category `<section class="cat-section">` blocks (🎬 וידאו ויוטיוב · 🎓 TAU אוניברסיטה לנוער · ✉️ אימייל · 🔗 קישורים וקודים · 🎲 כללי · 🔒 אדמין). The **🎓 TAU אוניברסיטה לנוער** category holds the three youth-science-day stations (all public): תחנת מחקר ביומימיקרי (`https://biomimicry.omri-iram.co.il` — repo `omri-il/Biomimicry-TAU`, VPS systemd `biomimicry` :5212; DNS+TLS pending), אולפן הפודקאסט המיקרוביאלי (`https://micropod.omri-iram.co.il` — moved here from the video category), and חדר הבריחה של האנרגיה (`https://energy.omri-iram.co.il`). The whole **אדמין** section is `cat-section admin-only` (hidden unless admin); individual admin tools in other sections keep the `tool-card admin-only` class. The shortener/qr/utm/extra/video-search tools log in with **"Sign in with Google"** (shared `omri_session` token, 30-day); a missing/expired token bounces the user through Google again.
 
+**Live config reorganized 2026-07-19 (v11, via the API — the seed still reproduces the old 6):** now **8 thematic categories** — 🎬 וידאו ויוטיוב (chapter-bar, video-search, whisper + davinci-control/video-downloader/obs-dashboard moved out of אדמין) · 🎟️ אירועים והרשמות (**new `eventking-events` card** → `https://events.omri-iram.co.il/admin`, plus geg-events + thanks-letter) · ✉️ אימייל ודיוור (+forms-mailerlite) · 🔗 קישורים וקודים (unchanged) · 🏫 לכיתה ולמורים (password-cards, randomizer, gems-gallery) · 🤖 AI ועוזרים (notebooklm, gems studio) · 🎓 TAU (unchanged) · 🧰 אישי (adminOnly: time-tracker, plant-care, extra). Per-card `visibility` is unchanged, so the public page still shows only the same public cards; the old catch-all 🔒 אדמין category is gone — admin cards now live in their thematic homes.
+
 ## Usage analytics (tool click counts)
 
 Each `.tool-card` carries a `data-tool="<id>"`; a click fires a fire-and-forget
@@ -112,7 +114,11 @@ client flag). go-shortener keeps per-tool lifetime totals + 90-day daily buckets
 An **admin-only** `#statsPanel` on the hub renders a ranked table (total / mine /
 visitors) with hand-rolled SVG sparklines. Counts only — no PII, no cookies, no
 third party. Only clicks **from the hub page** are counted (direct bookmarks and
-in-tool navigation are not).
+in-tool navigation are not). **Panel hidden since 2026-07-19** (Omri's request):
+the `<section id="statsPanel">` carries a `hidden` attribute and
+`maybeRenderStats()` early-returns on it (no `/api/stats` fetch either). Tracking
+itself still records clicks; to bring the table back, remove the `hidden`
+attribute in `index.html`.
 
 **Adding a tool → nothing to sync anymore.** The `/api/track` allow-list is now
 **derived from the hub config** (every card `id`), so adding a card in `/admin/`

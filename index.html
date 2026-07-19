@@ -66,7 +66,9 @@
 
   <main aria-label="כלים">
 
-    <section id="statsPanel" class="cat-section admin-only" aria-label="סטטיסטיקה">
+    <!-- Stats panel hidden by request (2026-07-19). To bring it back: remove
+         the `hidden` attribute — the render JS keys off it and will resume. -->
+    <section id="statsPanel" class="cat-section admin-only" aria-label="סטטיסטיקה" hidden>
       <h2 class="cat">📊 סטטיסטיקה — שימוש בכלים</h2>
       <div id="statsBody"><p class="stats-msg">טוען…</p></div>
     </section>
@@ -168,6 +170,10 @@
 
       // ---- Admin usage table (only in admin mode; runs once, post-render) ---
       function maybeRenderStats() {
+        // The panel's `hidden` attribute is the on/off switch — when the admin
+        // decides to hide the stats section, skip the /api/stats fetch too.
+        var panel = document.getElementById('statsPanel');
+        if (!panel || panel.hidden) return;
         if (statsLoaded) return;
         var isAdmin = false;
         try { isAdmin = localStorage.getItem('omri_admin') === '1'; } catch (_) {}
