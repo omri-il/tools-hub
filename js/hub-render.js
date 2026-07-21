@@ -49,8 +49,30 @@
     var layout = (cfg && cfg.layout) || {};
     var showTags = layout.showTags !== false;
     var frag = document.createDocumentFragment();
+    var categories = (cfg && cfg.categories) ? cfg.categories : [];
 
-    (cfg && cfg.categories ? cfg.categories : []).forEach(function (cat) {
+    // Favorites — a pinned section at the very top, pulled from every category.
+    // Cards stay in their original category too; this is just a shortcut shelf.
+    var favCards = [];
+    categories.forEach(function (cat) {
+      (cat.cards || []).forEach(function (c) {
+        if (!c.favorite) return;
+        if (!includeHidden && c.visibility === "hidden") return;
+        favCards.push(c);
+      });
+    });
+    if (favCards.length) {
+      var favSec = el("section", "cat-section favorites-section");
+      favSec.style.setProperty("--accent", "#fbbf24");
+      favSec.style.setProperty("--accent-2", "#f59e0b");
+      favSec.appendChild(el("h2", "cat", "⭐ מועדפים"));
+      var favGrid = el("div", "tools-grid");
+      favCards.forEach(function (c) { favGrid.appendChild(renderCard(c, showTags)); });
+      favSec.appendChild(favGrid);
+      frag.appendChild(favSec);
+    }
+
+    categories.forEach(function (cat) {
       var cards = (cat.cards || []).filter(function (c) {
         return includeHidden || c.visibility !== "hidden";
       });

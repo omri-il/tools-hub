@@ -55,12 +55,16 @@
     .panel h3 { margin: 0 0 12px; font-size: 16px; }
 
     /* tree */
+    .fav-shortcut { border: 1px solid rgba(251,191,36,0.4); border-radius: 12px; margin-bottom: 16px; overflow: hidden;
+      background: rgba(251,191,36,0.05); }
+    .fav-shortcut .cat-head { cursor: default; background: rgba(251,191,36,0.08); }
+    .fav-shortcut .c-title-text { color: #fcd34d; }
     .cat-block { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
     .cat-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px;
       background: rgba(255,255,255,0.03); cursor: pointer; }
     .cat-head.sel { background: rgba(167,139,250,0.14); }
     .cat-head .drag { cursor: grab; color: var(--text-soft); font-size: 15px; }
-    .cat-head .c-title { font-weight: 700; flex: 1; }
+    .cat-head .c-title-text { font-weight: 700; flex: 1; }
     .cat-head .c-badge { font-size: 11px; color: var(--text-soft); }
     .card-list { padding: 6px; min-height: 12px; }
     .card-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 9px;
@@ -72,6 +76,22 @@
     .card-row .r-title { flex: 1; font-size: 14px; }
     .card-row .vis { border: none; background: none; cursor: pointer; font-size: 15px; padding: 2px 4px; border-radius: 6px; }
     .card-row .vis:hover { background: rgba(255,255,255,0.08); }
+    .card-row .fav { border: none; background: none; cursor: pointer; font-size: 15px; padding: 2px 4px;
+      border-radius: 6px; color: #fbbf24; }
+    .card-row .fav:hover { background: rgba(255,255,255,0.08); }
+
+    /* inline rename (click a name/icon in the tree to edit it in place) */
+    .cat-head .c-icon, .cat-head .c-title-text,
+    .card-row .r-icon, .card-row .r-title {
+      cursor: text; border-radius: 6px; padding: 2px 5px; margin: -2px -5px;
+    }
+    .cat-head .c-icon:hover, .cat-head .c-title-text:hover,
+    .card-row .r-icon:hover, .card-row .r-title:hover { background: rgba(255,255,255,0.07); }
+    .inline-input {
+      background: rgba(0,0,0,0.4); border: 1px solid var(--accent); color: var(--text);
+      border-radius: 6px; padding: 1px 5px; font: inherit; }
+    .inline-input-icon { width: 3.4em; text-align: center; }
+    .inline-input-title { width: 100%; }
     .add-row { display: flex; gap: 8px; padding: 8px; }
     .add-row .btn { font-size: 13px; padding: 7px 12px; }
     .sortable-ghost { opacity: 0.4; }
@@ -94,6 +114,7 @@
     #preview .tool-card.hidden-card { opacity: 0.5; border-style: dashed; }
     #preview .admin-only { display: flex !important; }
     #preview .cat-section.admin-only { display: block !important; }
+    #preview .favorites-section .cat { color: #fcd34d; }
   </style>
 </head>
 <body>
@@ -107,7 +128,7 @@
 
   <div class="wrap" id="app" style="display:none">
     <h1 class="page">✏️ עריכת מרכז הכלים</h1>
-    <p class="sub">גררו כרטיסים וקטגוריות, ערכו טקסט, החליפו נראוּת (ציבורי / אדמין / מוסתר), ושַׁנו סגנון. שום דבר לא מתפרסם עד לחיצה על "שמור".</p>
+    <p class="sub">גררו כרטיסים וקטגוריות, לחצו על שם או אייקון ברשימה כדי לערוך במקום, סמנו ⭐ למועדפים (יוצגו בראש דף הבית), החליפו נראוּת (ציבורי / אדמין / מוסתר), ושַׁנו סגנון. שום דבר לא מתפרסם עד לחיצה על "שמור".</p>
 
     <div class="toolbar">
       <label>צפיפות
@@ -190,6 +211,9 @@
       api('/api/hub-config').then(function(r){ return r.json(); }).then(function(cfg){
         state.config = cfg;
         state.loadedVersion = cfg.version || 0;
+        (cfg.categories || []).forEach(function(c){
+          (c.cards || []).forEach(function(k){ if (typeof k.favorite !== 'boolean') k.favorite = false; });
+        });
         showApp();
         syncToolbar();
         renderTree();
@@ -223,7 +247,45 @@
     var VIS_ICON = { public:'🌐', admin:'🔒', hidden:'👁️‍🗨️' };
     var VIS_LABEL = { public:'ציבורי', admin:'אדמין', hidden:'מוסתר' };
 
-    function esc(s){ return String(s==null?'':s); }
+    // ---- inline rename (click a name/icon in the tree to edit it in place) --
+    function inlineEdit(initialText, cls, onCommit, opts){
+      opts = opts || {};
+      var span = document.createElement('span');
+      span.className = cls;
+      span.textContent = initialText;
+      span.title = opts.title || 'לחצו לעריכה';
+      span.tabIndex = 0;
+      function start(e){
+        if (e) e.stopPropagation();
+        if (span.querySelector('input')) return;
+        var cur = span.textContent;
+        if (opts.grow) span.style.width = opts.grow;
+        span.textContent = '';
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'inline-input ' + (opts.narrow ? 'inline-input-icon' : 'inline-input-title');
+        inp.value = cur;
+        span.appendChild(inp);
+        inp.focus(); inp.select();
+        inp.addEventListener('click', function(ev){ ev.stopPropagation(); });
+        inp.addEventListener('keydown', function(ev){
+          if (ev.key === 'Enter'){ ev.preventDefault(); inp.blur(); }
+          else if (ev.key === 'Escape'){ ev.preventDefault(); inp.value = cur; inp.blur(); }
+        });
+        inp.addEventListener('blur', function(){
+          var v = inp.value.trim();
+          if (!v) v = cur;
+          span.textContent = v;
+          if (opts.grow) span.style.width = '';
+          if (v !== cur) onCommit(v);
+        });
+      }
+      span.addEventListener('click', start);
+      span.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); start(e); }
+      });
+      return span;
+    }
 
     // ---- toolbar (layout) ---------------------------------------------
     function syncToolbar(){
@@ -238,40 +300,110 @@
 
     // ---- tree render ---------------------------------------------------
     var treeEl = document.getElementById('tree');
+
+    // A card row is built the same way whether it's inside its real category
+    // or inside the pinned favorites shortcut at the top of the tree — both
+    // reference the same underlying card object, so edits made in either
+    // place need a full tree re-render to stay in sync (draggable:false for
+    // the favorites shortcut, since it isn't a real reorderable list).
+    function buildCardRow(cat, card, opts){
+      opts = opts || {};
+      var row = document.createElement('div');
+      row.className = 'card-row' + (state.sel && state.sel.type==='card' && state.sel.cardId===card.id ? ' sel' : '');
+      row.setAttribute('data-card-id', card.id);
+
+      if (opts.draggable !== false) {
+        var cardDrag = document.createElement('span'); cardDrag.className='drag card-drag'; cardDrag.textContent='⋮⋮';
+        row.appendChild(cardDrag);
+      }
+
+      row.appendChild(inlineEdit(card.icon || '', 'r-icon', function(v){
+        card.icon = v; touchTreeForCard(card);
+      }, { title:'לחצו לשינוי אייקון', narrow:true, grow:'3.6em' }));
+
+      row.appendChild(inlineEdit(card.title || '', 'r-title', function(v){
+        card.title = v; touchTreeForCard(card);
+      }, { title:'לחצו לשינוי שם' }));
+
+      var favBtn = document.createElement('button'); favBtn.className='fav'; favBtn.type='button';
+      favBtn.title = card.favorite ? 'הסר ממועדפים' : 'הוסף למועדפים';
+      favBtn.textContent = card.favorite ? '⭐' : '☆';
+      favBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        card.favorite = !card.favorite;
+        touchTreeForCard(card);
+      });
+      row.appendChild(favBtn);
+
+      var visBtn = document.createElement('button'); visBtn.className='vis';
+      visBtn.title = VIS_LABEL[card.visibility]; visBtn.textContent = VIS_ICON[card.visibility];
+      visBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        card.visibility = VIS_NEXT[card.visibility] || 'public';
+        touchTreeForCard(card);
+      });
+      row.appendChild(visBtn);
+
+      row.addEventListener('click', function(e){
+        if (e.target.classList.contains('card-drag') || e.target.tagName === 'INPUT') return;
+        selectCard(cat.id, card.id);
+      });
+      return row;
+    }
+
     function renderTree(){
       treeEl.innerHTML = '';
+
+      // ⭐ Favorites — a pinned shortcut at the top of the editor tree, mirroring
+      // the pinned section on the public hub. Quick access while managing;
+      // not draggable (cards keep living in their real category below).
+      var favPairs = [];
+      state.config.categories.forEach(function(cat){
+        cat.cards.forEach(function(card){ if (card.favorite) favPairs.push({ cat: cat, card: card }); });
+      });
+      if (favPairs.length){
+        var favBlock = document.createElement('div');
+        favBlock.className = 'fav-shortcut';
+        var favHead = document.createElement('div');
+        favHead.className = 'cat-head';
+        var favTitle = document.createElement('span'); favTitle.className='c-title-text'; favTitle.textContent = '⭐ מועדפים';
+        favHead.appendChild(favTitle);
+        var favBadge = document.createElement('span'); favBadge.className='c-badge';
+        favBadge.textContent = favPairs.length + ' כרטיסים';
+        favHead.appendChild(favBadge);
+        favBlock.appendChild(favHead);
+        var favList = document.createElement('div'); favList.className = 'card-list';
+        favPairs.forEach(function(p){ favList.appendChild(buildCardRow(p.cat, p.card, { draggable:false })); });
+        favBlock.appendChild(favList);
+        treeEl.appendChild(favBlock);
+      }
+
       state.config.categories.forEach(function(cat){
         var block = document.createElement('div');
         block.className = 'cat-block'; block.setAttribute('data-cat-id', cat.id);
 
         var head = document.createElement('div');
         head.className = 'cat-head' + (state.sel && state.sel.type==='cat' && state.sel.catId===cat.id ? ' sel' : '');
-        head.innerHTML = '<span class="drag cat-drag" title="גרירה">⋮⋮</span>' +
-          '<span class="c-title">' + esc(cat.icon) + ' ' + esc(cat.title) + '</span>' +
-          '<span class="c-badge">' + (cat.adminOnly ? '🔒 קטגוריית אדמין · ' : '') + cat.cards.length + ' כרטיסים</span>';
-        head.addEventListener('click', function(e){ if (e.target.classList.contains('cat-drag')) return; selectCat(cat.id); });
+        var catDrag = document.createElement('span'); catDrag.className='drag cat-drag'; catDrag.title='גרירה'; catDrag.textContent='⋮⋮';
+        head.appendChild(catDrag);
+        head.appendChild(inlineEdit(cat.icon || '', 'c-icon', function(v){
+          cat.icon = v; touchTreeForCat(cat);
+        }, { title:'לחצו לשינוי אייקון', narrow:true, grow:'3.6em' }));
+        head.appendChild(inlineEdit(cat.title || '', 'c-title-text', function(v){
+          cat.title = v; touchTreeForCat(cat);
+        }, { title:'לחצו לשינוי שם' }));
+        var catBadge = document.createElement('span'); catBadge.className='c-badge';
+        catBadge.textContent = (cat.adminOnly ? '🔒 קטגוריית אדמין · ' : '') + cat.cards.length + ' כרטיסים';
+        head.appendChild(catBadge);
+        head.addEventListener('click', function(e){
+          if (e.target.classList.contains('cat-drag') || e.target.tagName === 'INPUT') return;
+          selectCat(cat.id);
+        });
         block.appendChild(head);
 
         var list = document.createElement('div');
         list.className = 'card-list'; list.setAttribute('data-cat-id', cat.id);
-        cat.cards.forEach(function(card){
-          var row = document.createElement('div');
-          row.className = 'card-row' + (state.sel && state.sel.type==='card' && state.sel.cardId===card.id ? ' sel' : '');
-          row.setAttribute('data-card-id', card.id);
-          row.innerHTML = '<span class="drag card-drag">⋮⋮</span>' +
-            '<span class="r-icon">' + esc(card.icon) + '</span>' +
-            '<span class="r-title">' + esc(card.title) + '</span>' +
-            '<button class="vis" title="' + VIS_LABEL[card.visibility] + '">' + VIS_ICON[card.visibility] + '</button>';
-          row.querySelector('.vis').addEventListener('click', function(e){
-            e.stopPropagation();
-            card.visibility = VIS_NEXT[card.visibility] || 'public';
-            this.textContent = VIS_ICON[card.visibility]; this.title = VIS_LABEL[card.visibility];
-            if (state.sel && state.sel.type==='card' && state.sel.cardId===card.id) renderInspector();
-            renderPreview();
-          });
-          row.addEventListener('click', function(e){ if (e.target.classList.contains('card-drag')) return; selectCard(cat.id, card.id); });
-          list.appendChild(row);
-        });
+        cat.cards.forEach(function(card){ list.appendChild(buildCardRow(cat, card)); });
         block.appendChild(list);
 
         var addRow = document.createElement('div');
@@ -406,6 +538,13 @@
       ntc.addEventListener('change', function(){ card.newTab=ntc.checked; renderPreview(); });
       ntl.appendChild(ntc); ntl.appendChild(document.createTextNode(' פתח בכרטיסייה חדשה'));
       ntWrap.appendChild(ntl); inspEl.appendChild(ntWrap);
+
+      var favWrap = document.createElement('div'); favWrap.className='field';
+      var favLbl = document.createElement('label'); favLbl.className='check';
+      var favCb = document.createElement('input'); favCb.type='checkbox'; favCb.checked = !!card.favorite;
+      favCb.addEventListener('change', function(){ card.favorite = favCb.checked; touchTree(); });
+      favLbl.appendChild(favCb); favLbl.appendChild(document.createTextNode(' ⭐ הצג במועדפים (מוצג למעלה בדף הבית)'));
+      favWrap.appendChild(favLbl); inspEl.appendChild(favWrap);
       inspEl.appendChild(fieldText('תגיות (מופרדות בפסיק)', (card.tags||[]).join(', '), function(v){
         card.tags = v.split(',').map(function(s){ return s.trim(); }).filter(Boolean).slice(0,8);
         renderPreview();
@@ -421,7 +560,22 @@
     }
 
     // update tree label live without losing selection/scroll
+    // (does NOT refresh the inspector — inspector fields call this on every
+    // keystroke, so refreshing it here would rebuild the input the user is
+    // typing into and steal focus mid-word)
     function touchTree(){ renderTree(); renderPreview(); }
+
+    // same, but also refreshes the inspector panel if the edited card/category
+    // is the one currently selected — for edits made from the tree row itself
+    // (inline rename, ⭐/vis toggles), which never originate inside the inspector.
+    function touchTreeForCard(card){
+      renderTree(); renderPreview();
+      if (state.sel && state.sel.type==='card' && state.sel.cardId===card.id) renderInspector();
+    }
+    function touchTreeForCat(cat){
+      renderTree(); renderPreview();
+      if (state.sel && state.sel.type==='cat' && state.sel.catId===cat.id) renderInspector();
+    }
 
     // ---- add / delete --------------------------------------------------
     function addCat(){
@@ -439,7 +593,7 @@
     function addCard(catId){
       var cat = findCat(catId);
       var card = { id: uniqueCardId(), title:'כלי חדש', desc:'תיאור קצר של הכלי.', icon:'🔧',
-        href:'https://', newTab:true, tags:[], visibility:'public' };
+        href:'https://', newTab:true, tags:[], visibility:'public', favorite:false };
       cat.cards.push(card); renderTree(); renderPreview(); selectCard(catId, card.id);
     }
     function delCard(catId, cardId){
@@ -513,6 +667,9 @@
           if (res.status === 401){ setStatus('פג התוקף — מתחבר מחדש…', 'err'); setTimeout(signIn, 800); return; }
           if (res.status !== 200){ setStatus('אין גרסה קודמת לשחזור.', 'err'); return; }
           state.config = res.j; state.loadedVersion = res.j.version || 0; state.sel = null;
+          (state.config.categories || []).forEach(function(c){
+            (c.cards || []).forEach(function(k){ if (typeof k.favorite !== 'boolean') k.favorite = false; });
+          });
           syncToolbar(); renderTree(); renderInspector(); renderPreview();
           setStatus('שוחזר ✓ · גרסה ' + state.loadedVersion, 'ok');
         }).catch(function(){ setStatus('שגיאת רשת בשחזור', 'err'); });
