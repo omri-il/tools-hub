@@ -29,6 +29,13 @@
     input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(251,146,60,0.16)}
     .nbbar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-top:14px}
     .nbbar label{color:var(--accent)}
+    .nbrow{display:flex;gap:8px}
+    .nbrow select,.nbrow input{flex:1;min-width:0}
+    .nbrow .btn-icon{padding:0 14px;font-size:1rem}
+    .nbrow + .nbrow{margin-top:10px}
+    .nbrow[hidden]{display:none}
+    .nbbar .msg{margin-top:8px}
+    .btn:disabled{opacity:.5;cursor:default}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .pane{display:none;margin-bottom:14px} .pane.active{display:block}
     .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:11px 20px;font-size:.92rem}
@@ -78,7 +85,16 @@
       </div>
       <div class="nbbar">
         <label for="nbSelect">📓 פנקס יעד ב-NotebookLM (לכפתור "שלח" בכל הקלטה)</label>
-        <select id="nbSelect"><option value="">טוען פנקסים…</option></select>
+        <div class="nbrow">
+          <select id="nbSelect"><option value="">טוען פנקסים…</option></select>
+          <button class="btn btn-ghost btn-icon" id="nbRefresh" type="button" title="רענון רשימת הפנקסים" aria-label="רענון רשימת הפנקסים">🔄</button>
+          <button class="btn btn-ghost btn-icon" id="nbNewBtn" type="button" title="פנקס חדש" aria-label="פנקס חדש">➕</button>
+        </div>
+        <div class="nbrow" id="nbNew" hidden>
+          <input type="text" id="nbNewName" placeholder="שם הפנקס החדש" aria-label="שם הפנקס החדש" />
+          <button class="btn btn-primary" id="nbCreate" type="button">צור פנקס</button>
+        </div>
+        <div class="msg" id="nbMsg"></div>
       </div>
       <div id="results"></div>
     </div>
@@ -202,16 +218,59 @@
       return d;
     }
 
-    async function loadNotebooks(){
-      const sel=$('nbSelect'); if(!sel) return;
+    function esc(s){ return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
+    function nbOption(n){ return '<option value="'+esc(n.id)+'">'+esc(n.title||n.id)+'</option>'; }
+
+    // Fills the dropdown. Keeps the current choice, or selects `pick` ({id,title}),
+    // which is added on top if NotebookLM's list does not show it yet.
+    async function loadNotebooks(pick){
+      const sel=$('nbSelect'), btn=$('nbRefresh'), msg=$('nbMsg');
+      const keep=pick?pick.id:sel.value;
+      const hadList=!!sel.value;
+      btn.disabled=true; if(hadList) msg.textContent='מרענן…';
       try{
         const r=await apiFetch('/notebooks');
         const j=await r.json().catch(()=>({}));
+        if(!r.ok) throw new Error(j.error||r.status);
         const list=(j.notebooks)||[];
-        if(!list.length){ sel.innerHTML='<option value="">לא נמצאו פנקסים</option>'; return; }
-        sel.innerHTML=list.map(n=>'<option value="'+n.id+'">'+(n.title||n.id)+'</option>').join('');
-      }catch(e){ sel.innerHTML='<option value="">שגיאה בטעינת פנקסים</option>'; }
+        if(pick && !list.some(n=>n.id===pick.id)) list.unshift(pick);
+        if(!list.length){ sel.innerHTML='<option value="">לא נמצאו פנקסים</option>'; msg.textContent=''; return; }
+        sel.innerHTML=list.map(nbOption).join('');
+        if(keep && list.some(n=>n.id===keep)) sel.value=keep;
+        msg.textContent='';
+      }catch(e){
+        if(pick){
+          if(!hadList) sel.innerHTML='';
+          if(![...sel.options].some(o=>o.value===pick.id)) sel.insertAdjacentHTML('afterbegin',nbOption(pick));
+          sel.value=pick.id; msg.textContent='';
+        }
+        else if(hadList) msg.textContent='הרענון נכשל. הרשימה הקודמת נשארה.';
+        else sel.innerHTML='<option value="">שגיאה בטעינת פנקסים</option>';
+      }finally{ btn.disabled=false; }
     }
+
+    async function createNotebook(){
+      const name=$('nbNewName').value.trim(), btn=$('nbCreate'), msg=$('nbMsg');
+      if(!name){ msg.textContent='כתבו שם לפנקס.'; $('nbNewName').focus(); return; }
+      btn.disabled=true; msg.textContent='יוצר פנקס ב-NotebookLM… (עד דקה)';
+      try{
+        const r=await apiFetch('/notebooks',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({title:name})});
+        const j=await r.json().catch(()=>({}));
+        if(!r.ok){ msg.textContent='שגיאה: '+(j.detail||j.error||r.status); return; }
+        await loadNotebooks({id:j.id,title:j.title});
+        $('nbNewName').value=''; $('nbNew').hidden=true;
+        msg.textContent = j.created ? '✓ הפנקס נוצר ונבחר' : 'פנקס בשם הזה כבר קיים, והוא נבחר';
+      }catch(e){ msg.textContent='שגיאת רשת'; }
+      finally{ btn.disabled=false; }
+    }
+
+    $('nbRefresh').addEventListener('click',()=>loadNotebooks());
+    $('nbNewBtn').addEventListener('click',()=>{
+      const box=$('nbNew'); box.hidden=!box.hidden; if(!box.hidden) $('nbNewName').focus();
+    });
+    $('nbCreate').addEventListener('click',createNotebook);
+    $('nbNewName').addEventListener('keydown',e=>{ if(e.key==='Enter') createNotebook(); });
 
     if(isAdmin()){ $('app').style.display='block'; $('searchBtn').addEventListener('click',doSearch); loadNotebooks(); }
     else { $('lockNotice').style.display='block'; }
