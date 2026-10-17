@@ -68,6 +68,27 @@
     .ev .post{font-size:.8rem;color:var(--faint)}
     .ev .add{margin-top:auto;align-self:flex-start}
     .evnote{color:var(--faint);font-size:.82rem;margin:0 4px 6px}
+    .ev .seats{font-size:.8rem;color:var(--ink)} .ev .seats.full{color:var(--danger)}
+    .ev .hist{display:flex;flex-direction:column;gap:2px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}
+    .ev .hist .h-sent{color:var(--accent)} .ev .hist .h-fail{color:var(--danger)} .ev .hist .h-skip{color:var(--faint)} .ev .hist .h-draft{color:#c4b5fd}
+    details.evs>summary{cursor:pointer;list-style:none;font-size:1.05rem;font-weight:700;margin:26px 4px 10px;color:var(--muted)}
+    details.evs>summary::-webkit-details-marker{display:none}
+    details.evs>summary::before{content:'◂ ';font-size:.8rem} details.evs[open]>summary::before{content:'▾ '}
+    .meta{flex-wrap:wrap}
+    .chip.ev{display:inline-block;color:#c4b5fd;max-width:300px;vertical-align:middle;overflow:hidden;text-overflow:ellipsis}
+    .sugpost{position:relative;max-width:min(460px,94%);border:1.5px dashed rgba(196,181,253,.7);border-radius:8px 0 8px 8px;padding:8px 10px;
+           background:rgba(196,181,253,.06);color:var(--muted);font-size:.86rem;cursor:pointer;line-height:1.45}
+    .sugpost:hover{background:rgba(196,181,253,.12)}
+    .sugpost b{color:var(--ink)} .sugpost .gtext{white-space:pre-line;color:var(--faint);font-size:.8rem;margin-top:4px;max-height:4.4em;overflow:hidden}
+    .sugpost .gbtns{display:flex;gap:6px;margin-top:6px}
+    .sugpost .gbtns button{background:transparent;border:1px solid rgba(196,181,253,.6);color:#c4b5fd;border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
+    [draggable=true]{cursor:grab}
+    .day.drop{box-shadow:0 0 0 2px #c4b5fd;background:rgba(196,181,253,.06)}
+    .dragging{opacity:.4}
+    .draghint{color:var(--faint);font-size:.8rem;margin:0 4px 8px}
+    #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);color:var(--ink);
+           border-radius:10px;padding:10px 16px;font-size:.92rem;z-index:50;display:none;max-width:90vw}
+    #toast.err{border-color:var(--danger);color:var(--danger)}
     .bubble{position:relative;max-width:min(460px,94%);background:var(--bubble);color:var(--wa-ink);border-radius:8px 0 8px 8px;padding:6px 9px 20px;
             box-shadow:0 1px .5px rgba(0,0,0,.25);font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14.2px;line-height:19px;cursor:pointer;text-align:start}
     .bubble::before{content:"";position:absolute;top:0;right:-8px;border:8px solid transparent;border-top-color:var(--bubble);border-right:0}
@@ -158,6 +179,7 @@
       <button class="tab" data-pane="results">🏆 מה עבד</button>
     </nav>
     <section class="pane active" id="board"><div class="loading">טוען…</div></section>
+    <div id="toast"></div>
     <section class="pane" id="results"><div class="loading">טוען…</div></section>
     <footer><p>פרטי · נשמר בגיליון <a id="sheetlink" href="#" target="_blank" rel="noopener">„פוסטים לוואטסאפ”</a> ב-Drive. מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p></footer>
   </div>
@@ -350,10 +372,15 @@
     function renderEvents(el){
       const s=state;
       if(!s.events_on) return;
-      const h=document.createElement('h2'); h.textContent='📅 אירועים קרובים'; el.appendChild(h);
-      if(s.events_error){ el.insertAdjacentHTML('beforeend','<p class="evnote">⚠️ האירועים לא נקראו: '+esc(s.events_error)+'</p>'); return; }
-      if(!s.events.length){ el.insertAdjacentHTML('beforeend','<p class="evnote">אין אירועים בשלושת השבועות הקרובים.</p>'); return; }
-      el.insertAdjacentHTML('beforeend','<p class="evnote">לכל אירוע נכתבת לבד טיוטת תזכורת, שבוע לפני היום שלה. היא יוצאת רק אחרי שמאשרים אותה. 📣 = מעט נרשמים, כדאי לקדם.</p>');
+      if(s.events_error){ el.insertAdjacentHTML('beforeend','<h2>📅 אירועים קרובים</h2><p class="evnote">⚠️ האירועים לא נקראו: '+esc(s.events_error)+'</p>'); return; }
+      if(!s.events.length){ el.insertAdjacentHTML('beforeend','<h2>📅 אירועים קרובים</h2><p class="evnote">אין אירועים בשלושת השבועות הקרובים.</p>'); return; }
+      const box=document.createElement('details'); box.className='evs';
+      try{ box.open=localStorage.getItem('wa_events_open')==='1'; }catch(_){ }
+      box.ontoggle=()=>{ try{ localStorage.setItem('wa_events_open',box.open?'1':'0'); }catch(_){ } };
+      const hot=s.events.filter(e=>e.promote).length;
+      box.innerHTML='<summary>📅 אירועים קרובים ('+s.events.length+(hot?' · 📣 '+hot+' כדאי לקדם':'')+') · מה יצא ומתי</summary>'+
+        '<p class="evnote">כל אירוע מופיע גם בתוך היום המומלץ לפוסט עליו (בקו מקווקו סגול). לכל אירוע נכתבת לבד טיוטת תזכורת שבוע לפני היום שלה, והיא יוצאת רק אחרי שמאשרים אותה. 📣 = מעט נרשמים, כדאי לקדם.</p>';
+      el.appendChild(box); el=box;
       const grid=document.createElement('div'); grid.className='events';
       for(const e of s.events){
         const card=document.createElement('div'); card.className='ev'+(e.promote?' promote':'');
@@ -362,11 +389,12 @@
         if(e.from_whatsapp) nums.push('<span>'+e.from_whatsapp+' מוואטסאפ</span>');
         if(e.waiting) nums.push('<span>'+e.waiting+' ברשימת המתנה</span>');
         if(e.promote) nums.push('<span class="hot">📣 כדאי לקדם</span>');
-        const post=e.posts.find(p=>!p.sent)||e.posts[0];
-        const postLine=!post?'':post.sent?'✓ יצא פוסט עליו':post.draft?'📝 יש טיוטה ל-'+esc(post.date.slice(8,10)+'.'+String(+post.date.slice(5,7))):'✅ יש פוסט ל-'+esc(post.date.slice(8,10)+'.'+String(+post.date.slice(5,7)));
+        const post=e.posts.find(p=>!p.sent&&!p.skipped)||e.posts.find(p=>!p.sent)||e.posts[0];
+        const hist=e.posts.length?'<div class="hist">'+e.posts.map(histLine).join('')+'</div>':'<div class="post">עוד אין פוסט עליו</div>';
         card.innerHTML='<div class="when">יום '+esc(e.day)+' '+esc(e.label)+' · '+esc(e.time)+' · '+left+'</div>'+
           '<a class="name" dir="auto" href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">'+esc(e.name)+'</a>'+
-          '<div class="nums">'+nums.join('')+'</div>'+(postLine?'<div class="post">'+postLine+'</div>':'')+
+          '<div class="nums">'+nums.join('')+'</div>'+
+          (e.seats_words?'<div class="seats'+(e.seats_left===0?' full':'')+'">🪑 '+esc(e.seats_words)+'</div>':'')+hist+
           ((e.groups&&e.groups.topic)?'<div class="grp" dir="auto">👥 קבוצת הנושא: '+esc(e.groups.topic.name)+'</div>':'');
         const b=document.createElement('button'); b.className='add';
         if(post&&!post.sent){ b.textContent=post.draft?'📝 לטיוטה':'✏️ לפוסט'; b.onclick=()=>{ const p=findPost(post.row); if(p) openEditor(p,e); else { weeks=Math.max(weeks,6); load(); } }; }
@@ -375,9 +403,63 @@
       }
       el.appendChild(grid);
     }
+    const dm=d=>d.slice(8,10)+'.'+String(+d.slice(5,7));
+    function histLine(h){
+      const to=h.group?' → '+esc(h.group_name):'';
+      if(h.sent) return '<span class="h-sent" dir="auto">✓ '+esc(h.status||'נשלח')+to+'</span>';
+      if(h.failed) return '<span class="h-fail" dir="auto">✗ '+esc(h.status)+to+'</span>';
+      if(h.skipped) return '<span class="h-skip" dir="auto">⏭ '+dm(h.date)+' · לא לשלוח'+to+'</span>';
+      if(h.draft) return '<span class="h-draft" dir="auto">📝 טיוטה ל-'+dm(h.date)+' '+esc(h.due)+' · מחכה לאישור'+to+'</span>';
+      return '<span dir="auto">⏳ ייצא '+dm(h.date)+' ב-'+esc(h.due)+to+'</span>';
+    }
+    // a suggestion appears in its day only while nothing was written about the event yet
+    function suggestionsFor(day){ return (state.events||[]).filter(e=>e.suggest&&e.suggest.date===day&&!e.posts.length); }
+    function toast(t,err){ const el=$('toast'); el.textContent=t; el.className=err?'err':''; el.style.display='block';
+      clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',err?6000:3500); }
+
+    // ---- drag a post or a suggestion to another day ----
+    let drag=null;
+    function draggable(node,what){
+      node.draggable=true;
+      node.addEventListener('dragstart',ev=>{ drag=what; node.classList.add('dragging'); ev.dataTransfer.effectAllowed='move';
+        try{ ev.dataTransfer.setData('text/plain','wa'); }catch(_){ } });
+      node.addEventListener('dragend',()=>{ node.classList.remove('dragging'); drag=null;
+        document.querySelectorAll('.day.drop').forEach(c=>c.classList.remove('drop')); });
+    }
+    function dropTarget(card,d){
+      card.addEventListener('dragover',ev=>{ if(!drag||d.past) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; card.classList.add('drop'); });
+      card.addEventListener('dragleave',ev=>{ if(!card.contains(ev.relatedTarget)) card.classList.remove('drop'); });
+      card.addEventListener('drop',ev=>{ ev.preventDefault(); card.classList.remove('drop'); const w=drag; drag=null; if(w&&!d.past) moveTo(w,d); });
+    }
+    async function moveTo(w,d){
+      try{
+        if(w.post){
+          const p=w.post; if(p.date===d.date) return;
+          let text=p.text;
+          // an event's reminder says "מחר" / "היום": its first line is reworded for the new day
+          const ev=eventOf(p);
+          if(ev&&/^📅 /.test(text)&&d.date<=ev.date){
+            try{ const r=await apiJson('/event-text?id='+ev.id+'&date='+d.date); text=r.text.split('\n')[0]+text.slice(text.indexOf('\n')<0?text.length:text.indexOf('\n')); }catch(_){ }
+          }
+          toast('מעביר ל'+d.day+' '+d.label+'…');
+          await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:d.date,time:p.time||'',text,image:p.image||'',skip:!!p.skipped,group:p.group||'',approve:false}});
+          toast('✓ ההודעה עברה ל'+d.day+' '+d.label+(p.draft?' (עדיין טיוטה)':''));
+        }else if(w.event){
+          const e=w.event;
+          if(d.date>e.date){ toast('היום הזה אחרי האירוע',true); return; }
+          toast('כותב טיוטה ל'+d.day+' '+d.label+'…');
+          const r=await apiJson('/event-text?id='+e.id+'&date='+d.date);
+          await apiJson('/posts',{method:'POST',json:{date:d.date,time:'',text:r.text,image:'',skip:false,group:'',draft:true}});
+          toast('📝 טיוטה נכתבה ל'+d.day+' '+d.label+'. היא תצא רק אחרי שתאשרו אותה.');
+        }
+        await load();
+      }catch(err){ toast(err.message,true); }
+    }
+
     function renderBoard(){
-      const s=state, el=$('board'); el.innerHTML='';
+      const s=state; let el=$('board'); el.innerHTML='';
       renderEvents(el);
+      el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, או הצעה לאירוע, ליום אחר.</p>');
       for(const w of s.weeks){
         if(!w.days.length) continue;
         const d0=w.days[0], dn=w.days[w.days.length-1];
@@ -385,25 +467,38 @@
         for(const d of w.days){
           const card=document.createElement('div'); card.className='day'+(d.today?' today':'')+(d.past?' past':'');
           const plan=d.plan.length?d.plan.map(p=>'<div class="plan" dir="auto">'+esc(p.title)+' <span class="st">'+esc(p.status)+'</span></div>').join(''):'<div class="plan empty">אין תוכן מתוכנן ב-Content Machine</div>';
-          const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.promote?' 📣':'')+'</div>').join('');
+          const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' 📣':'')+'</div>').join('');
           card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+evs+plan+'</aside><div class="chat"></div>';
           const aside=card.querySelector('aside');
           if(!d.past){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
           const chat=card.querySelector('.chat');
-          if(!d.posts.length){
+          dropTarget(card,d);
+          const ghosts=d.past?[]:suggestionsFor(d.date);
+          if(!d.posts.length&&!ghosts.length){
             const n=document.createElement('div'); n.className='none'+(d.past?' past':''); n.textContent=d.past?'לא נשלחה הודעה':'אין הודעה ליום הזה';
             if(!d.past){ n.style.cursor='pointer'; n.onclick=()=>openEditor({date:d.date}); }
             chat.appendChild(n);
           }
           for(const p of d.posts){
             const it=document.createElement('div'); it.className='item';
-            const [cls,label]=chipOf(p);
-            it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+'</div>';
+            const [cls,label]=chipOf(p), ev=eventOf(p);
+            it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
+              (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+'</div>';
             const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:p.skool?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
-            if(!p.sent) b.onclick=()=>openEditor(p,eventOf(p));
+            if(!p.sent){ b.onclick=()=>openEditor(p,ev); if(!d.past) draggable(it,{post:p}); }
             it.appendChild(b);
             if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
             chat.appendChild(it);
+          }
+          for(const e of ghosts){
+            const g=document.createElement('div'); g.className='sugpost'; g.dir='auto';
+            g.innerHTML='<div>💡 <b>הצעה: פוסט על „'+esc(e.name)+'”</b></div><div>יום '+esc(e.day)+' '+esc(e.label)+' ב-'+esc(e.time)+' · '+e.signed+' נרשמו'+
+              (e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' · 📣 כדאי לקדם':'')+'</div><div class="gtext">'+esc(e.suggest.text)+'</div>'+
+              '<div class="gbtns"><button type="button">✍️ לכתוב</button></div>';
+            g.title='לחיצה פותחת את הפוסט לעריכה. גרירה ליום אחר כותבת טיוטה לשם.';
+            g.onclick=()=>openEditor({date:d.date,text:e.suggest.text},e);
+            draggable(g,{event:e});
+            chat.appendChild(g);
           }
           el.appendChild(card);
         }
