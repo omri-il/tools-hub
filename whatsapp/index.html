@@ -48,6 +48,20 @@
     .meta{display:flex;gap:6px;align-items:center;font-size:.76rem;color:var(--muted)}
     .chip{border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:.72rem;white-space:nowrap}
     .chip.sent{color:var(--accent)} .chip.wait{color:var(--warn)} .chip.fail{color:var(--danger)} .chip.skip{color:var(--faint)}
+    .chip.draft{color:#c4b5fd}
+    .bubble.draft{outline:1.5px dashed #c4b5fd}
+    .evday{font-size:.84rem;color:#c4b5fd;margin-bottom:4px}
+    .events{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:6px}
+    .ev{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+    .ev.promote{border-color:rgba(251,191,36,.55)}
+    .ev .when{font-size:.8rem;color:var(--muted)}
+    .ev .name{font-weight:700;font-size:.95rem;line-height:1.35}
+    .ev .nums{display:flex;flex-wrap:wrap;gap:6px;font-size:.78rem;color:var(--muted)}
+    .ev .nums span{background:rgba(255,255,255,.05);border-radius:999px;padding:1px 8px}
+    .ev .nums .hot{color:var(--warn);background:rgba(251,191,36,.1)}
+    .ev .post{font-size:.8rem;color:var(--faint)}
+    .ev .add{margin-top:auto;align-self:flex-start}
+    .evnote{color:var(--faint);font-size:.82rem;margin:0 4px 6px}
     .bubble{position:relative;max-width:min(460px,94%);background:var(--bubble);color:var(--wa-ink);border-radius:8px 0 8px 8px;padding:6px 9px 20px;
             box-shadow:0 1px .5px rgba(0,0,0,.25);font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14.2px;line-height:19px;cursor:pointer;text-align:start}
     .bubble::before{content:"";position:absolute;top:0;right:-8px;border:8px solid transparent;border-top-color:var(--bubble);border-right:0}
@@ -175,7 +189,8 @@
         <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת הסקול נוספת לבד בסוף.</p>
       </div>
       <div class="actions">
-        <button class="btn primary" id="ed-save">שמירה</button>
+        <button class="btn primary" id="ed-approve" hidden>✅ לאשר לשליחה</button>
+<button class="btn primary" id="ed-save">שמירה</button>
         <button class="btn ghost" id="ed-cancel">ביטול</button>
         <span class="msg" id="ed-msg"></span>
         <span class="spacer"></span>
@@ -265,9 +280,9 @@
     }
 
     // a bubble; its picture / link card fill in when they arrive
-    function bubble(text,{time='',imageId='',footer='',clickable=true,skipped=false}={}){
+    function bubble(text,{time='',imageId='',footer='',clickable=true,skipped=false,draft=false}={}){
       const b=document.createElement('div');
-      b.className='bubble'+(clickable?'':' noclick')+(skipped?' skipped':'');
+      b.className='bubble'+(clickable?'':' noclick')+(skipped?' skipped':'')+(draft?' draft':'');
       const full=withFooter(text,footer);
       b.innerHTML='<span class="who">עומרי אירם</span><div class="media"></div><div class="text" dir="auto">'+waHtml(full)+'</div><span class="time" dir="ltr">'+esc(time)+'</span>';
       const media=b.querySelector('.media');
@@ -291,6 +306,7 @@
       if(p.sent) return ['sent',p.status||'נשלח'];
       if(p.failed) return ['fail',p.status];
       if(p.skipped) return ['skip','לא לשלוח'];
+      if(p.draft) return ['draft','📝 טיוטה · מחכה לאישור'];
       return ['wait','ממתין · '+p.due];
     }
     function statsOf(r){
@@ -311,8 +327,40 @@
         '<span class="pill">ימים: <b>ראשון–חמישי</b></span>';
       $('sheetlink').href=s.sheet;
     }
+    function findPost(row){
+      for(const w of state.weeks) for(const d of w.days) for(const p of d.posts) if(p.row===row) return p;
+      return null;
+    }
+    function renderEvents(el){
+      const s=state;
+      if(!s.events_on) return;
+      const h=document.createElement('h2'); h.textContent='📅 אירועים קרובים'; el.appendChild(h);
+      if(s.events_error){ el.insertAdjacentHTML('beforeend','<p class="evnote">⚠️ האירועים לא נקראו: '+esc(s.events_error)+'</p>'); return; }
+      if(!s.events.length){ el.insertAdjacentHTML('beforeend','<p class="evnote">אין אירועים בשלושת השבועות הקרובים.</p>'); return; }
+      el.insertAdjacentHTML('beforeend','<p class="evnote">לכל אירוע נכתבת לבד טיוטת תזכורת, שבוע לפני היום שלה. היא יוצאת רק אחרי שמאשרים אותה. 📣 = מעט נרשמים, כדאי לקדם.</p>');
+      const grid=document.createElement('div'); grid.className='events';
+      for(const e of s.events){
+        const card=document.createElement('div'); card.className='ev'+(e.promote?' promote':'');
+        const left=e.days_left===0?'היום':e.days_left===1?'מחר':'בעוד '+e.days_left+' ימים';
+        const nums=['<span>'+e.signed+' נרשמו</span>'];
+        if(e.from_whatsapp) nums.push('<span>'+e.from_whatsapp+' מוואטסאפ</span>');
+        if(e.waiting) nums.push('<span>'+e.waiting+' ברשימת המתנה</span>');
+        if(e.promote) nums.push('<span class="hot">📣 כדאי לקדם</span>');
+        const post=e.posts.find(p=>!p.sent)||e.posts[0];
+        const postLine=!post?'':post.sent?'✓ יצא פוסט עליו':post.draft?'📝 יש טיוטה ל-'+esc(post.date.slice(8,10)+'.'+String(+post.date.slice(5,7))):'✅ יש פוסט ל-'+esc(post.date.slice(8,10)+'.'+String(+post.date.slice(5,7)));
+        card.innerHTML='<div class="when">יום '+esc(e.day)+' '+esc(e.label)+' · '+esc(e.time)+' · '+left+'</div>'+
+          '<a class="name" dir="auto" href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">'+esc(e.name)+'</a>'+
+          '<div class="nums">'+nums.join('')+'</div>'+(postLine?'<div class="post">'+postLine+'</div>':'');
+        const b=document.createElement('button'); b.className='add';
+        if(post&&!post.sent){ b.textContent=post.draft?'📝 לטיוטה':'✏️ לפוסט'; b.onclick=()=>{ const p=findPost(post.row); if(p) openEditor(p); else { weeks=Math.max(weeks,6); load(); } }; }
+        else { b.textContent='✍️ פוסט על האירוע'; b.onclick=()=>openEditor({date:e.suggest.date,text:e.suggest.text}); }
+        card.appendChild(b); grid.appendChild(card);
+      }
+      el.appendChild(grid);
+    }
     function renderBoard(){
       const s=state, el=$('board'); el.innerHTML='';
+      renderEvents(el);
       for(const w of s.weeks){
         if(!w.days.length) continue;
         const d0=w.days[0], dn=w.days[w.days.length-1];
@@ -320,7 +368,8 @@
         for(const d of w.days){
           const card=document.createElement('div'); card.className='day'+(d.today?' today':'')+(d.past?' past':'');
           const plan=d.plan.length?d.plan.map(p=>'<div class="plan" dir="auto">'+esc(p.title)+' <span class="st">'+esc(p.status)+'</span></div>').join(''):'<div class="plan empty">אין תוכן מתוכנן ב-Content Machine</div>';
-          card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+plan+'</aside><div class="chat"></div>';
+          const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.promote?' 📣':'')+'</div>').join('');
+          card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+evs+plan+'</aside><div class="chat"></div>';
           const aside=card.querySelector('aside');
           if(!d.past){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
           const chat=card.querySelector('.chat');
@@ -333,7 +382,7 @@
             const it=document.createElement('div'); it.className='item';
             const [cls,label]=chipOf(p);
             it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span></div>';
-            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:s.settings.footer,clickable:!p.sent,skipped:p.skipped});
+            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
             if(!p.sent) b.onclick=()=>openEditor(p);
             it.appendChild(b);
             if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
@@ -393,10 +442,12 @@
     function openEditor(p){
       editing=p.row?p:null;
       image=p.image||'';
-      $('ed-title').textContent=editing?'עריכת הודעה':'הודעה חדשה';
+      $('ed-title').textContent=editing?(editing.draft?'📝 טיוטה: עורכים ומאשרים':'עריכת הודעה'):'הודעה חדשה';
+      $('ed-approve').hidden=!(editing&&editing.draft);
+      $('ed-save').textContent=(editing&&editing.draft)?'שמירה כטיוטה':'שמירה';
       $('ed-date').value=p.date; $('ed-time').value=p.time||''; $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
       $('ed-time-hint').textContent='ריק = בסביבות '+state.settings.time+' (כמה דקות אחרי)';
-      $('ed-send').hidden=!editing; $('ed-delete').hidden=!editing;
+      $('ed-send').hidden=!editing||!!editing.draft; $('ed-delete').hidden=!editing;
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
       renderImage(); preview();
       $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
@@ -448,12 +499,12 @@
     }
     document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>b.dataset.wrap?wrapSel(b.dataset.wrap):prefixLines(b.dataset.line));
     $('ed-text').addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
-      if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(); } } });
+      if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(false); } } });
     function say(t,err){ $('ed-msg').textContent=t; $('ed-msg').className='msg'+(err?' err':''); }
-    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete'].forEach(id=>$(id).disabled=v); }
-    async function save(){
+    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve'].forEach(id=>$(id).disabled=v); }
+    async function save(approve){
       if(busy) return;
-      const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked};
+      const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       setBusy(true); say('שומר…');
       try{
@@ -463,7 +514,8 @@
       }catch(e){ say(e.message,true); }
       finally{ setBusy(false); }
     }
-    $('ed-save').onclick=save;
+    $('ed-save').onclick=()=>save(false);
+    $('ed-approve').onclick=()=>save(true);
     $('ed-cancel').onclick=closeEditor;
     $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) closeEditor(); });
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')) closeEditor(); });
