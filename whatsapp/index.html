@@ -186,7 +186,7 @@
       <div>
         <label>כך זה ייראה בערוץ העדכונים</label>
         <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
-        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת הסקול נוספת לבד בסוף.</p>
+        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת הסקול נוספת לבד בסוף. כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
       </div>
       <div class="actions">
         <button class="btn primary" id="ed-approve" hidden>✅ לאשר לשליחה</button>
@@ -264,6 +264,14 @@
     }
     function firstUrl(text){ const m=(text||'').match(/https?:\/\/[^\s<>"']+/); if(!m) return ''; let u=m[0]; while(u&&TRAIL.includes(u.slice(-1))) u=u.slice(0,-1); return u; }
     function withFooter(text,footer){ if(!footer||/skool\.com/i.test(text)) return text; return text.replace(/\s+$/,'')+'\n\n'+footer; }
+    // Every link goes out as a go.omri-iram.co.il link of its own (its clicks count for that post).
+    // The editor shortens as you write; the footer's link is made when the post is sent.
+    const URLS=/https?:\/\/[^\s<>"']+/g, KEEP=/^https?:\/\/(go\.omri-iram\.co\.il|chat\.whatsapp\.com|wa\.me)(\/|$)/i;
+    function longLinks(t){ return ((t||'').match(URLS)||[]).filter(u=>!KEEP.test(u)); }
+    function goLinks(t){ return ((t||'').match(URLS)||[]).filter(u=>/^https?:\/\/go\.omri-iram\.co\.il\//i.test(u)); }
+    const shortMap={};   // short link → the page it opens (from /shorten)
+    function linksToSkool(t){ return /skool\.com/i.test(t||'')||goLinks(t).some(u=>/skool\.com/i.test(shortMap[u]||'')); }
+    function footerShown(footer){ return (footer||'').replace(URLS,u=>KEEP.test(u)?u:'https://go.omri-iram.co.il/•••••'); }
     function driveId(link){ const m=(link||'').match(/\/d\/([A-Za-z0-9_-]{20,})/)||(link||'').match(/[?&]id=([A-Za-z0-9_-]{20,})/); return m?m[1]:(/^[A-Za-z0-9_-]{20,}$/.test(link||'')?link:''); }
 
     // images come through the API (they need the session header), kept as blob URLs
@@ -283,8 +291,8 @@
     function bubble(text,{time='',imageId='',footer='',clickable=true,skipped=false,draft=false}={}){
       const b=document.createElement('div');
       b.className='bubble'+(clickable?'':' noclick')+(skipped?' skipped':'')+(draft?' draft':'');
-      const full=withFooter(text,footer);
-      b.innerHTML='<span class="who">עומרי אירם</span><div class="media"></div><div class="text" dir="auto">'+waHtml(full)+'</div><span class="time" dir="ltr">'+esc(time)+'</span>';
+      const full=withFooter(text,footer), shown=withFooter(text,footerShown(footer));
+      b.innerHTML='<span class="who">עומרי אירם</span><div class="media"></div><div class="text" dir="auto">'+waHtml(shown)+'</div><span class="time" dir="ltr">'+esc(time)+'</span>';
       const media=b.querySelector('.media');
       if(imageId){
         const img=document.createElement('img'); img.className='photo'; img.alt=''; media.appendChild(img);
@@ -382,7 +390,7 @@
             const it=document.createElement('div'); it.className='item';
             const [cls,label]=chipOf(p);
             it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span></div>';
-            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
+            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:p.skool?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
             if(!p.sent) b.onclick=()=>openEditor(p);
             it.appendChild(b);
             if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
@@ -449,7 +457,8 @@
       $('ed-time-hint').textContent='ריק = בסביבות '+state.settings.time+' (כמה דקות אחרי)';
       $('ed-send').hidden=!editing||!!editing.draft; $('ed-delete').hidden=!editing;
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
-      renderImage(); preview();
+      if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
+      renderImage(); preview(); scheduleShorten(0);
       $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
     }
     function closeEditor(){ $('overlay').classList.remove('open'); editing=null; }
@@ -483,11 +492,32 @@
         const text=$('ed-text').value, t=$('ed-time').value;
         const box=$('ed-preview'); box.innerHTML='';
         if(!text.trim()){ box.innerHTML='<div class="hint">כאן תופיע ההודעה כמו בוואטסאפ</div>'; }
-        else box.appendChild(bubble(text,{time:t||state.settings.time,imageId:driveId(image),footer:state.settings.footer,clickable:false,skipped:$('ed-skip').checked}));
+        else box.appendChild(bubble(text,{time:t||state.settings.time,imageId:driveId(image),footer:linksToSkool(text)?'':state.settings.footer,clickable:false,skipped:$('ed-skip').checked}));
         const n=[...text].length; $('ed-count').textContent=n+' תווים';
       },150);
     }
     ['ed-text','ed-time','ed-skip'].forEach(id=>$(id).addEventListener('input',preview));
+    let shortTimer=null, shortening=false;
+    function scheduleShorten(ms){ clearTimeout(shortTimer); shortTimer=setTimeout(shortenNow,ms); }
+    async function shortenNow(){
+      const ta=$('ed-text'), sent=ta.value;
+      if(!longLinks(sent).length||!$('overlay').classList.contains('open')) return;
+      if(shortening){ scheduleShorten(800); return; }
+      shortening=true; say('מקצר את הקישורים…');
+      try{
+        const r=await apiJson('/shorten',{method:'POST',json:{text:sent}});
+        Object.assign(shortMap,r.links||{});
+        if(ta.value===sent&&r.text!==sent){
+          const pos=ta.selectionStart+(r.text.length-sent.length);
+          ta.value=r.text; if(document.activeElement===ta) ta.setSelectionRange(Math.max(0,pos),Math.max(0,pos));
+        }
+        say(longLinks(ta.value).length?'חלק מהקישורים יקוצרו בשמירה':'🔗 הקישורים קוצרו, וכל לחיצה עליהם נספרת');
+      }catch(e){ say('הקישורים יקוצרו בשמירה'); }
+      finally{ shortening=false; preview(); }
+    }
+    $('ed-text').addEventListener('input',()=>scheduleShorten(1500));
+    $('ed-text').addEventListener('paste',()=>scheduleShorten(300));
+    $('ed-text').addEventListener('blur',()=>scheduleShorten(0));
     function wrapSel(mark){
       const ta=$('ed-text'), a=ta.selectionStart, b=ta.selectionEnd, v=ta.value, sel=v.slice(a,b)||'טקסט';
       ta.value=v.slice(0,a)+mark+sel+mark+v.slice(b); ta.focus(); ta.setSelectionRange(a+mark.length,a+mark.length+sel.length); preview();
