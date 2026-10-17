@@ -48,14 +48,20 @@ There is **one link only**: `tools.omri-iram.co.il`. No separate private URL. Pr
 - Trigger: **triple-click the "OI" brand logo** (on the hub) or the **"הכלים של עומרי אירם" kicker** (on a tool page) within ~1.2s → PIN prompt → code **`9464`** → sets `localStorage['omri_admin']='1'` → `document.body.classList.add('admin')`. A "🔓 מצב אדמין · יציאה" chip lets you exit.
 - This is **obscurity, not security** (the flag is client-side). It only controls *visibility*. Truly sensitive tools are protected at their own endpoints — by **Google sign-in** (shortener, qr, utm, extra, video-search — see below) or by **Tailscale-only** network gating (DaVinci control, video downloader).
 
-### Admin auth — Google sign-in (shortener · qr · utm · extra · video-search)
+### Admin auth — Google sign-in (shortener · qr · utm · extra · video-search · whatsapp)
 
-The private tools log in with **"התחבר עם Google"** (only **hello@omri-iram.co.il**). One login is shared across all five via a single `localStorage['omri_session']` token:
+The private tools log in with **"התחבר עם Google"** (only **hello@omri-iram.co.il**). One login is shared across all of them via a single `localStorage['omri_session']` token:
 - The page sends you (a top-level redirect) to `go.omri-iram.co.il/api/auth/google/start?return=<this-page>` → Google consent → the **go-shortener** backend verifies you're hello@ (`email_verified`) and mints a **30-day, HMAC-signed session token**, then redirects back to `<page>#omri_session=<token>`. A tiny inline IIFE reads the token out of the URL fragment into `localStorage['omri_session']` and strips the URL. On a missing/expired token (`401`), the page just bounces you through Google again (no prompt).
 - The token is sent as the **`X-Session`** header on every API call. Because **go-shortener** and **extra-bridge** sign/verify with the **same** `TOTP_SECRET`, one token is **cross-valid** on both — log in once, authed on all five pages for 30 days. **The Google OAuth flow lives only in go-shortener; extra-bridge is unchanged** (it just keeps verifying `X-Session`).
 - **TOTP is now break-glass only:** `POST /api/auth` (go-shortener) / `/api/extra/auth` (extra-bridge) `{code}` (Google Authenticator entry "Omri Admin Tools") still mints the same token from any HTTP client if Google is ever unavailable — **no UI exposes it**. The old static passwords (`ADMIN_PASSWORD`, `EXTRA_BRIDGE_PASSWORD` via `X-Admin-Password`) remain a deeper fallback.
 - **Setup + env** (`GOOGLE_OAUTH_CLIENT_ID/SECRET`, `ADMIN_EMAIL`, `FLASK_SECRET`, and the GCP redirect URI `https://go.omri-iram.co.il/api/auth/google/callback`) live in **go-shortener/CLAUDE.md → "Google sign-in setup"**. This is a **Web** OAuth client shared with Thank-you-letter / forms-to-mailerlite.
 - Note the `omri_admin` visibility flag (triple-click + PIN `9464`, below) is **separate** — it only reveals the admin *cards/features*; the Google `omri_session` token is what actually authorizes the API calls.
+
+**`whatsapp/` — פוסטים לוואטסאפ** (2026-10-17, admin card `whatsapp-posts` in "אימייל ודיוור"): Content Machine's
+daily posts to the "בינה בהוראה" WhatsApp community. API `https://go.omri-iram.co.il/wa/api` = content-machine's
+`bot/wa_web.py` (systemd `content-machine-wa-web`), which checks `X-Session` by asking go-shortener. The posts
+live in the Google Sheet "פוסטים לוואטסאפ"; see content-machine CLAUDE.md → "WhatsApp post". For a local test,
+`localStorage.wa_api_base` overrides the API base.
 
 **When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
 - **Public** → normal `<a class="tool-card">` in `index.html`.
