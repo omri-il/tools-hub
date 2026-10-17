@@ -367,7 +367,7 @@
         card.innerHTML='<div class="when">יום '+esc(e.day)+' '+esc(e.label)+' · '+esc(e.time)+' · '+left+'</div>'+
           '<a class="name" dir="auto" href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">'+esc(e.name)+'</a>'+
           '<div class="nums">'+nums.join('')+'</div>'+(postLine?'<div class="post">'+postLine+'</div>':'')+
-          ((e.groups&&(e.groups.topic||e.groups.session))?'<div class="grp" dir="auto">👥 '+[e.groups.topic?'נושא: '+esc(e.groups.topic.name):'',e.groups.session?'מועד: '+esc(e.groups.session.name):''].filter(Boolean).join(' · ')+'</div>':'');
+          ((e.groups&&e.groups.topic)?'<div class="grp" dir="auto">👥 קבוצת הנושא: '+esc(e.groups.topic.name)+'</div>':'');
         const b=document.createElement('button'); b.className='add';
         if(post&&!post.sent){ b.textContent=post.draft?'📝 לטיוטה':'✏️ לפוסט'; b.onclick=()=>{ const p=findPost(post.row); if(p) openEditor(p,e); else { weeks=Math.max(weeks,6); load(); } }; }
         else { b.textContent='✍️ פוסט על האירוע'; b.onclick=()=>openEditor({date:e.suggest.date,text:e.suggest.text},e); }
@@ -458,7 +458,7 @@
     let editing=null, image='', busy=false;
     // ---- where a post goes ----
     let also=new Set(), editEvent=null;
-    const KINDS=[['announce',''],['community','קבוצות בקהילה'],['session','קבוצות של מועדים'],['other','קבוצות אחרות']];
+    const KINDS=[['announce',''],['community','קבוצות בקהילה „בינה בהוראה”']];
     function eventOf(p){ return (state.events||[]).find(e=>e.posts.some(x=>x.row===p.row))||null; }
     function groupName(jid){ if(!jid) return 'ערוץ העדכונים'; const g=(state.groups||[]).find(g=>g.jid===jid); return g?g.name:jid; }
     function fillGroups(current){
@@ -478,10 +478,10 @@
       const where=groupName($('ed-group').value);
       $('ed-where').textContent='כך זה ייראה ב'+(where==='ערוץ העדכונים'?'ערוץ העדכונים':'קבוצה „'+where+'”');
       $('ed-bar').textContent=$('ed-group').value?where:'בינה בהוראה 🧠';
-      const gs=editEvent&&editEvent.groups; if(!gs||!(gs.topic||gs.session)) return;
+      const gs=editEvent&&editEvent.groups; if(!gs||!gs.topic) return;
       const cur=$('ed-group').value;
       box.insertAdjacentHTML('beforeend','<span>הצעה לאירוע:</span>');
-      for(const [k,label] of [['topic','קבוצת הנושא'],['session','קבוצת המועד']]){
+      for(const [k,label] of [['topic','קבוצת הנושא']]){
         const g=gs[k]; if(!g) continue;
         const set=document.createElement('button'); set.type='button'; set.className='sg'+(cur===g.jid?' on':''); set.dir='auto';
         set.textContent=(cur===g.jid?'✓ ':'')+label+': '+g.name; set.title='לשלוח את ההודעה לשם (במקום)';
