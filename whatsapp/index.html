@@ -534,7 +534,7 @@
             it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
               (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
               (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
-            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:p.skool?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
+            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:(p.skool||p.group)?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
             if(!p.sent){ b.onclick=()=>openEditor(p,ev||(md&&md.ev)); if(!d.past) draggable(it,{post:p}); }
             it.appendChild(b);
             if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
@@ -640,7 +640,7 @@
         }
       }
     }
-    $('ed-group').addEventListener('change',()=>{ also.delete($('ed-group').value); renderSuggest(); });
+    $('ed-group').addEventListener('change',()=>{ also.delete($('ed-group').value); renderSuggest(); preview(); });
     // the time of day: four choices, no minutes (Omri, 2026-10-18). The Sheet keeps HH:MM, "" = the usual time.
     function timeSlots(){ return [['','☀️ אחר הצהריים · '+state.settings.time+' (הרגיל)'],['08:00','🌅 בוקר · 08:00'],['12:00','🕛 צהריים · 12:00'],['20:00','🌙 ערב · 20:00']]; }
     function fillTimes(current){
@@ -697,7 +697,7 @@
         const text=$('ed-text').value, t=$('ed-time').value;
         const box=$('ed-preview'); box.innerHTML='';
         if(!text.trim()){ box.innerHTML='<div class="hint">כאן תופיע ההודעה כמו בוואטסאפ</div>'; }
-        else box.appendChild(bubble(text,{time:t||state.settings.time,imageId:driveId(image),footer:linksToSkool(text)?'':state.settings.footer,clickable:false,skipped:$('ed-skip').checked}));
+        else box.appendChild(bubble(text,{time:t||state.settings.time,imageId:driveId(image),footer:(linksToSkool(text)||$('ed-group').value)?'':state.settings.footer,clickable:false,skipped:$('ed-skip').checked}));
         const n=[...text].length; $('ed-count').textContent=n+' תווים';
       },150);
     }
