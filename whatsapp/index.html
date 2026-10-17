@@ -68,6 +68,9 @@
     .ev .post{font-size:.8rem;color:var(--faint)}
     .ev .add{margin-top:auto;align-self:flex-start}
     .evnote{color:var(--faint);font-size:.82rem;margin:0 4px 6px}
+    .ev .links{display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem}
+    .ev .links a{color:var(--wa-link);text-decoration:none} .ev .links .no{color:var(--faint)}
+    .chip.md{color:#7dd3fc;max-width:300px;display:inline-block;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
     .ev .seats{font-size:.8rem;color:var(--ink)} .ev .seats.full{color:var(--danger)}
     .ev .hist{display:flex;flex-direction:column;gap:2px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}
     .ev .hist .h-sent{color:var(--accent)} .ev .hist .h-fail{color:var(--danger)} .ev .hist .h-skip{color:var(--faint)} .ev .hist .h-draft{color:#c4b5fd}
@@ -456,9 +459,55 @@
       }catch(err){ toast(err.message,true); }
     }
 
+    // ---- the channel's videos and the workshops held (the last three weeks) ----
+    function mediaOf(p){
+      const m=state.media||{};
+      for(const v of m.videos||[]) if(v.posts.some(x=>x.row===p.row)) return {kind:'video',item:v,ev:{groups:{topic:v.suggest.group}}};
+      for(const w of m.workshops||[]) if(w.posts.some(x=>x.row===p.row)) return {kind:'workshop',item:w,ev:{groups:{topic:w.suggest.group}}};
+      return null;
+    }
+    async function writeAbout(kind,item){
+      let text=item.suggest.text;
+      if(kind==='video'){ toast('מנסח פוסט עם AI…'); try{ text=(await apiJson('/video-text?id='+encodeURIComponent(item.id))).text; $('toast').style.display='none'; }catch(e){ toast('ה-AI לא ענה, הנה נוסח פשוט',true); } }
+      const g=item.suggest.group;
+      openEditor({date:item.suggest.date,text,group:kind==='workshop'&&g?g.jid:''},{groups:{topic:g}});
+    }
+    function renderMedia(el){
+      const m=state.media||{}, vs=m.videos||[], ws=m.workshops||[];
+      if(!vs.length&&!ws.length) return;
+      const box=document.createElement('details'); box.className='evs';
+      try{ box.open=localStorage.getItem('wa_media_open')==='1'; }catch(_){ }
+      box.ontoggle=()=>{ try{ localStorage.setItem('wa_media_open',box.open?'1':'0'); }catch(_){ } };
+      const fresh=[...vs,...ws].filter(x=>!x.posts.length).length;
+      box.innerHTML='<summary>🎬 סרטונים וסדנאות משלושת השבועות האחרונים ('+(vs.length+ws.length)+(fresh?' · '+fresh+' בלי פוסט':'')+')</summary>'+
+        '<p class="evnote">כל סרטון ציבורי חדש בערוץ וכל סדנה שההקלטה והסיכום שלה מוכנים נכתבים לבד כטיוטה ליום הפוסט הבא, ויוצאים רק אחרי אישור. כאן אפשר לכתוב פוסט גם על מה שהיה לפני כן. 👥 = הקבוצה בקהילה שמתאימה לנושא.</p>';
+      const grid=document.createElement('div'); grid.className='events';
+      const card=(kind,x)=>{
+        const c=document.createElement('div'); c.className='ev';
+        const title=kind==='video'?x.title:x.name;
+        const links=kind==='video'?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">▶️ לסרטון</a>':
+          (x.recording?'<a href="'+esc(x.recording)+'" target="_blank" rel="noopener">▶️ ההקלטה</a>':'<span class="no">▶️ אין הקלטה עדיין</span>')+
+          (x.summary?'<a href="'+esc(x.summary)+'" target="_blank" rel="noopener">📄 הסיכום</a>':'<span class="no">📄 הסיכום עוד לא מוכן</span>');
+        const g=x.suggest.group;
+        c.innerHTML='<div class="when">'+(kind==='video'?'🎬 סרטון בערוץ · עלה ב-':'🎓 סדנה · ')+esc(x.label)+(x.time?' '+esc(x.time):'')+'</div>'+
+          '<div class="name" dir="auto">'+esc(title)+'</div><div class="links">'+links+'</div>'+
+          (g?'<div class="grp" dir="auto">👥 '+esc(g.name)+'</div>':'')+
+          (x.posts.length?'<div class="hist">'+x.posts.map(histLine).join('')+'</div>':'<div class="post">עוד אין פוסט עליו</div>');
+        const b=document.createElement('button'); b.className='add';
+        const open=x.posts.find(p=>!p.sent&&!p.skipped);
+        if(open){ b.textContent=open.draft?'📝 לטיוטה':'✏️ לפוסט'; b.onclick=()=>{ const p=findPost(open.row); if(p) openEditor(p,{groups:{topic:g}}); else { weeks=Math.max(weeks,6); load(); } }; }
+        else { b.textContent='✍️ פוסט'+(kind==='video'?' על הסרטון':' על הסדנה'); b.onclick=()=>writeAbout(kind,x); }
+        c.appendChild(b); return c;
+      };
+      for(const w of ws) grid.appendChild(card('workshop',w));
+      for(const v of vs) grid.appendChild(card('video',v));
+      box.appendChild(grid); el.appendChild(box);
+    }
+
     function renderBoard(){
       const s=state; let el=$('board'); el.innerHTML='';
       renderEvents(el);
+      renderMedia(el);
       el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, או הצעה לאירוע, ליום אחר.</p>');
       for(const w of s.weeks){
         if(!w.days.length) continue;
@@ -481,11 +530,12 @@
           }
           for(const p of d.posts){
             const it=document.createElement('div'); it.className='item';
-            const [cls,label]=chipOf(p), ev=eventOf(p);
+            const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
             it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
-              (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+'</div>';
+              (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
+              (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
             const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:p.skool?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
-            if(!p.sent){ b.onclick=()=>openEditor(p,ev); if(!d.past) draggable(it,{post:p}); }
+            if(!p.sent){ b.onclick=()=>openEditor(p,ev||(md&&md.ev)); if(!d.past) draggable(it,{post:p}); }
             it.appendChild(b);
             if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
             chat.appendChild(it);
@@ -575,7 +625,7 @@
       $('ed-bar').textContent=$('ed-group').value?where:'בינה בהוראה 🧠';
       const gs=editEvent&&editEvent.groups; if(!gs||!gs.topic) return;
       const cur=$('ed-group').value;
-      box.insertAdjacentHTML('beforeend','<span>הצעה לאירוע:</span>');
+      box.insertAdjacentHTML('beforeend','<span>קבוצה מתאימה בקהילה:</span>');
       for(const [k,label] of [['topic','קבוצת הנושא']]){
         const g=gs[k]; if(!g) continue;
         const set=document.createElement('button'); set.type='button'; set.className='sg'+(cur===g.jid?' on':''); set.dir='auto';
