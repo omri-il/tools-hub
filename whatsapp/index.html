@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>פוסטים לוואטסאפ</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#6c727c;
+           --line:rgba(255,255,255,0.09); --accent:#25d366; --accent-ink:#04230f; --danger:#f87171; --warn:#fbbf24;
+           --wa-bg:#0b141a; --bubble:#202c33; --wa-ink:#e9edef; --wa-muted:#8696a0; --wa-link:#53bdeb; --wa-name:#25d366;
+           font-family:'Heebo',system-ui,sans-serif; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(90% 60% at 50% -10%,rgba(37,211,102,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:28px 16px 80px;line-height:1.5}
+    .wrap{max-width:1040px;margin:0 auto}
+    .back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:14px}
+    .masthead{text-align:center;margin-bottom:20px}
+    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent);cursor:default;user-select:none}
+    h1{font-weight:900;font-size:clamp(1.8rem,5vw,2.5rem);margin-top:8px}
+    h1 .em{color:var(--accent)}
+    .lede{color:var(--muted);font-weight:300;margin:8px auto 0;max-width:560px}
+    .statusbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 18px;font-size:.86rem}
+    .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted)}
+    .pill b{color:var(--ink);font-weight:600}
+    .pill.ok{border-color:rgba(37,211,102,.4)} .pill.bad{border-color:rgba(248,113,113,.5);color:var(--danger)}
+    .pill a{color:inherit}
+    .tabs{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
+    .tab{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--muted);padding:8px 18px;cursor:pointer;font-family:inherit;font-size:.92rem;font-weight:600}
+    .tab.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+    .pane{display:none} .pane.active{display:block}
+    h2{font-size:1.05rem;font-weight:700;margin:26px 4px 10px;color:var(--muted)}
+    .day{display:grid;grid-template-columns:230px 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+    .day.today{box-shadow:0 0 0 2px var(--accent)}
+    .day.past{opacity:.6}
+    .day aside h3{font-size:1.05rem;font-weight:700}
+    .day aside .cat{color:var(--faint);font-size:.82rem;margin:2px 0 8px}
+    .plan{font-size:.86rem;color:var(--muted);margin-bottom:4px}
+    .plan .st{color:var(--faint);font-size:.76rem}
+    .plan.empty{color:var(--faint);font-size:.8rem}
+    .add{margin-top:8px;background:transparent;border:1px dashed rgba(37,211,102,.5);color:var(--accent);border-radius:10px;padding:6px 12px;font-family:inherit;font-size:.86rem;cursor:pointer}
+    .add:hover{background:rgba(37,211,102,.08)}
+    .chat{background:var(--wa-bg);border-radius:12px;padding:14px 12px;min-height:72px;display:flex;flex-direction:column;gap:10px;
+          background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:14px 14px}
+    .item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+    .meta{display:flex;gap:6px;align-items:center;font-size:.76rem;color:var(--muted)}
+    .chip{border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:.72rem;white-space:nowrap}
+    .chip.sent{color:var(--accent)} .chip.wait{color:var(--warn)} .chip.fail{color:var(--danger)} .chip.skip{color:var(--faint)}
+    .bubble{position:relative;max-width:min(460px,94%);background:var(--bubble);color:var(--wa-ink);border-radius:8px 0 8px 8px;padding:6px 9px 20px;
+            box-shadow:0 1px .5px rgba(0,0,0,.25);font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14.2px;line-height:19px;cursor:pointer;text-align:start}
+    .bubble::before{content:"";position:absolute;top:0;right:-8px;border:8px solid transparent;border-top-color:var(--bubble);border-right:0}
+    .bubble:hover{outline:1px solid rgba(37,211,102,.45)}
+    .bubble.noclick{cursor:default} .bubble.noclick:hover{outline:none}
+    .bubble .who{display:block;color:var(--wa-name);font-size:12.8px;font-weight:600;margin-bottom:2px}
+    .bubble .text{white-space:normal;overflow-wrap:anywhere}
+    .bubble .text a{color:var(--wa-link);text-decoration:none;unicode-bidi:isolate}
+    .bubble .text code,.bubble .text pre{font-family:Consolas,monospace;font-size:13px}
+    .bubble .text pre{white-space:pre-wrap}
+    .bubble .text .q{display:block;border-right:4px solid var(--wa-muted);padding-right:8px;color:var(--wa-muted)}
+    .bubble .time{position:absolute;bottom:3px;left:9px;font-size:11px;color:var(--wa-muted)}
+    .bubble .photo{display:block;width:100%;border-radius:6px;margin:2px 0 6px;min-height:40px;background:#111b21}
+    .bubble .card{display:flex;gap:8px;background:rgba(0,0,0,.25);border-radius:6px;overflow:hidden;margin:2px 0 6px}
+    .bubble .card img{width:84px;height:84px;object-fit:cover;flex:none}
+    .bubble .card div{display:flex;flex-direction:column;gap:2px;padding:6px 8px;min-width:0}
+    .bubble .card b{font-size:13.5px}
+    .bubble .card span{font-size:12.5px;color:var(--wa-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .bubble .card small{font-size:12px;color:var(--wa-muted)}
+    .bubble.skipped{opacity:.55}
+    .stats{display:flex;flex-wrap:wrap;gap:6px;font-size:.78rem;color:var(--muted)}
+    .stats span{background:rgba(255,255,255,.05);border-radius:999px;padding:1px 8px}
+    .none{border:1.5px dashed rgba(248,113,113,.55);color:var(--danger);border-radius:8px;padding:10px;text-align:center;font-size:.9rem}
+    .none.past{border-color:var(--line);color:var(--faint)}
+    .more{display:block;margin:18px auto 0;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 18px;font-family:inherit;cursor:pointer}
+    .loading,.error{text-align:center;color:var(--muted);padding:40px 0}
+    .error{color:var(--danger)}
+    /* editor */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;padding:28px 12px;overflow:auto;z-index:20}
+    .overlay.open{display:flex}
+    .editor{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(980px,100%);padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .editor h3{grid-column:1/-1;font-size:1.15rem}
+    .field{margin-bottom:12px}
+    label{display:block;font-weight:600;font-size:.84rem;margin-bottom:5px;color:var(--muted)}
+    input[type=date],input[type=time],textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:10px 12px}
+    textarea{min-height:230px;resize:vertical;line-height:1.55}
+    input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,211,102,.16)}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .hint{font-size:.76rem;color:var(--faint);margin-top:4px}
+    .toolbar{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+    .tb{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;min-width:34px;height:30px;font-family:inherit;cursor:pointer;padding:0 8px}
+    .count{font-size:.76rem;color:var(--faint);text-align:left;margin-top:3px}
+    .drop{border:1.5px dashed var(--line);border-radius:10px;padding:12px;text-align:center;color:var(--muted);font-size:.86rem;cursor:pointer}
+    .drop.over{border-color:var(--accent);color:var(--accent)}
+    .thumb{display:flex;gap:10px;align-items:center}
+    .thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px}
+    .check{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);margin-top:4px}
+    .phone{background:var(--wa-bg);border-radius:14px;padding:16px 12px;min-height:200px;
+           background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:14px 14px}
+    .phone .bar{color:var(--wa-muted);font-size:.78rem;margin-bottom:10px;text-align:center}
+    .actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{border:0;border-radius:10px;padding:10px 18px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer}
+    .btn.primary{background:var(--accent);color:var(--accent-ink)}
+    .btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+    .btn.danger{background:transparent;color:var(--danger);border:1px solid rgba(248,113,113,.45)}
+    .btn:disabled{opacity:.5;cursor:default}
+    .msg{font-size:.88rem;color:var(--muted)} .msg.err{color:var(--danger)}
+    .spacer{flex:1}
+    /* results */
+    .report{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;white-space:pre-wrap;line-height:1.7;font-size:.94rem}
+    .report a{color:var(--wa-link)}
+    table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.86rem;background:var(--card);border-radius:14px;overflow:hidden}
+    th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+    th{color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap;background:var(--panel)}
+    td.num{text-align:center;font-variant-numeric:tabular-nums}
+    .tablewrap{overflow-x:auto}
+    footer{margin-top:30px;text-align:center;color:var(--faint);font-size:.8rem}
+    footer a{color:var(--muted)}
+    @media (max-width:760px){
+      .day{grid-template-columns:1fr}
+      .editor{grid-template-columns:1fr}
+      .overlay{padding:0}
+      .editor{border-radius:0;min-height:100vh}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="https://tools.omri-iram.co.il">→ לכל הכלים</a>
+    <header class="masthead">
+      <div class="kicker">הכלים של עומרי אירם</div>
+      <h1>פוסטים <span class="em">לוואטסאפ</span></h1>
+      <p class="lede">ערוץ העדכונים של קהילת „בינה בהוראה”. כותבים כאן, וההודעה יוצאת לבד ביום ובשעה שלה.</p>
+    </header>
+    <div class="statusbar" id="statusbar"></div>
+    <nav class="tabs">
+      <button class="tab active" data-pane="board">📅 הלוח</button>
+      <button class="tab" data-pane="results">🏆 מה עבד</button>
+    </nav>
+    <section class="pane active" id="board"><div class="loading">טוען…</div></section>
+    <section class="pane" id="results"><div class="loading">טוען…</div></section>
+    <footer><p>פרטי · נשמר בגיליון <a id="sheetlink" href="#" target="_blank" rel="noopener">„פוסטים לוואטסאפ”</a> ב-Drive. מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p></footer>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="editor" role="dialog" aria-modal="true">
+      <h3 id="ed-title">הודעה חדשה</h3>
+      <div>
+        <div class="row2">
+          <div class="field"><label for="ed-date">תאריך</label><input type="date" id="ed-date"></div>
+          <div class="field"><label for="ed-time">שעה</label><input type="time" id="ed-time"><div class="hint" id="ed-time-hint"></div></div>
+        </div>
+        <div class="field">
+          <label for="ed-text">ההודעה</label>
+          <div class="toolbar">
+            <button class="tb" data-wrap="*" title="מודגש (Ctrl+B)"><b>B</b></button>
+            <button class="tb" data-wrap="_" title="נטוי (Ctrl+I)"><i>I</i></button>
+            <button class="tb" data-wrap="~" title="קו חוצה"><s>S</s></button>
+            <button class="tb" data-wrap="```" title="מונו">{ }</button>
+            <button class="tb" data-line="- " title="רשימה">• רשימה</button>
+          </div>
+          <textarea id="ed-text" dir="auto" placeholder="הטיפ של היום…"></textarea>
+          <div class="count" id="ed-count"></div>
+        </div>
+        <div class="field">
+          <label>תמונה (לא חובה)</label>
+          <div id="ed-image"></div>
+          <input type="file" id="ed-file" accept="image/*" hidden>
+        </div>
+        <label class="check"><input type="checkbox" id="ed-skip"> לא לשלוח את ההודעה הזאת (נשמרת, אבל לא יוצאת)</label>
+      </div>
+      <div>
+        <label>כך זה ייראה בערוץ העדכונים</label>
+        <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
+        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת הסקול נוספת לבד בסוף.</p>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="ed-save">שמירה</button>
+        <button class="btn ghost" id="ed-cancel">ביטול</button>
+        <span class="msg" id="ed-msg"></span>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="ed-send" hidden>📤 לשלוח עכשיו</button>
+        <button class="btn danger" id="ed-delete" hidden>מחיקה</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $=id=>document.getElementById(id);
+    const API=(()=>{ try{ return localStorage.getItem('wa_api_base')||'https://go.omri-iram.co.il/wa/api'; }catch(_){ return 'https://go.omri-iram.co.il/wa/api'; } })();
+    function isAdmin(){ try{return localStorage.getItem('omri_admin')==='1';}catch(_){return false;} }
+    (function(){ const k=document.querySelector('.kicker'); if(!k)return; let c=0,t=null;
+      k.addEventListener('click',()=>{ c++; clearTimeout(t); t=setTimeout(()=>c=0,1200);
+        if(c>=3){ c=0; if(isAdmin())return; const v=prompt('קוד אדמין:');
+          if(v==='9464'){ try{localStorage.setItem('omri_admin','1');}catch(_){}; location.reload(); } else if(v!==null){ alert('קוד שגוי'); } } });
+    })();
+
+    // ---- sign-in: the Tools Hub's shared Google session (see tools-hub CLAUDE.md) ----
+    const SESS_KEY='omri_session', AUTH_BASE='https://go.omri-iram.co.il';
+    function tokGet(){ try{return localStorage.getItem(SESS_KEY)||'';}catch(_){return '';} }
+    function tokSet(t){ try{localStorage.setItem(SESS_KEY,t);}catch(_){ } }
+    function tokClear(){ try{localStorage.removeItem(SESS_KEY);}catch(_){ } }
+    (function(){ try{
+      const m=(location.hash||'').match(/(?:^#|&)omri_session=([^&]+)/);
+      if(m){ tokSet(decodeURIComponent(m[1])); history.replaceState(null,'',location.pathname+location.search); }
+      else if(/(?:^#|&)auth_error=/.test(location.hash||'')){ history.replaceState(null,'',location.pathname+location.search);
+        alert('ההתחברות נכשלה או שהחשבון לא מורשה. התחברו עם hello@omri-iram.co.il.'); }
+    }catch(_){}})();
+    function signIn(){ location.href=AUTH_BASE+'/api/auth/google/start?return='+encodeURIComponent(location.origin+location.pathname+location.search); }
+    async function api(path,opts){
+      opts=opts||{}; const t=tokGet();
+      if(!t){ signIn(); return new Promise(()=>{}); }
+      const headers=Object.assign({},opts.headers||{},{'X-Session':t});
+      if(opts.json!==undefined){ headers['Content-Type']='application/json'; opts.body=JSON.stringify(opts.json); }
+      const r=await fetch(API+path,Object.assign({},opts,{headers}));
+      if(r.status===401){ tokClear(); signIn(); return new Promise(()=>{}); }
+      return r;
+    }
+    async function apiJson(path,opts){
+      const r=await api(path,opts); let data={};
+      try{ data=await r.json(); }catch(_){ }
+      if(!r.ok) throw new Error(data.error||('שגיאה '+r.status));
+      return data;
+    }
+
+    // ---- WhatsApp's own markup → HTML (the same rules as content_machine/whatsapp.py) ----
+    const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const TRAIL='.,;:!?)]}\'"…';
+    function inline(text){
+      const links=[];
+      text=text.replace(/https?:\/\/[^\s<>"']+/g,m=>{ let u=m,tail=''; while(u&&TRAIL.includes(u.slice(-1))){ tail=u.slice(-1)+tail; u=u.slice(0,-1); }
+        links.push(u); return '\u0000'+(links.length-1)+'\u0000'+tail; });
+      let out=esc(text);
+      out=out.replace(/(?<![\p{L}\p{N}_*])\*(?!\s)([^*\n]+?)(?<!\s)\*(?![\p{L}\p{N}_*])/gu,'<b>$1</b>');
+      out=out.replace(/(?<![\p{L}\p{N}_])_(?!\s)([^_\n]+?)(?<!\s)_(?![\p{L}\p{N}_])/gu,'<i>$1</i>');
+      out=out.replace(/(?<![\p{L}\p{N}_~])~(?!\s)([^~\n]+?)(?<!\s)~(?![\p{L}\p{N}_~])/gu,'<s>$1</s>');
+      out=out.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+      return out.replace(/\u0000(\d+)\u0000/g,(_,i)=>'<a href="'+esc(links[+i])+'" target="_blank" rel="noopener" dir="ltr">'+esc(links[+i])+'</a>');
+    }
+    function waHtml(text){
+      return text.split(/```([\s\S]*?)```/).map((part,n)=>{
+        if(n%2) return '<pre dir="auto">'+esc(part)+'</pre>';
+        return part.split('\n').map(line=>{
+          if(line.startsWith('> ')) return '<span class="q">'+inline(line.slice(2))+'</span>';
+          if(/^[-*•] /.test(line)) return '• '+inline(line.slice(2));
+          return inline(line);
+        }).join('<br>');
+      }).join('');
+    }
+    function firstUrl(text){ const m=(text||'').match(/https?:\/\/[^\s<>"']+/); if(!m) return ''; let u=m[0]; while(u&&TRAIL.includes(u.slice(-1))) u=u.slice(0,-1); return u; }
+    function withFooter(text,footer){ if(!footer||/skool\.com/i.test(text)) return text; return text.replace(/\s+$/,'')+'\n\n'+footer; }
+    function driveId(link){ const m=(link||'').match(/\/d\/([A-Za-z0-9_-]{20,})/)||(link||'').match(/[?&]id=([A-Za-z0-9_-]{20,})/); return m?m[1]:(/^[A-Za-z0-9_-]{20,}$/.test(link||'')?link:''); }
+
+    // images come through the API (they need the session header), kept as blob URLs
+    const imgCache={};
+    async function imageUrl(id){
+      if(!id) return '';
+      if(!imgCache[id]) imgCache[id]=api('/image/'+encodeURIComponent(id)).then(r=>r.ok?r.blob():null).then(b=>b?URL.createObjectURL(b):'');
+      return imgCache[id];
+    }
+    const cardCache={};
+    function linkCard(url){
+      if(!cardCache[url]) cardCache[url]=apiJson('/linkcard?url='+encodeURIComponent(url)).catch(()=>({}));
+      return cardCache[url];
+    }
+
+    // a bubble; its picture / link card fill in when they arrive
+    function bubble(text,{time='',imageId='',footer='',clickable=true,skipped=false}={}){
+      const b=document.createElement('div');
+      b.className='bubble'+(clickable?'':' noclick')+(skipped?' skipped':'');
+      const full=withFooter(text,footer);
+      b.innerHTML='<span class="who">עומרי אירם</span><div class="media"></div><div class="text" dir="auto">'+waHtml(full)+'</div><span class="time" dir="ltr">'+esc(time)+'</span>';
+      const media=b.querySelector('.media');
+      if(imageId){
+        const img=document.createElement('img'); img.className='photo'; img.alt=''; media.appendChild(img);
+        imageUrl(imageId).then(u=>{ if(u) img.src=u; else img.replaceWith(Object.assign(document.createElement('div'),{className:'hint',textContent:'⚠️ התמונה לא נפתחה'})); });
+      }else{
+        const url=firstUrl(full);
+        if(url) linkCard(url).then(c=>{ if(!c||!c.title) return;
+          const d=document.createElement('div'); d.className='card';
+          d.innerHTML=(c.image?'<img src="'+esc(c.image)+'" alt="" referrerpolicy="no-referrer">':'')+'<div><b dir="auto">'+esc(c.title)+'</b><span dir="auto">'+esc((c.description||'').slice(0,160))+'</span><small dir="ltr">'+esc(c.host||'')+'</small></div>';
+          media.appendChild(d); });
+      }
+      return b;
+    }
+
+    // ---- the board ----
+    let state=null, weeks=3;
+    const STATUS={sent:['sent','נשלח'],fail:['fail','נכשל'],skip:['skip','לא לשלוח'],wait:['wait','ממתין']};
+    function chipOf(p){
+      if(p.sent) return ['sent',p.status||'נשלח'];
+      if(p.failed) return ['fail',p.status];
+      if(p.skipped) return ['skip','לא לשלוח'];
+      return ['wait','ממתין · '+p.due];
+    }
+    function statsOf(r){
+      if(!r) return '';
+      const bits=[];
+      bits.push(r.read_pct!=null?('👁 '+r.read_pct+'%'):('👁 '+r.reads));
+      bits.push('❤️ '+r.reactions); bits.push('💬 '+r.replies);
+      if(r.clicks!=null) bits.push('🔗 '+r.clicks);
+      return '<div class="stats">'+bits.map(b=>'<span>'+esc(b)+'</span>').join('')+'</div>';
+    }
+    function renderStatus(){
+      const s=state, wa=s.whatsapp||{};
+      const ok=wa.state==='open';
+      const waText={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק, צריך לקשר מחדש',down:'השירות לא עונה',connecting:'מתחבר…'}[wa.state]||wa.state;
+      $('statusbar').innerHTML=
+        '<span class="pill '+(ok?'ok':'bad')+'">וואטסאפ: <b>'+esc(waText)+'</b></span>'+
+        '<span class="pill">הודעה בלי שעה יוצאת בסביבות <b>'+esc(s.settings.time)+'</b></span>'+
+        '<span class="pill">ימים: <b>ראשון–חמישי</b></span>';
+      $('sheetlink').href=s.sheet;
+    }
+    function renderBoard(){
+      const s=state, el=$('board'); el.innerHTML='';
+      for(const w of s.weeks){
+        if(!w.days.length) continue;
+        const d0=w.days[0], dn=w.days[w.days.length-1];
+        const h=document.createElement('h2'); h.textContent=d0.label+' – '+dn.label; el.appendChild(h);
+        for(const d of w.days){
+          const card=document.createElement('div'); card.className='day'+(d.today?' today':'')+(d.past?' past':'');
+          const plan=d.plan.length?d.plan.map(p=>'<div class="plan" dir="auto">'+esc(p.title)+' <span class="st">'+esc(p.status)+'</span></div>').join(''):'<div class="plan empty">אין תוכן מתוכנן ב-Content Machine</div>';
+          card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+plan+'</aside><div class="chat"></div>';
+          const aside=card.querySelector('aside');
+          if(!d.past){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
+          const chat=card.querySelector('.chat');
+          if(!d.posts.length){
+            const n=document.createElement('div'); n.className='none'+(d.past?' past':''); n.textContent=d.past?'לא נשלחה הודעה':'אין הודעה ליום הזה';
+            if(!d.past){ n.style.cursor='pointer'; n.onclick=()=>openEditor({date:d.date}); }
+            chat.appendChild(n);
+          }
+          for(const p of d.posts){
+            const it=document.createElement('div'); it.className='item';
+            const [cls,label]=chipOf(p);
+            it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span></div>';
+            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:s.settings.footer,clickable:!p.sent,skipped:p.skipped});
+            if(!p.sent) b.onclick=()=>openEditor(p);
+            it.appendChild(b);
+            if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
+            chat.appendChild(it);
+          }
+          el.appendChild(card);
+        }
+      }
+      const more=document.createElement('button'); more.className='more';
+      more.textContent=s.more?('עוד שבועות ('+s.more+' ימים עם הודעות בהמשך)'):'עוד שבועות';
+      more.onclick=()=>{ weeks+=3; load(); };
+      el.appendChild(more);
+    }
+    async function load(){
+      try{
+        state=await apiJson('/state?weeks='+weeks);
+        renderStatus(); renderBoard();
+      }catch(e){ $('board').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
+    }
+
+    // ---- results ----
+    let results=null, sortKey='at', sortDir=-1;
+    const COLS=[['at','מתי'],['category','קטגוריה'],['head','ההודעה'],['read_pct','% קראו'],['reads_1h','בשעה הראשונה'],['reactions','ריאקציות'],['replies','תגובות'],['clicks','קליקים'],['score','ציון']];
+    function safeReport(html){ // Telegram's small HTML: keep b / i / a only
+      const doc=new DOMParser().parseFromString('<div>'+html+'</div>','text/html');
+      const walk=n=>{ for(const c of [...n.childNodes]){ if(c.nodeType===1){ const tag=c.tagName.toLowerCase();
+        if(!['b','i','a'].includes(tag)){ walk(c); c.replaceWith(...c.childNodes); continue; }
+        for(const a of [...c.attributes]) if(!(tag==='a'&&a.name==='href'&&/^https:\/\//.test(a.value))) c.removeAttribute(a.name);
+        if(tag==='a'){ c.target='_blank'; c.rel='noopener'; } walk(c); } } };
+      walk(doc.body.firstChild); return doc.body.firstChild.innerHTML;
+    }
+    function renderResults(){
+      const el=$('results');
+      const rows=[...results.results].sort((a,b)=>{ const x=a[sortKey],y=b[sortKey]; return (x==null)-(y==null)||(x>y?1:x<y?-1:0)*sortDir; });
+      el.innerHTML=(results.report?'<div class="report">'+safeReport(results.report)+'</div>':'<div class="report">עוד אין הודעות שנשלחו. אחרי ההודעה הראשונה יופיעו כאן כמה קראו, ריאקציות, תגובות וקליקים.</div>')+
+        '<p class="hint" style="margin-top:8px">ציון = (ריאקציות + 3×תגובות + 2×קליקים) לכל 100 חברים. הלשונית „תוצאות” בגיליון מתעדכנת כל ערב.</p>';
+      if(!rows.length) return;
+      const wrap=document.createElement('div'); wrap.className='tablewrap';
+      wrap.innerHTML='<table><thead><tr>'+COLS.map(([k,l])=>'<th data-k="'+k+'">'+l+(k===sortKey?(sortDir<0?' ▼':' ▲'):'')+'</th>').join('')+'</tr></thead><tbody>'+
+        rows.map(r=>'<tr><td>'+esc((r.at||'').replace('T',' '))+'</td><td>'+esc(r.category||'')+'</td><td dir="auto">'+esc(r.head||'')+'</td>'+
+          ['read_pct','reads_1h','reactions','replies','clicks','score'].map(k=>'<td class="num">'+(r[k]==null?'—':esc(r[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+      wrap.querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; sortDir=(k===sortKey)?-sortDir:-1; sortKey=k; renderResults(); });
+      el.appendChild(wrap);
+    }
+    async function loadResults(){
+      try{ results=await apiJson('/results'); renderResults(); }
+      catch(e){ $('results').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
+    }
+    document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+      document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id===t.dataset.pane));
+      if(t.dataset.pane==='results') loadResults();
+    });
+
+    // ---- the editor ----
+    let editing=null, image='', busy=false;
+    function openEditor(p){
+      editing=p.row?p:null;
+      image=p.image||'';
+      $('ed-title').textContent=editing?'עריכת הודעה':'הודעה חדשה';
+      $('ed-date').value=p.date; $('ed-time').value=p.time||''; $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
+      $('ed-time-hint').textContent='ריק = בסביבות '+state.settings.time+' (כמה דקות אחרי)';
+      $('ed-send').hidden=!editing; $('ed-delete').hidden=!editing;
+      $('ed-msg').textContent=''; $('ed-msg').className='msg';
+      renderImage(); preview();
+      $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
+    }
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; }
+    function renderImage(){
+      const box=$('ed-image'); const id=driveId(image);
+      if(!id){ box.innerHTML='<div class="drop" id="drop">📷 גוררים תמונה לכאן, או לוחצים לבחירה</div>';
+        const d=$('drop'); d.onclick=()=>$('ed-file').click();
+        d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
+        d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) upload(f);};
+        return; }
+      box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="img-x">הסרת התמונה</button></div>';
+      imageUrl(id).then(u=>{ if(u) box.querySelector('img').src=u; });
+      $('img-x').onclick=()=>{ image=''; renderImage(); preview(); };
+    }
+    $('ed-file').onchange=e=>{ const f=e.target.files[0]; if(f) upload(f); e.target.value=''; };
+    document.addEventListener('paste',e=>{ if(!$('overlay').classList.contains('open')) return;
+      const f=[...(e.clipboardData||{}).files||[]].find(f=>f.type.startsWith('image/')); if(f){ e.preventDefault(); upload(f); } });
+    async function upload(f){
+      if(!f.type.startsWith('image/')){ say('רק תמונות',true); return; }
+      say('מעלה את התמונה ל-Drive…');
+      try{
+        const r=await api('/image',{method:'POST',body:f,headers:{'Content-Type':f.type,'X-Filename':encodeURIComponent(f.name||'image')}});
+        const data=await r.json(); if(!r.ok) throw new Error(data.error||'ההעלאה נכשלה');
+        image=data.link; renderImage(); preview(); say('התמונה עלתה ✓');
+      }catch(e){ say(e.message,true); }
+    }
+    let previewTimer=null;
+    function preview(){
+      clearTimeout(previewTimer);
+      previewTimer=setTimeout(()=>{
+        const text=$('ed-text').value, t=$('ed-time').value;
+        const box=$('ed-preview'); box.innerHTML='';
+        if(!text.trim()){ box.innerHTML='<div class="hint">כאן תופיע ההודעה כמו בוואטסאפ</div>'; }
+        else box.appendChild(bubble(text,{time:t||state.settings.time,imageId:driveId(image),footer:state.settings.footer,clickable:false,skipped:$('ed-skip').checked}));
+        const n=[...text].length; $('ed-count').textContent=n+' תווים';
+      },150);
+    }
+    ['ed-text','ed-time','ed-skip'].forEach(id=>$(id).addEventListener('input',preview));
+    function wrapSel(mark){
+      const ta=$('ed-text'), a=ta.selectionStart, b=ta.selectionEnd, v=ta.value, sel=v.slice(a,b)||'טקסט';
+      ta.value=v.slice(0,a)+mark+sel+mark+v.slice(b); ta.focus(); ta.setSelectionRange(a+mark.length,a+mark.length+sel.length); preview();
+    }
+    function prefixLines(p){
+      const ta=$('ed-text'), v=ta.value; let a=v.lastIndexOf('\n',ta.selectionStart-1)+1, b=ta.selectionEnd;
+      const block=v.slice(a,b).split('\n').map(l=>l.startsWith(p)?l:p+l).join('\n');
+      ta.value=v.slice(0,a)+block+v.slice(b); ta.focus(); preview();
+    }
+    document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>b.dataset.wrap?wrapSel(b.dataset.wrap):prefixLines(b.dataset.line));
+    $('ed-text').addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
+      if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(); } } });
+    function say(t,err){ $('ed-msg').textContent=t; $('ed-msg').className='msg'+(err?' err':''); }
+    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete'].forEach(id=>$(id).disabled=v); }
+    async function save(){
+      if(busy) return;
+      const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked};
+      if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
+      setBusy(true); say('שומר…');
+      try{
+        if(editing) await apiJson('/posts/'+editing.row,{method:'PUT',json:Object.assign({key:editing.key},body)});
+        else await apiJson('/posts',{method:'POST',json:body});
+        closeEditor(); await load();
+      }catch(e){ say(e.message,true); }
+      finally{ setBusy(false); }
+    }
+    $('ed-save').onclick=save;
+    $('ed-cancel').onclick=closeEditor;
+    $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) closeEditor(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')) closeEditor(); });
+    $('ed-delete').onclick=async()=>{
+      if(!editing||busy||!confirm('למחוק את ההודעה?')) return;
+      setBusy(true); say('מוחק…');
+      try{ await apiJson('/posts/'+editing.row+'?key='+encodeURIComponent(editing.key),{method:'DELETE'}); closeEditor(); await load(); }
+      catch(e){ say(e.message,true); } finally{ setBusy(false); }
+    };
+    $('ed-send').onclick=async()=>{
+      if(!editing||busy) return;
+      if(!confirm('לשלוח את ההודעה עכשיו לערוץ העדכונים של הקהילה? (השמורה, בלי שינויים שלא נשמרו)')) return;
+      setBusy(true); say('שולח…');
+      try{ await apiJson('/send-now',{method:'POST',json:{row:editing.row,key:editing.key}}); say('נשלחה לשליחה. בעוד דקה האישור יופיע כאן ובטלגרם.'); setTimeout(load,25000); }
+      catch(e){ say(e.message,true); } finally{ setBusy(false); }
+    };
+
+    load();
+  </script>
+</body>
+</html>
