@@ -193,7 +193,7 @@
       <div>
         <div class="row2">
           <div class="field"><label for="ed-date">תאריך</label><input type="date" id="ed-date"></div>
-          <div class="field"><label for="ed-time">שעה</label><input type="time" id="ed-time"><div class="hint" id="ed-time-hint"></div></div>
+          <div class="field"><label for="ed-time">מתי ביום</label><select id="ed-time"></select><div class="hint" id="ed-time-hint"></div></div>
         </div>
         <div class="field">
           <label for="ed-text">ההודעה</label>
@@ -641,6 +641,15 @@
       }
     }
     $('ed-group').addEventListener('change',()=>{ also.delete($('ed-group').value); renderSuggest(); });
+    // the time of day: four choices, no minutes (Omri, 2026-10-18). The Sheet keeps HH:MM, "" = the usual time.
+    function timeSlots(){ return [['','☀️ אחר הצהריים · '+state.settings.time+' (הרגיל)'],['08:00','🌅 בוקר · 08:00'],['12:00','🕛 צהריים · 12:00'],['20:00','🌙 ערב · 20:00']]; }
+    function fillTimes(current){
+      const sel=$('ed-time'); sel.innerHTML='';
+      const slots=timeSlots();
+      if(current&&!slots.some(s=>s[0]===current)) slots.push([current,'🕒 '+current+' (כפי שנקבע)']);
+      for(const [v,label] of slots){ const o=document.createElement('option'); o.value=v; o.textContent=label; sel.appendChild(o); }
+      sel.value=current;
+    }
     function openEditor(p,ev){
       editing=p.row?p:null;
       editEvent=ev||null; also=new Set();
@@ -649,8 +658,8 @@
       $('ed-title').textContent=editing?(editing.draft?'📝 טיוטה: עורכים ומאשרים':'עריכת הודעה'):'הודעה חדשה';
       $('ed-approve').hidden=!(editing&&editing.draft);
       $('ed-save').textContent=(editing&&editing.draft)?'שמירה כטיוטה':'שמירה';
-      $('ed-date').value=p.date; $('ed-time').value=p.time||''; $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
-      $('ed-time-hint').textContent='ריק = בסביבות '+state.settings.time+' (כמה דקות אחרי)';
+      $('ed-date').value=p.date; fillTimes(p.time||''); $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
+      $('ed-time-hint').textContent='הרגיל יוצא עד רבע שעה אחרי '+state.settings.time+'. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-send').hidden=!editing||!!editing.draft; $('ed-delete').hidden=!editing;
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
       if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
@@ -693,6 +702,7 @@
       },150);
     }
     ['ed-text','ed-time','ed-skip'].forEach(id=>$(id).addEventListener('input',preview));
+    $('ed-time').addEventListener('change',preview);
     let shortTimer=null, shortening=false;
     function scheduleShorten(ms){ clearTimeout(shortTimer); shortTimer=setTimeout(shortenNow,ms); }
     async function shortenNow(){
