@@ -137,6 +137,7 @@
     .drop{border:1.5px dashed var(--line);border-radius:10px;padding:12px;text-align:center;color:var(--muted);font-size:.86rem;cursor:pointer}
     .drop.over{border-color:var(--accent);color:var(--accent)}
     .thumb{display:flex;gap:10px;align-items:center}
+    .drivelink{margin-top:6px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.86rem;padding:8px 12px}
     .thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px}
     .check{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);margin-top:4px}
     .phone{background:var(--wa-bg);border-radius:14px;padding:16px 12px;min-height:200px;
@@ -224,7 +225,8 @@
       <div class="actions">
         <button class="btn primary" id="ed-approve" hidden>✅ לאשר לשליחה</button>
 <button class="btn primary" id="ed-save">שמירה</button>
-        <button class="btn ghost" id="ed-cancel">ביטול</button>
+        <button class="btn ghost" id="ed-cancel" title="מה שנכתב נשמר כטיוטה">סגירה</button>
+        <button class="btn ghost" id="ed-test" title="ההודעה כמו שהיא תצא, לצ'אט שלך עם עצמך בוואטסאפ. לא נשמרת ולא נספרת.">🧪 לשלוח לי לבדיקה</button>
         <span class="msg" id="ed-msg"></span>
         <span class="spacer"></span>
         <button class="btn ghost" id="ed-send" hidden>📤 לשלוח עכשיו</button>
@@ -561,7 +563,7 @@
     async function load(){
       try{
         state=await apiJson('/state?weeks='+weeks);
-        renderStatus(); renderBoard();
+        renderStatus(); renderBoard(); restoreBackup();
       }catch(e){ $('board').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
     }
 
@@ -664,30 +666,71 @@
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
       if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
       renderImage(); preview(); scheduleShorten(0);
+      opened=fields();
       $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; }
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); }
+
+    // Nothing written is lost (Omri, 2026-10-19: "whatever I do, the tool auto-drafts it"):
+    // closing the editor any way but "save" (outside it, Esc, "סגירה") saves what changed as a DRAFT
+    // in the Sheet, which never goes out until it is approved. What is typed is also kept in this
+    // browser, so a closed tab or a crash brings the editor back with it the next time.
+    let opened='';
+    function fields(){ return JSON.stringify({date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value.trim(),image,skip:$('ed-skip').checked,group:$('ed-group').value}); }
+    function changed(){ return fields()!==opened; }
+    const BACKUP='wa_editor_backup';
+    let backupTimer=null;
+    function backup(){ clearTimeout(backupTimer); backupTimer=setTimeout(saveBackup,400); }
+    function saveBackup(){
+      if(!$('overlay').classList.contains('open')) return;
+      try{ if(changed()&&$('ed-text').value.trim()) localStorage.setItem(BACKUP,JSON.stringify({f:JSON.parse(fields()),row:editing&&editing.row,key:editing&&editing.key,at:Date.now()}));
+           else localStorage.removeItem(BACKUP); }catch(_){ }
+    }
+    function dropBackup(){ clearTimeout(backupTimer); try{ localStorage.removeItem(BACKUP); }catch(_){ } }
+    async function leaveEditor(){
+      if(busy||!$('overlay').classList.contains('open')) return;
+      if(!$('ed-text').value.trim()||!changed()){ closeEditor(); return; }
+      await save(false,true);
+    }
+    // the editor was open when the tab closed: it comes back as it was
+    function restoreBackup(){
+      let b=null; try{ b=JSON.parse(localStorage.getItem(BACKUP)||'null'); }catch(_){ }
+      if(!b||!b.f||!b.f.text||$('overlay').classList.contains('open')) return;
+      if(Date.now()-b.at>14*86400e3){ dropBackup(); return; }
+      const p=b.row?findPost(b.row):null;
+      const base=(p&&p.key===b.key&&!p.sent)?p:{};
+      openEditor(Object.assign({},base,{date:b.f.date,time:b.f.time,text:b.f.text,image:b.f.image,skipped:b.f.skip,group:b.f.group}));
+      opened='';   // what came back was never saved: closing saves it as a draft
+      say('📝 חזרה הודעה שלא נשמרה. שמירה, או סגירה = טיוטה');
+    }
     function renderImage(){
       const box=$('ed-image'); const id=driveId(image);
-      if(!id){ box.innerHTML='<div class="drop" id="drop">📷 גוררים תמונה לכאן, או לוחצים לבחירה</div>';
+      if(!id){ box.innerHTML='<div class="drop" id="drop">📷 גוררים תמונה לכאן, או לוחצים לבחירה</div>'+
+          '<input class="drivelink" id="drivelink" dir="auto" placeholder="או מדביקים כאן קישור לתמונה ב-Drive">';
+        const dl=$('drivelink'); dl.oninput=()=>{ if(driveId(dl.value.trim())){ image=dl.value.trim(); renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } };
         const d=$('drop'); d.onclick=()=>$('ed-file').click();
         d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
         d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) upload(f);};
         return; }
       box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="img-x">הסרת התמונה</button></div>';
-      imageUrl(id).then(u=>{ if(u) box.querySelector('img').src=u; });
-      $('img-x').onclick=()=>{ image=''; renderImage(); preview(); };
+      imageUrl(id).then(u=>{ if(u){ box.querySelector('img').src=u; return; }
+        delete imgCache[id]; if(driveId(image)===id) say('התמונה לא נפתחה מ-Drive: בודקים שזה קובץ תמונה ושהחשבון hello@ יכול לראות אותו',true); });
+      $('img-x').onclick=()=>{ image=''; renderImage(); preview(); backup(); };
     }
     $('ed-file').onchange=e=>{ const f=e.target.files[0]; if(f) upload(f); e.target.value=''; };
     document.addEventListener('paste',e=>{ if(!$('overlay').classList.contains('open')) return;
-      const f=[...(e.clipboardData||{}).files||[]].find(f=>f.type.startsWith('image/')); if(f){ e.preventDefault(); upload(f); } });
+      const f=[...(e.clipboardData||{}).files||[]].find(f=>f.type.startsWith('image/')); if(f){ e.preventDefault(); upload(f); return; }
+      // a Drive link pasted anywhere in the editor except the text box = the picture
+      const t=((e.clipboardData&&e.clipboardData.getData('text'))||'').trim();
+      if(e.target!==$('ed-text')&&e.target.id!=='drivelink'&&/drive\.google\.com\/(file\/d\/|open\?id=)/.test(t)&&driveId(t)){
+        e.preventDefault(); image=t; renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } });
     async function upload(f){
       if(!f.type.startsWith('image/')){ say('רק תמונות',true); return; }
       say('מעלה את התמונה ל-Drive…');
       try{
         const r=await api('/image',{method:'POST',body:f,headers:{'Content-Type':f.type,'X-Filename':encodeURIComponent(f.name||'image')}});
         const data=await r.json(); if(!r.ok) throw new Error(data.error||'ההעלאה נכשלה');
-        image=data.link; renderImage(); preview(); say('התמונה עלתה ✓');
+        image=data.link; renderImage(); preview(); backup(); say('התמונה עלתה ✓');
       }catch(e){ say(e.message,true); }
     }
     let previewTimer=null;
@@ -702,6 +745,7 @@
       },150);
     }
     ['ed-text','ed-time','ed-skip'].forEach(id=>$(id).addEventListener('input',preview));
+    ['ed-text','ed-date','ed-time','ed-skip','ed-group'].forEach(id=>{ $(id).addEventListener('input',backup); $(id).addEventListener('change',backup); });
     $('ed-time').addEventListener('change',preview);
     let shortTimer=null, shortening=false;
     function scheduleShorten(ms){ clearTimeout(shortTimer); shortTimer=setTimeout(shortenNow,ms); }
@@ -737,28 +781,42 @@
     $('ed-text').addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
       if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(false); } } });
     function say(t,err){ $('ed-msg').textContent=t; $('ed-msg').className='msg'+(err?' err':''); }
-    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve'].forEach(id=>$(id).disabled=v); }
-    async function save(approve){
+    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve','ed-test','ed-cancel'].forEach(id=>$(id).disabled=v); }
+    // auto: the editor was closed without "save" → what changed is kept as a draft
+    async function save(approve,auto){
       if(busy) return;
       const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
-      setBusy(true); say('שומר…');
+      if(auto) body.draft=true;
+      const wasQueued=!!(editing&&!editing.draft&&!editing.skipped);
+      setBusy(true); say(auto?'שומר כטיוטה…':'שומר…');
       try{
         if(editing) await apiJson('/posts/'+editing.row,{method:'PUT',json:Object.assign({key:editing.key},body)});
         else await apiJson('/posts',{method:'POST',json:body});
+        if(auto) toast(wasQueued?'📝 השינויים נשמרו כטיוטה: ההודעה לא תצא עד שתאשרו אותה':'📝 נשמר כטיוטה');
         // copies to the other suggested groups: a draft stays a draft there too
-        const asDraft=!!(editing&&editing.draft&&approve!==true);
+        const asDraft=!!(auto||(editing&&editing.draft&&approve!==true));
         for(const jid of also){ say('שומר עותק ל'+groupName(jid)+'…');
           await apiJson('/posts',{method:'POST',json:Object.assign({},body,{group:jid,approve:false,draft:asDraft})}); }
         closeEditor(); await load();
-      }catch(e){ say(e.message,true); }
+      }catch(e){ say((auto?'לא נשמר כטיוטה: ':'')+e.message,true); }
       finally{ setBusy(false); }
     }
     $('ed-save').onclick=()=>save(false);
     $('ed-approve').onclick=()=>save(true);
-    $('ed-cancel').onclick=closeEditor;
-    $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) closeEditor(); });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')) closeEditor(); });
+    $('ed-cancel').onclick=leaveEditor;
+    $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) leaveEditor(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')) leaveEditor(); });
+    // the tab closing with unsaved text: kept in this browser, and the browser asks first
+    window.addEventListener('beforeunload',e=>{ if($('overlay').classList.contains('open')&&$('ed-text').value.trim()&&changed()){ saveBackup(); e.preventDefault(); e.returnValue=''; } });
+    $('ed-test').onclick=async()=>{
+      if(busy) return;
+      const text=$('ed-text').value;
+      if(!text.trim()){ say('ההודעה ריקה',true); return; }
+      setBusy(true); say('שולח אליך לבדיקה…');
+      try{ await apiJson('/test-send',{method:'POST',json:{text,image,group:$('ed-group').value}}); say("🧪 נשלחה לצ'אט שלך עם עצמך בוואטסאפ ✓"); }
+      catch(e){ say(e.message,true); } finally{ setBusy(false); }
+    };
     $('ed-delete').onclick=async()=>{
       if(!editing||busy||!confirm('למחוק את ההודעה?')) return;
       setBusy(true); say('מוחק…');
