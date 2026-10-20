@@ -133,6 +133,15 @@
     .hint{font-size:.76rem;color:var(--faint);margin-top:4px}
     .toolbar{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
     .tb{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;min-width:34px;height:30px;font-family:inherit;cursor:pointer;padding:0 8px}
+    .toolbar{position:relative}
+    .emojis{position:absolute;top:36px;right:0;z-index:5;width:min(352px,100%);max-height:300px;overflow:auto;background:var(--card);
+            border:1px solid var(--line);border-radius:12px;padding:6px 8px 8px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+    .emojis h4{font-size:.72rem;font-weight:600;color:var(--faint);margin:6px 4px 2px}
+    .emojis .grid{display:flex;flex-wrap:wrap}
+    .emojis button{background:none;border:0;border-radius:8px;width:38px;height:38px;font-size:1.35rem;line-height:1;cursor:pointer;
+                   font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif}
+    .emojis button:hover,.emojis button:focus-visible{background:rgba(37,211,102,.14);outline:none}
+    .emojis .tip{font-size:.72rem;color:var(--faint);margin:8px 4px 0}
     .count{font-size:.76rem;color:var(--faint);text-align:left;margin-top:3px}
     .drop{border:1.5px dashed var(--line);border-radius:10px;padding:12px;text-align:center;color:var(--muted);font-size:.86rem;cursor:pointer}
     .drop.over{border-color:var(--accent);color:var(--accent)}
@@ -204,6 +213,8 @@
             <button class="tb" data-wrap="~" title="קו חוצה"><s>S</s></button>
             <button class="tb" data-wrap="```" title="מונו">{ }</button>
             <button class="tb" data-line="- " title="רשימה">• רשימה</button>
+            <button class="tb" type="button" id="ed-emoji-btn" title="אימוג'י" aria-haspopup="true" aria-expanded="false">😊</button>
+            <div class="emojis" id="ed-emojis" hidden></div>
           </div>
           <textarea id="ed-text" dir="auto" placeholder="הטיפ של היום…"></textarea>
           <div class="count" id="ed-count"></div>
@@ -229,7 +240,7 @@
         <button class="btn ghost" id="ed-test" title="ההודעה כמו שהיא תצא, לצ'אט שלך עם עצמך בוואטסאפ. לא נשמרת ולא נספרת.">🧪 לשלוח לי לבדיקה</button>
         <span class="msg" id="ed-msg"></span>
         <span class="spacer"></span>
-        <button class="btn ghost" id="ed-send" hidden>📤 לשלוח עכשיו</button>
+        <button class="btn ghost" id="ed-send" title="מה שכתוב כאן יוצא מיד, בלי לחכות ליום ולשעה">📤 לשלוח עכשיו</button>
         <button class="btn danger" id="ed-delete" hidden>מחיקה</button>
       </div>
     </div>
@@ -350,6 +361,7 @@
       if(p.failed) return ['fail',p.status];
       if(p.skipped) return ['skip','לא לשלוח'];
       if(p.draft) return ['draft','📝 טיוטה · מחכה לאישור'];
+      if(/^שולח עכשיו/.test(p.status||'')) return ['wait','📤 יוצאת עכשיו'];
       return ['wait','ממתין · '+p.due];
     }
     function statsOf(r){
@@ -662,14 +674,14 @@
       $('ed-save').textContent=(editing&&editing.draft)?'שמירה כטיוטה':'שמירה';
       $('ed-date').value=p.date; fillTimes(p.time||''); $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
       $('ed-time-hint').textContent='הרגיל יוצא עד רבע שעה אחרי '+state.settings.time+'. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
-      $('ed-send').hidden=!editing||!!editing.draft; $('ed-delete').hidden=!editing;
+      $('ed-delete').hidden=!editing;
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
       if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
       renderImage(); preview(); scheduleShorten(0);
       opened=fields();
       $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); }
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); }
 
     // Nothing written is lost (Omri, 2026-10-19: "whatever I do, the tool auto-drafts it"):
     // closing the editor any way but "save" (outside it, Esc, "סגירה") saves what changed as a DRAFT
@@ -777,7 +789,38 @@
       const block=v.slice(a,b).split('\n').map(l=>l.startsWith(p)?l:p+l).join('\n');
       ta.value=v.slice(0,a)+block+v.slice(b); ta.focus(); preview();
     }
-    document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>b.dataset.wrap?wrapSel(b.dataset.wrap):prefixLines(b.dataset.line));
+    document.querySelectorAll('.tb[data-wrap],.tb[data-line]').forEach(b=>b.onclick=()=>b.dataset.wrap?wrapSel(b.dataset.wrap):prefixLines(b.dataset.line));
+
+    // ---- emoji: a grid by the toolbar, the last ones used first (kept in this browser) ----
+    const EMOJI=[
+      ['נפוצים','😊 🙂 😀 😄 😁 😅 😂 🤩 😍 🥳 😎 🤔 🤓 😮 🙏 👏 🙌 👍 💪 👋 ❤️ 💚 🔥 ✨ ⭐ 🎉 ✅ ❗ ❓ 👇 👉 📌'],
+      ['הוראה ולמידה','🧠 📚 📖 ✏️ 📝 🎓 🏫 👩‍🏫 👨‍🏫 🧑‍🎓 🧪 🔬 🧬 🌱 🌍 📐 🧮 🎨 🎵 🏆'],
+      ['AI וטכנולוגיה','🤖 💻 📱 ⚙️ 🛠️ 🔗 💡 🚀 🔍 🧩 📊 📈 🎥 🎬 ▶️ 🎙️ 🖼️ 📄'],
+      ['אירועים והודעות','📅 🗓️ ⏰ ⏳ 📍 🎟️ 🆕 🎁 📣 📢 💬 📩 🔔 ⚠️ ⭕ 1️⃣ 2️⃣ 3️⃣'],
+    ];
+    const RECENT='wa_emoji_recent';
+    function recentEmoji(){ try{ return JSON.parse(localStorage.getItem(RECENT)||'[]').slice(0,16); }catch(_){ return []; } }
+    function renderEmojis(){
+      const box=$('ed-emojis'); box.innerHTML='';
+      const rec=recentEmoji();
+      for(const [title,list] of (rec.length?[['אחרונים',rec.join(' ')]]:[]).concat(EMOJI)){
+        const h=document.createElement('h4'); h.textContent=title; box.appendChild(h);
+        const g=document.createElement('div'); g.className='grid';
+        for(const em of list.split(' ')){ const b=document.createElement('button'); b.type='button'; b.textContent=em; b.title=em; b.onclick=()=>insertEmoji(em); g.appendChild(b); }
+        box.appendChild(g);
+      }
+      box.insertAdjacentHTML('beforeend','<div class="tip">כל האימוג\'ים במחשב: ‎Win + .‎ (נקודה) בתוך תיבת הטקסט</div>');
+    }
+    function insertEmoji(em){
+      const ta=$('ed-text'), a=ta.selectionStart, b=ta.selectionEnd;
+      ta.focus(); ta.setRangeText(em,a,b,'end');
+      ta.dispatchEvent(new Event('input'));   // the preview, the browser backup, the link shortener
+      try{ localStorage.setItem(RECENT,JSON.stringify([em,...recentEmoji().filter(x=>x!==em)].slice(0,16))); }catch(_){ }
+    }
+    function emojisOpen(){ return !$('ed-emojis').hidden; }
+    function toggleEmojis(open){ $('ed-emojis').hidden=!open; $('ed-emoji-btn').setAttribute('aria-expanded',String(open)); if(open) renderEmojis(); }
+    $('ed-emoji-btn').onclick=()=>toggleEmojis(!emojisOpen());
+    document.addEventListener('click',e=>{ if(emojisOpen()&&!e.target.closest('#ed-emojis,#ed-emoji-btn')) toggleEmojis(false); });
     $('ed-text').addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
       if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(false); } } });
     function say(t,err){ $('ed-msg').textContent=t; $('ed-msg').className='msg'+(err?' err':''); }
@@ -806,7 +849,7 @@
     $('ed-approve').onclick=()=>save(true);
     $('ed-cancel').onclick=leaveEditor;
     $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) leaveEditor(); });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')) leaveEditor(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')){ if(emojisOpen()){ toggleEmojis(false); $('ed-text').focus(); } else leaveEditor(); } });
     // the tab closing with unsaved text: kept in this browser, and the browser asks first
     window.addEventListener('beforeunload',e=>{ if($('overlay').classList.contains('open')&&$('ed-text').value.trim()&&changed()){ saveBackup(); e.preventDefault(); e.returnValue=''; } });
     $('ed-test').onclick=async()=>{
@@ -823,12 +866,20 @@
       try{ await apiJson('/posts/'+editing.row+'?key='+encodeURIComponent(editing.key),{method:'DELETE'}); closeEditor(); await load(); }
       catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
+    // send now (Omri, 2026-10-20): what the editor holds, new / saved / a draft, goes out at once:
+    // the server writes it to today at this minute and starts the sender (copies for "➕ גם לשם" too)
     $('ed-send').onclick=async()=>{
-      if(!editing||busy) return;
-      if(!confirm('לשלוח את ההודעה עכשיו לערוץ העדכונים של הקהילה? (השמורה, בלי שינויים שלא נשמרו)')) return;
+      if(busy) return;
+      const text=$('ed-text').value;
+      if(!text.trim()){ say('ההודעה ריקה',true); return; }
+      const group=$('ed-group').value, where=[group,...also].map(j=>j?'קבוצה „'+groupName(j)+'”':'ערוץ העדכונים');
+      if(!confirm('לשלוח עכשיו, כמו שזה כתוב כאן, ל'+where.join(' ול')+'?\nההודעה יוצאת מיד לכל החברים, ואי אפשר להחזיר אותה.')) return;
       setBusy(true); say('שולח…');
-      try{ await apiJson('/send-now',{method:'POST',json:{row:editing.row,key:editing.key}}); say('נשלחה לשליחה. בעוד דקה האישור יופיע כאן ובטלגרם.'); setTimeout(load,25000); }
-      catch(e){ say(e.message,true); } finally{ setBusy(false); }
+      try{
+        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also]})});
+        closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
+        await load(); setTimeout(load,20000);
+      }catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
 
     load();
