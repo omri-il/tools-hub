@@ -159,6 +159,13 @@
     .btn.danger{background:transparent;color:var(--danger);border:1px solid rgba(248,113,113,.45)}
     .btn:disabled{opacity:.5;cursor:default}
     .msg{font-size:.88rem;color:var(--muted)} .msg.err{color:var(--danger)}
+    .proof{grid-column:1/-1;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.45);border-radius:12px;padding:12px 14px;font-size:.92rem}
+    .proof .plist{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+    .proof .pitem{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .proof .pitem s{color:var(--danger)} .proof .pitem b{color:var(--accent)} .proof .why{color:var(--faint);font-size:.82rem}
+    .proof .pitem.fixed{opacity:.55} .proof .pitem.fixed::after{content:'✓ תוקן';color:var(--accent);font-size:.8rem}
+    .proof .pbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+    .fixsent{background:transparent;border:1px dashed rgba(37,211,102,.55);color:var(--accent);border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
     .spacer{flex:1}
     /* results */
     .report{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;white-space:pre-wrap;line-height:1.7;font-size:.94rem}
@@ -231,9 +238,11 @@
       <div>
         <label id="ed-where">כך זה ייראה בערוץ העדכונים</label>
         <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
-        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת הסקול נוספת לבד בסוף. כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
+        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
       </div>
+      <div class="proof" id="proof" hidden></div>
       <div class="actions">
+        <button class="btn primary" id="ed-fix" hidden>✏️ לתקן בוואטסאפ</button>
         <button class="btn primary" id="ed-approve" hidden>✅ לאשר לשליחה</button>
 <button class="btn primary" id="ed-save">שמירה</button>
         <button class="btn ghost" id="ed-cancel" title="מה שנכתב נשמר כטיוטה">סגירה</button>
@@ -551,6 +560,14 @@
             const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:(p.skool||p.group)?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
             if(!p.sent){ b.onclick=()=>openEditor(p,ev||(md&&md.ev)); if(!d.past) draggable(it,{post:p}); }
             it.appendChild(b);
+            // a typo in a post just sent: WhatsApp lets the sending device (the server) fix it for 15 minutes
+            if(p.sent&&p.edit_left>0){
+              p.deadline=Date.now()+p.edit_left*1000;
+              const until=new Date(p.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+              const fx=document.createElement('button'); fx.type='button'; fx.className='fixsent'; fx.textContent='✏️ לתקן בוואטסאפ (עד '+until+')';
+              fx.onclick=()=>{ if(Date.now()>p.deadline){ toast('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); fx.remove(); return; } openEditor(p); };
+              it.appendChild(fx);
+            }
             if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
             chat.appendChild(it);
           }
@@ -676,12 +693,68 @@
       $('ed-time-hint').textContent='הרגיל יוצא עד רבע שעה אחרי '+state.settings.time+'. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-delete').hidden=!editing;
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
+      proofed=''; hideProof();
+      // a sent post: only its text can change, and only the "fix in WhatsApp" button sends it
+      const fix=!!(editing&&editing.sent);
+      ['ed-approve','ed-save','ed-send','ed-delete','ed-test'].forEach(id=>{ if(fix) $(id).hidden=true; });
+      if(!fix) $('ed-save').hidden=$('ed-send').hidden=$('ed-test').hidden=false;
+      $('ed-fix').hidden=!fix;
+      ['ed-date','ed-time','ed-group','ed-skip'].forEach(id=>$(id).disabled=fix);
+      $('ed-image').closest('.field').hidden=fix; $('ed-skip').closest('.check').hidden=fix;
+      $('ed-cancel').textContent=fix?'ביטול':'סגירה';
+      if(fix){ $('ed-title').textContent='✏️ תיקון הודעה שכבר נשלחה';
+        say('אפשר לתקן את הטקסט עד '+new Date(editing.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+'. בוואטסאפ יופיע ליד ההודעה „נערכה”.'); }
       if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
       renderImage(); preview(); scheduleShorten(0);
       opened=fields();
       $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); }
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); hideProof(); }
+
+    // ---- a check for typos before a post can go out (Omri, 2026-10-20, after "מוזמני" went to the community):
+    // Gemini reads it (POST /proofread); mistakes found = a panel with each one and its fix, and the post
+    // goes on only when Omri says so. The same text is not checked twice.
+    let proofed='';
+    function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    async function proofGate(date,go){
+      const text=$('ed-text').value;
+      if(proofed&&proofed===text) return true;
+      setBusy(true); say('🔎 בודק טעויות…');
+      let r;
+      try{ r=await apiJson('/proofread',{method:'POST',json:{text,date}}); }catch(e){ r={ok:false,issues:[],error:e.message}; }
+      if(r.ok&&!r.issues.length){ setBusy(false); proofed=text; say('✓ לא נמצאו טעויות'); return true; }
+      say('');
+      return new Promise(resolve=>showProof(r,go,v=>{ setBusy(false); resolve(v); }));
+    }
+    function hideProof(){ $('proof').hidden=true; $('proof').innerHTML=''; }
+    function applyFix(i){
+      if(i.done) return; const ta=$('ed-text'), v=ta.value, n=v.indexOf(i.wrong); if(n<0) return;
+      ta.value=v.slice(0,n)+i.fix+v.slice(n+i.wrong.length); i.done=true; ta.dispatchEvent(new Event('input'));
+    }
+    function showProof(r,go,resolve){
+      const box=$('proof'); box.hidden=false; box.innerHTML='';
+      const done=v=>{ hideProof(); if(v) proofed=$('ed-text').value; resolve(v); };
+      if(!r.ok) box.innerHTML='<b>⚠️ הבדיקה לא רצה הפעם</b> <span class="why">'+esc(r.error||'')+'</span>';
+      else{
+        box.insertAdjacentHTML('beforeend','<b>🔎 '+(r.issues.length===1?'נמצאה טעות אפשרית אחת':'נמצאו '+r.issues.length+' טעויות אפשריות')+'</b>');
+        const list=document.createElement('div'); list.className='plist';
+        for(const i of r.issues){
+          const row=document.createElement('div'); row.className='pitem';
+          row.innerHTML='<s dir="auto">'+esc(i.wrong)+'</s> ← <b dir="auto">'+esc(i.fix)+'</b>'+(i.why?' <span class="why">('+esc(i.why)+')</span>':'');
+          const fx=document.createElement('button'); fx.type='button'; fx.className='sg'; fx.textContent='לתקן';
+          fx.onclick=()=>{ applyFix(i); row.classList.add('fixed'); fx.remove(); };
+          row.appendChild(fx); list.appendChild(row);
+        }
+        box.appendChild(list);
+      }
+      const btns=document.createElement('div'); btns.className='pbtns';
+      const mk=(t,cls,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=t; b.onclick=fn; btns.appendChild(b); };
+      if(r.ok) mk('✅ לתקן הכול ו'+go,'primary',()=>{ r.issues.forEach(applyFix); done(true); });
+      mk(r.ok?go+' כמו שזה עכשיו':'להמשיך בלי בדיקה','ghost',()=>done(true));
+      mk('חזרה לעריכה','ghost',()=>{ done(false); $('ed-text').focus(); });
+      box.appendChild(btns);
+      box.scrollIntoView({block:'nearest'});
+    }
 
     // Nothing written is lost (Omri, 2026-10-19: "whatever I do, the tool auto-drafts it"):
     // closing the editor any way but "save" (outside it, Esc, "סגירה") saves what changed as a DRAFT
@@ -694,14 +767,14 @@
     let backupTimer=null;
     function backup(){ clearTimeout(backupTimer); backupTimer=setTimeout(saveBackup,400); }
     function saveBackup(){
-      if(!$('overlay').classList.contains('open')) return;
+      if(!$('overlay').classList.contains('open')||(editing&&editing.sent)) return;
       try{ if(changed()&&$('ed-text').value.trim()) localStorage.setItem(BACKUP,JSON.stringify({f:JSON.parse(fields()),row:editing&&editing.row,key:editing&&editing.key,at:Date.now()}));
            else localStorage.removeItem(BACKUP); }catch(_){ }
     }
     function dropBackup(){ clearTimeout(backupTimer); try{ localStorage.removeItem(BACKUP); }catch(_){ } }
     async function leaveEditor(){
       if(busy||!$('overlay').classList.contains('open')) return;
-      if(!$('ed-text').value.trim()||!changed()){ closeEditor(); return; }
+      if(!$('ed-text').value.trim()||!changed()||(editing&&editing.sent)){ closeEditor(); return; }
       await save(false,true);
     }
     // the editor was open when the tab closed: it comes back as it was
@@ -824,10 +897,13 @@
     $('ed-text').addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
       if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(false); } } });
     function say(t,err){ $('ed-msg').textContent=t; $('ed-msg').className='msg'+(err?' err':''); }
-    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve','ed-test','ed-cancel'].forEach(id=>$(id).disabled=v); }
+    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve','ed-test','ed-cancel','ed-fix'].forEach(id=>$(id).disabled=v); }
     // auto: the editor was closed without "save" → what changed is kept as a draft
     async function save(approve,auto){
-      if(busy) return;
+      if(busy||(editing&&editing.sent)) return;
+      // a post that will go out is checked for typos first; a draft kept as a draft is not
+      const goesOut=!auto&&!$('ed-skip').checked&&(approve===true||!(editing&&editing.draft));
+      if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור')) return;
       const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       if(auto) body.draft=true;
@@ -870,8 +946,9 @@
     // the server writes it to today at this minute and starts the sender (copies for "➕ גם לשם" too)
     $('ed-send').onclick=async()=>{
       if(busy) return;
+      if(!$('ed-text').value.trim()){ say('ההודעה ריקה',true); return; }
+      if(!await proofGate(today(),'לשלוח')) return;
       const text=$('ed-text').value;
-      if(!text.trim()){ say('ההודעה ריקה',true); return; }
       const group=$('ed-group').value, where=[group,...also].map(j=>j?'קבוצה „'+groupName(j)+'”':'ערוץ העדכונים');
       if(!confirm('לשלוח עכשיו, כמו שזה כתוב כאן, ל'+where.join(' ול')+'?\nההודעה יוצאת מיד לכל החברים, ואי אפשר להחזיר אותה.')) return;
       setBusy(true); say('שולח…');
@@ -879,6 +956,19 @@
         await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also]})});
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
+      }catch(e){ say(e.message,true); } finally{ setBusy(false); }
+    };
+    // a sent post's typo, fixed in WhatsApp itself (within 15 minutes of the send)
+    $('ed-fix').onclick=async()=>{
+      if(busy||!editing||!editing.sent) return;
+      if(!$('ed-text').value.trim()){ say('ההודעה ריקה',true); return; }
+      if(Date.now()>editing.deadline){ say('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); return; }
+      if(!await proofGate(editing.date,'לשלוח את התיקון')) return;
+      if(!confirm('לתקן את ההודעה שכבר יצאה? כל מי שקיבל אותה יראה את הנוסח החדש, וליד ההודעה יופיע „נערכה”.')) return;
+      setBusy(true); say('מתקן בוואטסאפ…');
+      try{
+        await apiJson('/edit-sent',{method:'POST',json:{row:editing.row,key:editing.key,text:$('ed-text').value}});
+        closeEditor(); toast('✏️ ההודעה תוקנה בוואטסאפ'); await load();
       }catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
 
