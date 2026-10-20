@@ -363,7 +363,7 @@
     }
 
     // ---- the board ----
-    let state=null, weeks=3;
+    let state=null, weeks=3, back=1;
     const STATUS={sent:['sent','נשלח'],fail:['fail','נכשל'],skip:['skip','לא לשלוח'],wait:['wait','ממתין']};
     function chipOf(p){
       if(p.sent) return ['sent',p.status||'נשלח'];
@@ -392,7 +392,7 @@
       $('sheetlink').href=s.sheet;
     }
     function findPost(row){
-      for(const w of state.weeks) for(const d of w.days) for(const p of d.posts) if(p.row===row) return p;
+      for(const d of [...state.weeks.flatMap(w=>w.days),...(state.archive||[])]) for(const p of d.posts) if(p.row===row) return p;
       return null;
     }
     function renderEvents(el){
@@ -527,71 +527,94 @@
       box.appendChild(grid); el.appendChild(box);
     }
 
+    function dayCard(d){
+      const s=state;
+      const card=document.createElement('div'); card.className='day'+(d.today?' today':'')+(d.past?' past':'');
+      const plan=d.plan.length?d.plan.map(p=>'<div class="plan" dir="auto">'+esc(p.title)+' <span class="st">'+esc(p.status)+'</span></div>').join(''):'<div class="plan empty">אין תוכן מתוכנן ב-Content Machine</div>';
+      const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' 📣':'')+'</div>').join('');
+      card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+evs+plan+'</aside><div class="chat"></div>';
+      const aside=card.querySelector('aside');
+      if(!d.past){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
+      const chat=card.querySelector('.chat');
+      dropTarget(card,d);
+      const ghosts=d.past?[]:suggestionsFor(d.date);
+      if(!d.posts.length&&!ghosts.length){
+        const n=document.createElement('div'); n.className='none'+(d.past?' past':''); n.textContent=d.past?'לא נשלחה הודעה':'אין הודעה ליום הזה';
+        if(!d.past){ n.style.cursor='pointer'; n.onclick=()=>openEditor({date:d.date}); }
+        chat.appendChild(n);
+      }
+      for(const p of d.posts){
+        const it=document.createElement('div'); it.className='item';
+        const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
+        it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
+          (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
+          (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
+        const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:(p.skool||p.group)?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
+        if(!p.sent){ b.onclick=()=>openEditor(p,ev||(md&&md.ev)); if(!d.past) draggable(it,{post:p}); }
+        it.appendChild(b);
+        // a typo in a post just sent: WhatsApp lets the sending device (the server) fix it for 15 minutes
+        if(p.sent&&p.edit_left>0){
+          p.deadline=Date.now()+p.edit_left*1000;
+          const until=new Date(p.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+          const fx=document.createElement('button'); fx.type='button'; fx.className='fixsent'; fx.textContent='✏️ לתקן בוואטסאפ (עד '+until+')';
+          fx.onclick=()=>{ if(Date.now()>p.deadline){ toast('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); fx.remove(); return; } openEditor(p); };
+          it.appendChild(fx);
+        }
+        if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
+        chat.appendChild(it);
+      }
+      for(const e of ghosts){
+        const g=document.createElement('div'); g.className='sugpost'; g.dir='auto';
+        g.innerHTML='<div>💡 <b>הצעה: פוסט על „'+esc(e.name)+'”</b></div><div>יום '+esc(e.day)+' '+esc(e.label)+' ב-'+esc(e.time)+' · '+e.signed+' נרשמו'+
+          (e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' · 📣 כדאי לקדם':'')+'</div><div class="gtext">'+esc(e.suggest.text)+'</div>'+
+          '<div class="gbtns"><button type="button">✍️ לכתוב</button></div>';
+        g.title='לחיצה פותחת את הפוסט לעריכה. גרירה ליום אחר כותבת טיוטה לשם.';
+        g.onclick=()=>openEditor({date:d.date,text:e.suggest.text},e);
+        draggable(g,{event:e});
+        chat.appendChild(g);
+      }
+      return card;
+    }
     function renderBoard(){
       const s=state; let el=$('board'); el.innerHTML='';
+      // today first; the days still ahead after it, week by week; the days gone by in the archive
+      const ahead=s.weeks.map(w=>w.days.filter(d=>!d.past)).filter(ds=>ds.length);
+      const gone=[...s.weeks.flatMap(w=>w.days.filter(d=>d.past)).reverse(),...(s.archive||[])];
+      const first=ahead.length?ahead[0].shift():null;
+      if(first){
+        el.insertAdjacentHTML('beforeend','<h2>'+(first.today?'היום':'הבא בתור')+'</h2>');
+        el.appendChild(dayCard(first));
+      }
       renderEvents(el);
       renderMedia(el);
       el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, או הצעה לאירוע, ליום אחר.</p>');
-      for(const w of s.weeks){
-        if(!w.days.length) continue;
-        const d0=w.days[0], dn=w.days[w.days.length-1];
-        const h=document.createElement('h2'); h.textContent=d0.label+' – '+dn.label; el.appendChild(h);
-        for(const d of w.days){
-          const card=document.createElement('div'); card.className='day'+(d.today?' today':'')+(d.past?' past':'');
-          const plan=d.plan.length?d.plan.map(p=>'<div class="plan" dir="auto">'+esc(p.title)+' <span class="st">'+esc(p.status)+'</span></div>').join(''):'<div class="plan empty">אין תוכן מתוכנן ב-Content Machine</div>';
-          const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' 📣':'')+'</div>').join('');
-          card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+evs+plan+'</aside><div class="chat"></div>';
-          const aside=card.querySelector('aside');
-          if(!d.past){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
-          const chat=card.querySelector('.chat');
-          dropTarget(card,d);
-          const ghosts=d.past?[]:suggestionsFor(d.date);
-          if(!d.posts.length&&!ghosts.length){
-            const n=document.createElement('div'); n.className='none'+(d.past?' past':''); n.textContent=d.past?'לא נשלחה הודעה':'אין הודעה ליום הזה';
-            if(!d.past){ n.style.cursor='pointer'; n.onclick=()=>openEditor({date:d.date}); }
-            chat.appendChild(n);
-          }
-          for(const p of d.posts){
-            const it=document.createElement('div'); it.className='item';
-            const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
-            it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
-              (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
-              (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
-            const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:(p.skool||p.group)?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
-            if(!p.sent){ b.onclick=()=>openEditor(p,ev||(md&&md.ev)); if(!d.past) draggable(it,{post:p}); }
-            it.appendChild(b);
-            // a typo in a post just sent: WhatsApp lets the sending device (the server) fix it for 15 minutes
-            if(p.sent&&p.edit_left>0){
-              p.deadline=Date.now()+p.edit_left*1000;
-              const until=new Date(p.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
-              const fx=document.createElement('button'); fx.type='button'; fx.className='fixsent'; fx.textContent='✏️ לתקן בוואטסאפ (עד '+until+')';
-              fx.onclick=()=>{ if(Date.now()>p.deadline){ toast('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); fx.remove(); return; } openEditor(p); };
-              it.appendChild(fx);
-            }
-            if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
-            chat.appendChild(it);
-          }
-          for(const e of ghosts){
-            const g=document.createElement('div'); g.className='sugpost'; g.dir='auto';
-            g.innerHTML='<div>💡 <b>הצעה: פוסט על „'+esc(e.name)+'”</b></div><div>יום '+esc(e.day)+' '+esc(e.label)+' ב-'+esc(e.time)+' · '+e.signed+' נרשמו'+
-              (e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' · 📣 כדאי לקדם':'')+'</div><div class="gtext">'+esc(e.suggest.text)+'</div>'+
-              '<div class="gbtns"><button type="button">✍️ לכתוב</button></div>';
-            g.title='לחיצה פותחת את הפוסט לעריכה. גרירה ליום אחר כותבת טיוטה לשם.';
-            g.onclick=()=>openEditor({date:d.date,text:e.suggest.text},e);
-            draggable(g,{event:e});
-            chat.appendChild(g);
-          }
-          el.appendChild(card);
-        }
+      for(const ds of ahead){
+        if(!ds.length) continue;
+        const h=document.createElement('h2'); h.textContent=ds[0].label+' – '+ds[ds.length-1].label; el.appendChild(h);
+        for(const d of ds) el.appendChild(dayCard(d));
       }
       const more=document.createElement('button'); more.className='more';
       more.textContent=s.more?('עוד שבועות ('+s.more+' ימים עם הודעות בהמשך)'):'עוד שבועות';
       more.onclick=()=>{ weeks+=3; load(); };
       el.appendChild(more);
+      renderArchive(el,gone);
+    }
+    function renderArchive(el,gone){
+      const box=document.createElement('details'); box.className='evs archive';
+      try{ box.open=localStorage.getItem('wa_archive_open')==='1'; }catch(_){ }
+      box.ontoggle=()=>{ try{ localStorage.setItem('wa_archive_open',box.open?'1':'0'); }catch(_){ } };
+      const n=gone.reduce((k,d)=>k+d.posts.filter(p=>p.sent).length,0);
+      box.innerHTML='<summary>🗄️ ארכיון · ימים שעברו ('+gone.length+' ימים · '+n+' הודעות יצאו)</summary>';
+      for(const d of gone) box.appendChild(dayCard(d));
+      if(!gone.length) box.insertAdjacentHTML('beforeend','<p class="evnote">עוד אין ימים שעברו.</p>');
+      const older=document.createElement('button'); older.className='more'; older.textContent='עוד שבועות אחורה';
+      older.onclick=()=>{ back+=2; try{ localStorage.setItem('wa_archive_open','1'); }catch(_){ } load(); };
+      box.appendChild(older);
+      el.appendChild(box);
     }
     async function load(){
       try{
-        state=await apiJson('/state?weeks='+weeks);
+        state=await apiJson('/state?weeks='+weeks+'&back='+back);
         renderStatus(); renderBoard(); restoreBackup();
       }catch(e){ $('board').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
     }
