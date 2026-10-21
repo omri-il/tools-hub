@@ -149,6 +149,9 @@
     .drivelink{margin-top:6px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.86rem;padding:8px 12px}
     .thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px}
     .check{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);margin-top:4px}
+    .check.off{opacity:.55}
+    .setting{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;max-width:640px;margin:0 auto 12px}
+    .setting .check{font-size:1rem;color:var(--ink)}
     .phone{background:var(--wa-bg);border-radius:14px;padding:16px 12px;min-height:200px;
            background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:14px 14px}
     .phone .bar{color:var(--wa-muted);font-size:.78rem;margin-bottom:10px;text-align:center}
@@ -197,10 +200,18 @@
     <nav class="tabs">
       <button class="tab active" data-pane="board">📅 הלוח</button>
       <button class="tab" data-pane="results">🏆 מה עבד</button>
+      <button class="tab" data-pane="settings">⚙️ הגדרות</button>
     </nav>
     <section class="pane active" id="board"><div class="loading">טוען…</div></section>
     <div id="toast"></div>
     <section class="pane" id="results"><div class="loading">טוען…</div></section>
+    <section class="pane" id="settings">
+      <div class="setting">
+        <label class="check"><input type="checkbox" id="set-footer"> להוסיף בסוף כל הודעה את השורה „כל הפוסטים הקודמים מחכים כאן” והקישור לסקול</label>
+        <p class="hint" id="set-footer-hint">רק בערוץ העדכונים. אפשר לוותר עליה גם בהודעה אחת, בעורך.</p>
+        <span class="msg" id="set-msg"></span>
+      </div>
+    </section>
     <footer><p>פרטי · נשמר בגיליון <a id="sheetlink" href="#" target="_blank" rel="noopener">„פוסטים לוואטסאפ”</a> ב-Drive. מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p></footer>
   </div>
 
@@ -233,12 +244,13 @@
         </div>
         <div class="field"><label for="ed-group">לאן נשלחת</label><select id="ed-group"></select>
           <div class="sugg" id="ed-sugg"></div></div>
+        <label class="check" id="ed-nofooter-box"><input type="checkbox" id="ed-nofooter"> <span id="ed-nofooter-label">בלי השורה „כל הפוסטים הקודמים” בסוף ההודעה הזאת</span></label>
         <label class="check"><input type="checkbox" id="ed-skip"> לא לשלוח את ההודעה הזאת (נשמרת, אבל לא יוצאת)</label>
       </div>
       <div>
         <label id="ed-where">כך זה ייראה בערוץ העדכונים</label>
         <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
-        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
+        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים; מכבים אותה כאן להודעה אחת, או ב„⚙️ הגדרות” לכולן). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
       </div>
       <div class="proof" id="proof" hidden></div>
       <div class="actions">
@@ -319,6 +331,14 @@
     }
     function firstUrl(text){ const m=(text||'').match(/https?:\/\/[^\s<>"']+/); if(!m) return ''; let u=m[0]; while(u&&TRAIL.includes(u.slice(-1))) u=u.slice(0,-1); return u; }
     function withFooter(text,footer){ if(!footer||/skool\.com/i.test(text)) return text; return text.replace(/\s+$/,'')+'\n\n'+footer; }
+    // the footer goes out only in the announcements group, while ⚙️ has it on, and not on a post marked "בלי"
+    function footerOn(){ return !(state&&state.settings&&state.settings.footer_on===false); }
+    function footerFor(text,group,own){ return (!footerOn()||!own||group||linksToSkool(text))?'':state.settings.footer; }
+    // a sent post as it went out (the server says whether it had the footer); the rest as they will
+    function boardFooter(p){
+      if(p.sent&&typeof p.footer_sent==='boolean') return p.footer_sent?state.settings.footer:'';
+      return (p.skool||p.group||p.footer===false||!footerOn())?'':state.settings.footer;
+    }
     // Every link goes out as a go.omri-iram.co.il link of its own (its clicks count for that post).
     // The editor shortens as you write; the footer's link is made when the post is sent.
     const URLS=/https?:\/\/[^\s<>"']+/g, KEEP=/^https?:\/\/(go\.omri-iram\.co\.il|chat\.whatsapp\.com|wa\.me)(\/|$)/i;
@@ -468,7 +488,7 @@
             try{ const r=await apiJson('/event-text?id='+ev.id+'&date='+d.date); text=r.text.split('\n')[0]+text.slice(text.indexOf('\n')<0?text.length:text.indexOf('\n')); }catch(_){ }
           }
           toast('מעביר ל'+d.day+' '+d.label+'…');
-          await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:d.date,time:p.time||'',text,image:p.image||'',skip:!!p.skipped,group:p.group||'',approve:false}});
+          await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:d.date,time:p.time||'',text,image:p.image||'',skip:!!p.skipped,group:p.group||'',approve:false,no_footer:p.footer===false}});
           toast('✓ ההודעה עברה ל'+d.day+' '+d.label+(p.draft?' (עדיין טיוטה)':''));
         }else if(w.event){
           const e=w.event;
@@ -549,7 +569,7 @@
         it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
           (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
           (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
-        const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:(p.skool||p.group)?'':s.settings.footer,clickable:!p.sent,skipped:p.skipped,draft:p.draft});
+        const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:boardFooter(p),clickable:!p.sent,skipped:p.skipped,draft:p.draft});
         if(!p.sent){ b.onclick=()=>openEditor(p,ev||(md&&md.ev)); if(!d.past) draggable(it,{post:p}); }
         it.appendChild(b);
         // a typo in a post just sent: WhatsApp lets the sending device (the server) fix it for 15 minutes
@@ -615,9 +635,28 @@
     async function load(){
       try{
         state=await apiJson('/state?weeks='+weeks+'&back='+back);
-        renderStatus(); renderBoard(); restoreBackup();
+        renderStatus(); renderSettings(); renderBoard(); restoreBackup();
       }catch(e){ $('board').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
     }
+
+    // ---- ⚙️ settings (kept on the server: they count from the next send) ----
+    function renderSettings(){
+      $('set-footer').checked=footerOn();
+      $('set-footer-hint').textContent=footerOn()
+        ?'רק בערוץ העדכונים. אפשר לוותר עליה גם בהודעה אחת, בעורך.'
+        :'כבוי: אף הודעה לא יוצאת עם השורה הזאת, עד שמדליקים כאן שוב.';
+    }
+    $('set-footer').addEventListener('change',async()=>{
+      const on=$('set-footer').checked, box=$('set-footer');
+      box.disabled=true; $('set-msg').textContent='שומר…'; $('set-msg').className='msg';
+      try{
+        const r=await apiJson('/settings',{method:'PUT',json:{footer_on:on}});
+        Object.assign(state.settings,r.settings);
+        $('set-msg').textContent=on?'✓ השורה חוזרת להודעות':'✓ מעכשיו ההודעות יוצאות בלי השורה';
+        renderSettings(); renderBoard();
+      }catch(e){ box.checked=!on; $('set-msg').textContent=e.message; $('set-msg').className='msg err'; }
+      finally{ box.disabled=false; }
+    });
 
     // ---- results ----
     let results=null, sortKey='at', sortDir=-1;
@@ -713,6 +752,7 @@
       $('ed-approve').hidden=!(editing&&editing.draft);
       $('ed-save').textContent=(editing&&editing.draft)?'שמירה כטיוטה':'שמירה';
       $('ed-date').value=p.date; fillTimes(p.time||''); $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
+      $('ed-nofooter').checked=p.footer===false;
       $('ed-time-hint').textContent='הרגיל יוצא עד רבע שעה אחרי '+state.settings.time+'. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-delete').hidden=!editing;
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
@@ -724,6 +764,7 @@
       $('ed-fix').hidden=!fix;
       ['ed-date','ed-time','ed-group','ed-skip'].forEach(id=>$(id).disabled=fix);
       $('ed-image').closest('.field').hidden=fix; $('ed-skip').closest('.check').hidden=fix;
+      $('ed-nofooter-box').hidden=fix;   // a fix goes out with the footer as the post had it
       $('ed-cancel').textContent=fix?'ביטול':'סגירה';
       if(fix){ $('ed-title').textContent='✏️ תיקון הודעה שכבר נשלחה';
         say('אפשר לתקן את הטקסט עד '+new Date(editing.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+'. בוואטסאפ יופיע ליד ההודעה „נערכה”.'); }
@@ -784,7 +825,7 @@
     // in the Sheet, which never goes out until it is approved. What is typed is also kept in this
     // browser, so a closed tab or a crash brings the editor back with it the next time.
     let opened='';
-    function fields(){ return JSON.stringify({date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value.trim(),image,skip:$('ed-skip').checked,group:$('ed-group').value}); }
+    function fields(){ return JSON.stringify({date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value.trim(),image,skip:$('ed-skip').checked,group:$('ed-group').value,nofooter:$('ed-nofooter').checked}); }
     function changed(){ return fields()!==opened; }
     const BACKUP='wa_editor_backup';
     let backupTimer=null;
@@ -807,7 +848,7 @@
       if(Date.now()-b.at>14*86400e3){ dropBackup(); return; }
       const p=b.row?findPost(b.row):null;
       const base=(p&&p.key===b.key&&!p.sent)?p:{};
-      openEditor(Object.assign({},base,{date:b.f.date,time:b.f.time,text:b.f.text,image:b.f.image,skipped:b.f.skip,group:b.f.group}));
+      openEditor(Object.assign({},base,{date:b.f.date,time:b.f.time,text:b.f.text,image:b.f.image,skipped:b.f.skip,group:b.f.group,footer:!b.f.nofooter}));
       opened='';   // what came back was never saved: closing saves it as a draft
       say('📝 חזרה הודעה שלא נשמרה. שמירה, או סגירה = טיוטה');
     }
@@ -848,12 +889,21 @@
         const text=$('ed-text').value, t=$('ed-time').value;
         const box=$('ed-preview'); box.innerHTML='';
         if(!text.trim()){ box.innerHTML='<div class="hint">כאן תופיע ההודעה כמו בוואטסאפ</div>'; }
-        else box.appendChild(bubble(text,{time:t||state.settings.time,imageId:driveId(image),footer:(linksToSkool(text)||$('ed-group').value)?'':state.settings.footer,clickable:false,skipped:$('ed-skip').checked}));
+        else box.appendChild(bubble(text,{time:t||state.settings.time,imageId:driveId(image),footer:footerFor(text,$('ed-group').value,!$('ed-nofooter').checked),clickable:false,skipped:$('ed-skip').checked}));
+        nofooterUi();
         const n=[...text].length; $('ed-count').textContent=n+' תווים';
       },150);
     }
-    ['ed-text','ed-time','ed-skip'].forEach(id=>$(id).addEventListener('input',preview));
-    ['ed-text','ed-date','ed-time','ed-skip','ed-group'].forEach(id=>{ $(id).addEventListener('input',backup); $(id).addEventListener('change',backup); });
+    // the per-post choice says why it does nothing when the footer can't go out anyway
+    function nofooterUi(){
+      const why=!footerOn()?'כבויה לכל ההודעות ב„⚙️ הגדרות”':$('ed-group').value?'ממילא לא נוספת בהודעה לקבוצה':'';
+      $('ed-nofooter').disabled=!!why||!!(editing&&editing.sent);
+      $('ed-nofooter-box').classList.toggle('off',!!why);
+      $('ed-nofooter-label').textContent='בלי השורה „כל הפוסטים הקודמים” בסוף ההודעה הזאת'+(why?' ('+why+')':'');
+    }
+    ['ed-text','ed-time','ed-skip','ed-nofooter'].forEach(id=>$(id).addEventListener('input',preview));
+    $('ed-nofooter').addEventListener('change',preview);
+    ['ed-text','ed-date','ed-time','ed-skip','ed-group','ed-nofooter'].forEach(id=>{ $(id).addEventListener('input',backup); $(id).addEventListener('change',backup); });
     $('ed-time').addEventListener('change',preview);
     let shortTimer=null, shortening=false;
     function scheduleShorten(ms){ clearTimeout(shortTimer); shortTimer=setTimeout(shortenNow,ms); }
@@ -927,7 +977,7 @@
       // a post that will go out is checked for typos first; a draft kept as a draft is not
       const goesOut=!auto&&!$('ed-skip').checked&&(approve===true||!(editing&&editing.draft));
       if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור')) return;
-      const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value};
+      const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       if(auto) body.draft=true;
       const wasQueued=!!(editing&&!editing.draft&&!editing.skipped);
@@ -956,7 +1006,7 @@
       const text=$('ed-text').value;
       if(!text.trim()){ say('ההודעה ריקה',true); return; }
       setBusy(true); say('שולח אליך לבדיקה…');
-      try{ await apiJson('/test-send',{method:'POST',json:{text,image,group:$('ed-group').value}}); say("🧪 נשלחה לצ'אט שלך עם עצמך בוואטסאפ ✓"); }
+      try{ await apiJson('/test-send',{method:'POST',json:{text,image,group:$('ed-group').value,no_footer:$('ed-nofooter').checked}}); say("🧪 נשלחה לצ'אט שלך עם עצמך בוואטסאפ ✓"); }
       catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
     $('ed-delete').onclick=async()=>{
@@ -976,7 +1026,7 @@
       if(!confirm('לשלוח עכשיו, כמו שזה כתוב כאן, ל'+where.join(' ול')+'?\nההודעה יוצאת מיד לכל החברים, ואי אפשר להחזיר אותה.')) return;
       setBusy(true); say('שולח…');
       try{
-        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also]})});
+        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
       }catch(e){ say(e.message,true); } finally{ setBusy(false); }
