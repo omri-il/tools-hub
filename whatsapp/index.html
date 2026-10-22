@@ -203,6 +203,9 @@
     .fab{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:15;width:58px;height:58px;border-radius:18px;border:0;
          background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none}
     .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    /* the page never moves sideways on a phone, whatever is too wide inside it (clip keeps the sticky tabs) */
+    html{overflow-x:clip}
+    .day>*,.apv-item>*,.ev,.item{min-width:0}
     @media (hover:none){ .draghint{display:none} }
     @media (display-mode:standalone){ .back{display:none} }
     @media (max-width:760px){
@@ -211,8 +214,9 @@
       .masthead{margin-bottom:8px}
       .lede{display:none}
       h1{font-size:1.55rem;margin-top:2px}
-      .statusbar{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin:10px -10px;padding:0 10px;scrollbar-width:none}
-      .pill{white-space:nowrap}
+      /* the pills wrap: a sideways-scrolling row stuck out of the page on the left on Omri's phone (2026-10-22) */
+      .statusbar{margin:10px 0;gap:6px;font-size:.8rem}
+      .pill{padding:4px 10px}
       .tabs{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -10px 12px;padding:8px 10px}
       .tab{flex:1;padding:10px 4px}
       h2{margin:18px 2px 8px}
