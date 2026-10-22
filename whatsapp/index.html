@@ -6,6 +6,10 @@
   <meta name="robots" content="noindex,nofollow" />
   <title>פוסטים לוואטסאפ</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <!-- the app on the phone (a PWA, 2026-10-22): installed from Chrome, shares come in, notifications -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0c0d10">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
   <style>
@@ -180,11 +184,56 @@
     .tablewrap{overflow-x:auto}
     footer{margin-top:30px;text-align:center;color:var(--faint);font-size:.8rem}
     footer a{color:var(--muted)}
+    /* drafts waiting for approval, at the top of the board */
+    .apv{background:var(--card);border:1px solid rgba(196,181,253,.45);border-radius:14px;padding:4px 14px;margin-bottom:10px}
+    .apv-item{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+    .apv-item:first-child{border-top:0}
+    .apv-when{font-size:.84rem;color:#c4b5fd}
+    .apv-text{white-space:pre-line;overflow-wrap:anywhere;font-size:.9rem;max-height:6.6em;overflow:hidden;cursor:pointer}
+    .apv-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .apv-btns .btn{padding:8px 14px;font-size:.9rem}
+    .apv-none{color:var(--faint);font-size:.86rem;margin:0 4px 8px}
+    /* the app on the phone: install, notifications, the new-post button */
+    .appbar{display:flex;flex-direction:column;gap:8px;max-width:640px;margin:0 auto 14px}
+    .appbar:empty{display:none}
+    .banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid rgba(37,211,102,.4);border-radius:12px;padding:10px 12px;font-size:.9rem}
+    .banner span{flex:1;min-width:180px}
+    .banner .btn{padding:8px 14px;font-size:.88rem}
+    .banner .x{background:none;border:0;color:var(--faint);font-size:1.1rem;cursor:pointer;padding:4px}
+    .fab{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:15;width:58px;height:58px;border-radius:18px;border:0;
+         background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none}
+    .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    @media (hover:none){ .draghint{display:none} }
+    @media (display-mode:standalone){ .back{display:none} }
     @media (max-width:760px){
-      .day{grid-template-columns:1fr}
-      .editor{grid-template-columns:1fr}
+      body{padding:12px 10px 96px}
+      .back{margin-bottom:6px}
+      .masthead{margin-bottom:8px}
+      .lede{display:none}
+      h1{font-size:1.55rem;margin-top:2px}
+      .statusbar{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin:10px -10px;padding:0 10px;scrollbar-width:none}
+      .pill{white-space:nowrap}
+      .tabs{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -10px 12px;padding:8px 10px}
+      .tab{flex:1;padding:10px 4px}
+      h2{margin:18px 2px 8px}
+      .day{grid-template-columns:1fr;padding:12px;gap:10px}
+      .chat{padding:10px 8px}
+      .bubble,.sugpost{max-width:100%}
+      .events{grid-template-columns:1fr}
       .overlay{padding:0}
-      .editor{border-radius:0;min-height:100vh}
+      .editor{grid-template-columns:1fr;border-radius:0;min-height:100vh;min-height:100dvh;padding:14px 12px 0;gap:6px;border:0}
+      input[type=date],input[type=time],textarea,select,.drivelink{font-size:16px}  /* no zoom on focus */
+      textarea{min-height:38vh}
+      .tb{min-width:44px;height:40px}
+      .emojis{width:100%}
+      .emojis button{width:44px;height:44px}
+      .actions{position:sticky;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);margin:0 -12px;
+               padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+      .actions .msg{flex-basis:100%;order:-1}
+      .actions .spacer{display:none}
+      .actions .btn{padding:12px 14px;flex:1 1 auto}
+      .fab{display:block}
+      table{font-size:.8rem}
     }
   </style>
 </head>
@@ -197,6 +246,7 @@
       <p class="lede">ערוץ העדכונים של קהילת „בינה בהוראה”. כותבים כאן, וההודעה יוצאת לבד ביום ובשעה שלה.</p>
     </header>
     <div class="statusbar" id="statusbar"></div>
+    <div class="appbar" id="appbar"></div>
     <nav class="tabs">
       <button class="tab active" data-pane="board">📅 הלוח</button>
       <button class="tab" data-pane="results">🏆 מה עבד</button>
@@ -211,9 +261,21 @@
         <p class="hint" id="set-footer-hint">רק בערוץ העדכונים. אפשר לוותר עליה גם בהודעה אחת, בעורך.</p>
         <span class="msg" id="set-msg"></span>
       </div>
+      <div class="setting" id="set-push-box">
+        <label class="check"><input type="checkbox" id="set-push"> 🔔 התראות במכשיר הזה</label>
+        <p class="hint" id="set-push-hint">אותן הודעות שמגיעות בטלגרם: טיוטה שמחכה לאישור, הודעה שלא יצאה, מחר בלי הודעה, וואטסאפ מנותק. לחיצה על ההתראה פותחת את האפליקציה.</p>
+        <div class="row"><button class="btn ghost" id="set-push-test" hidden>לשלוח התראת בדיקה</button></div>
+        <span class="msg" id="set-push-msg"></span>
+      </div>
+      <div class="setting" id="set-install-box" hidden>
+        <p>📲 <b>להתקין כאפליקציה בטלפון:</b> פותחים את הדף הזה ב-Chrome באנדרואיד ← ⋮ למעלה ← „התקנת אפליקציה” (או „הוספה למסך הבית”). אחרי זה „פוסטים” מופיע במסך הבית וגם ברשימת השיתוף של כל אפליקציה.</p>
+        <div class="row"><button class="btn primary" id="set-install" hidden>📲 להתקין עכשיו</button></div>
+      </div>
     </section>
     <footer><p>פרטי · נשמר בגיליון <a id="sheetlink" href="#" target="_blank" rel="noopener">„פוסטים לוואטסאפ”</a> ב-Drive. מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p></footer>
   </div>
+
+  <button class="fab" id="fab" type="button" aria-label="הודעה חדשה" title="הודעה חדשה">✍️</button>
 
   <div class="overlay" id="overlay">
     <div class="editor" role="dialog" aria-modal="true">
@@ -600,6 +662,7 @@
       // today first; the days still ahead after it, week by week; the days gone by in the archive
       const ahead=s.weeks.map(w=>w.days.filter(d=>!d.past)).filter(ds=>ds.length);
       const gone=[...s.weeks.flatMap(w=>w.days.filter(d=>d.past)).reverse(),...(s.archive||[])];
+      renderApprovals(el);
       const first=ahead.length?ahead[0].shift():null;
       if(first){
         el.insertAdjacentHTML('beforeend','<h2>'+(first.today?'היום':'הבא בתור')+'</h2>');
@@ -635,7 +698,9 @@
     async function load(){
       try{
         state=await apiJson('/state?weeks='+weeks+'&back='+back);
-        renderStatus(); renderSettings(); renderBoard(); restoreBackup();
+        renderStatus(); renderSettings(); renderBoard();
+        if(started||!/[?&](share|new)\b/.test(location.search)) restoreBackup();
+        afterFirstLoad();
       }catch(e){ $('board').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
     }
 
@@ -772,8 +837,17 @@
       renderImage(); preview(); scheduleShorten(0);
       opened=fields();
       $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
+      // the phone's back button closes the editor (as "סגירה": what changed becomes a draft), not the app
+      if(!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); hideProof(); }
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); hideProof();
+      if(edHist){ edHist=false; try{ history.back(); }catch(_){ } } }
+    let edHist=false;
+    window.addEventListener('popstate',async()=>{
+      if(!edHist||!$('overlay').classList.contains('open')) return;
+      edHist=false; await leaveEditor();
+      if($('overlay').classList.contains('open')&&!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
+    });
 
     // ---- a check for typos before a post can go out (Omri, 2026-10-20, after "מוזמני" went to the community):
     // Gemini reads it (POST /proofread); mistakes found = a panel with each one and its fix, and the post
@@ -1044,6 +1118,172 @@
         closeEditor(); toast('✏️ ההודעה תוקנה בוואטסאפ'); await load();
       }catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
+
+    // ---- the app on the phone (a PWA, Omri 2026-10-22: "an Android app for my phone") ----
+    const STANDALONE=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+    const PUSH_OK='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+    let swReg=null, installEvt=null, pushInfo=null;
+    function lsGet(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
+    function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(_){ } }
+
+    // the next day a post goes out: today while its usual time is still ahead, else the next posting day
+    function nextPostDay(){
+      const days=state.weeks.flatMap(w=>w.days).filter(d=>!d.past&&d.post_day);
+      const d=days.find(d=>!(d.today&&state.now>=state.settings.time));
+      return (d||days[0]||{date:today()}).date;
+    }
+    function newPost(){ if(state) openEditor({date:nextPostDay()}); }
+    $('fab').onclick=newPost;
+
+    // drafts waiting for approval, first thing on the board (from the notification: ?view=approve)
+    function draftsAhead(){
+      return state.weeks.flatMap(w=>w.days).filter(d=>!d.past)
+        .flatMap(d=>d.posts.filter(p=>p.draft&&!p.sent).map(p=>({p,d})));
+    }
+    function renderApprovals(el){
+      const list=draftsAhead();
+      if(!list.length){ if(startView==='approve') el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור</h2><p class="apv-none">✓ אין טיוטות שמחכות לאישור.</p>'); return; }
+      el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור ('+list.length+')</h2>');
+      const box=document.createElement('div'); box.className='apv';
+      for(const {p,d} of list){
+        const it=document.createElement('div'); it.className='apv-item';
+        const ev=eventOf(p), md=ev?null:mediaOf(p);
+        const about=ev?' · 📅 '+esc(ev.name):md?' · '+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name):'';
+        it.innerHTML='<div class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+(p.group?' → '+esc(p.group_name):' · ערוץ העדכונים')+(p.image?' · 🖼':'')+about+'</div>'+
+          '<div class="apv-text" dir="auto">'+esc(p.text)+'</div><div class="apv-btns"></div>';
+        const btns=it.querySelector('.apv-btns'), ctx=ev||(md&&md.ev);
+        const ok=document.createElement('button'); ok.type='button'; ok.className='btn primary'; ok.textContent='✅ לאשר';
+        ok.onclick=()=>quickApprove(p,ctx);
+        const ed=document.createElement('button'); ed.type='button'; ed.className='btn ghost'; ed.textContent='✏️ לעריכה';
+        ed.onclick=()=>openEditor(p,ctx);
+        it.querySelector('.apv-text').onclick=()=>openEditor(p,ctx);
+        btns.append(ok,ed); box.appendChild(it);
+      }
+      el.appendChild(box);
+    }
+    // approve = the editor's own "✅ לאשר": the typo check runs, and shows what it found in the editor
+    async function quickApprove(p,ctx){
+      openEditor(p,ctx);
+      const when=p.date===today()?'היום':dm(p.date);
+      await save(true);
+      if(!$('overlay').classList.contains('open')) toast('✅ אושרה. יוצאת '+when+' ב-'+p.due+'.');
+    }
+
+    // what was shared into the app from another app (sw.js keeps it): a new post, open in the editor
+    async function openShare(){
+      let meta=null, blob=null;
+      try{
+        const c=await caches.open('wa-share'), base=location.href;
+        const m=await c.match(new URL('__share/meta',base).href);
+        if(m) meta=await m.json();
+        const i=await c.match(new URL('__share/image',base).href);
+        if(i) blob=await i.blob();
+        await c.delete(new URL('__share/meta',base).href); await c.delete(new URL('__share/image',base).href);
+      }catch(_){ }
+      if(!meta){ toast('השיתוף לא הגיע. נסו לשתף שוב',true); return; }
+      const title=(meta.title||'').trim(), text=(meta.text||'').trim(), url=(meta.url||'').trim();
+      const parts=[];
+      if(title&&!text.includes(title)) parts.push(text||url?'*'+title+'*':title);
+      if(text) parts.push(text);
+      if(url&&!text.includes(url)) parts.push(url);
+      openEditor({date:nextPostDay(),text:parts.join('\n\n')});
+      opened='';   // never saved: closing keeps it as a draft
+      $('ed-title').textContent='📥 מהשיתוף: הודעה חדשה';
+      say('„שמירה” = יוצאת ביום ובשעה שלה. „סגירה” = נשמרת כטיוטה.');
+      if(blob) upload(new File([blob],meta.name||'shared.jpg',{type:meta.type||blob.type||'image/jpeg'}));
+    }
+
+    // what the app was opened for: ?share=1 (a share), ?new=1 (the icon's shortcut), ?view=approve (a notification)
+    const startParams=new URLSearchParams(location.search);
+    const startView=startParams.get('view')||'';
+    let started=false;
+    function afterFirstLoad(){
+      if(started) return; started=true;
+      if(startParams.has('share')||startParams.has('new')||startParams.has('view')){
+        try{ history.replaceState(null,'',location.pathname); }catch(_){ }
+      }
+      if(startParams.has('share')) openShare();
+      else if(startParams.has('new')) newPost();
+      else if(startView==='approve'){ const h=$('approve'); if(h) h.scrollIntoView({block:'start'}); }
+      renderAppbar(); refreshPush();
+    }
+
+    // ---- install (Chrome on Android offers it; the button only says so) ----
+    window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installEvt=e; renderAppbar(); });
+    window.addEventListener('appinstalled',()=>{ installEvt=null; renderAppbar(); toast('📲 „פוסטים” הותקנה. היא במסך הבית.'); });
+    async function install(){ if(!installEvt) return; installEvt.prompt(); try{ await installEvt.userChoice; }catch(_){ } installEvt=null; renderAppbar(); }
+    $('set-install').onclick=install;
+    const PHONE=matchMedia('(pointer:coarse)').matches;
+    function renderAppbar(){
+      const bar=$('appbar'); bar.innerHTML='';
+      $('set-install-box').hidden=STANDALONE; $('set-install').hidden=!installEvt;
+      const banner=(text,btn,go,off)=>{
+        const b=document.createElement('div'); b.className='banner';
+        b.innerHTML='<span>'+text+'</span>';
+        const ok=document.createElement('button'); ok.type='button'; ok.className='btn primary'; ok.textContent=btn; ok.onclick=go;
+        const x=document.createElement('button'); x.type='button'; x.className='x'; x.textContent='✕'; x.title='לא עכשיו';
+        x.onclick=()=>{ lsSet(off,'1'); renderAppbar(); };
+        b.append(ok,x); bar.appendChild(b);
+      };
+      if(installEvt&&PHONE&&!STANDALONE&&lsGet('wa_install_off')!=='1')
+        banner('📲 להתקין את „פוסטים” כאפליקציה בטלפון: אייקון במסך הבית, ושיתוף ישר מכל אפליקציה.','להתקין',install,'wa_install_off');
+      if(STANDALONE&&pushInfo&&pushInfo.on&&!pushInfo.subscribed&&Notification.permission!=='denied'&&lsGet('wa_push_off')!=='1')
+        banner('🔔 להפעיל התראות בטלפון? טיוטה שמחכה לאישור, הודעה שלא יצאה, וואטסאפ מנותק.','להפעיל',()=>setPush(true),'wa_push_off');
+    }
+
+    // ---- notifications (the server: bot/push.py; the same messages as Telegram) ----
+    function b64u8(s){ const p='='.repeat((4-s.length%4)%4), raw=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));
+      return Uint8Array.from([...raw].map(c=>c.charCodeAt(0))); }
+    function deviceName(){ const ua=navigator.userAgent;
+      return (/Android/.test(ua)?'Android':/iPhone|iPad/.test(ua)?'iPhone':/Windows/.test(ua)?'Windows':/Mac/.test(ua)?'Mac':'דפדפן')+(STANDALONE?' · אפליקציה':' · דפדפן'); }
+    function pushMsg(t,err){ $('set-push-msg').textContent=t; $('set-push-msg').className='msg'+(err?' err':''); }
+    async function refreshPush(){
+      const box=$('set-push');
+      if(!PUSH_OK){ box.disabled=true; $('set-push-hint').textContent='הדפדפן הזה לא מקבל התראות. באנדרואיד: מתקינים את האפליקציה מ-Chrome ומדליקים כאן.'; return; }
+      if(!swReg) return;
+      try{
+        const sub=await swReg.pushManager.getSubscription();
+        pushInfo=await apiJson('/push/key?endpoint='+encodeURIComponent(sub?sub.endpoint:''));
+        if(!pushInfo.on){ box.disabled=true; box.checked=false; pushMsg('ההתראות עוד לא הוגדרו בשרת'); return; }
+        // the browser still has it, the server lost it (or the other way round): put it back
+        if(sub&&!pushInfo.subscribed&&Notification.permission==='granted'){
+          await apiJson('/push/subscribe',{method:'POST',json:{subscription:sub.toJSON(),device:deviceName()}}); pushInfo.subscribed=true; }
+        box.disabled=false; box.checked=!!(sub&&pushInfo.subscribed);
+        $('set-push-test').hidden=!box.checked;
+        if(Notification.permission==='denied') pushMsg('ההתראות חסומות לאתר הזה. פותחים את הגדרות האתר (🔒 ליד הכתובת, או פרטי האפליקציה) ומאפשרים התראות.',true);
+      }catch(e){ pushMsg(e.message,true); }
+      renderAppbar();
+    }
+    async function setPush(on){
+      const box=$('set-push'); box.disabled=true; pushMsg(on?'מפעיל…':'מכבה…');
+      try{
+        if(!swReg) swReg=await navigator.serviceWorker.ready;
+        if(on){
+          if(!pushInfo) pushInfo=await apiJson('/push/key');
+          const perm=await Notification.requestPermission();
+          if(perm!=='granted') throw new Error('ההתראות לא אושרו בדפדפן');
+          const sub=(await swReg.pushManager.getSubscription())||
+            await swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(pushInfo.key)});
+          await apiJson('/push/subscribe',{method:'POST',json:{subscription:sub.toJSON(),device:deviceName()}});
+          pushMsg('✓ ההתראות פועלות במכשיר הזה');
+        }else{
+          const sub=await swReg.pushManager.getSubscription();
+          if(sub){ await apiJson('/push/unsubscribe',{method:'POST',json:{endpoint:sub.endpoint}}); await sub.unsubscribe(); }
+          pushMsg('ההתראות כבויות במכשיר הזה. טלגרם ממשיך כרגיל.');
+        }
+      }catch(e){ pushMsg(e.message,true); }
+      await refreshPush();
+    }
+    $('set-push').addEventListener('change',()=>setPush($('set-push').checked));
+    $('set-push-test').onclick=async()=>{
+      pushMsg('שולח…');
+      try{ await apiJson('/push/test',{method:'POST'}); pushMsg('✓ נשלחה. היא אמורה להופיע עכשיו.'); }
+      catch(e){ pushMsg(e.message,true); }
+    };
+
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js').then(r=>{ swReg=r; if(started) refreshPush(); }).catch(()=>{});
+    }
 
     load();
   </script>

@@ -62,6 +62,11 @@ daily posts to the "בינה בהוראה" WhatsApp community. API `https://go.o
 `bot/wa_web.py` (systemd `content-machine-wa-web`), which checks `X-Session` by asking go-shortener. The posts
 live in the Google Sheet "פוסטים לוואטסאפ"; see content-machine CLAUDE.md → "WhatsApp post". For a local test,
 `localStorage.wa_api_base` overrides the API base.
+**It is also an Android app (a PWA, 2026-10-22):** `whatsapp/manifest.webmanifest` (scope `/whatsapp/`, icons in
+`whatsapp/icons/`, a share target, shortcuts `?new=1` / `?view=approve`) and `whatsapp/sw.js` (the page network-first,
+the share POST to `/whatsapp/share` kept in the `wa-share` cache → `?share=1`, push notifications). Installed from
+Chrome on the phone; under 760px the page has a phone layout. Notifications come from content-machine's
+`bot/push.py`; see its CLAUDE.md → "The app on Omri's Android phone". A change to `sw.js` → bump `SHELL`.
 
 **When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
 - **Public** → normal `<a class="tool-card">` in `index.html`.
