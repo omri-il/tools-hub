@@ -203,6 +203,24 @@
     .fab{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:15;width:58px;height:58px;border-radius:18px;border:0;
          background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none}
     .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    /* the other channels (⚙️) and a post's version for each (Omri, 2026-10-22) */
+    .chrow{display:grid;grid-template-columns:1.3fr 110px 1.4fr 36px;grid-template-areas:"n k u x";gap:6px;margin-top:8px}
+    .chrow .n{grid-area:n} .chrow .k{grid-area:k} .chrow .u{grid-area:u} .chrow .x{grid-area:x}
+    @media (max-width:760px){ .chrow{grid-template-columns:110px 1fr 40px;grid-template-areas:"n n x" "k u u";padding-bottom:8px;border-bottom:1px solid var(--line)}
+      .versions{border-radius:0;min-height:100vh;min-height:100dvh;border:0;padding:16px 12px 0} }
+    .chrow input,.chrow select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:.9rem;padding:7px 9px}
+    .chrow .x{background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--faint);cursor:pointer;font-size:1rem}
+    .versions{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(760px,100%);padding:20px}
+    .versions h3{font-size:1.15rem;margin-bottom:4px}
+    .vcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--panel)}
+    .vcard.done{border-color:rgba(37,211,102,.5)}
+    .vhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}
+    .vhead .kind{font-weight:400;font-size:.76rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 8px}
+    .vhead .clicks{font-weight:400;font-size:.8rem;color:var(--accent);margin-inline-start:auto}
+    .vtext{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.88rem;color:var(--muted);margin:8px 0;max-height:9em;overflow:auto;background:var(--bg);border-radius:8px;padding:8px 10px}
+    .vbtns{display:flex;gap:8px;flex-wrap:wrap}
+    .vbtns .btn{padding:8px 14px;font-size:.9rem}
+    .postbtns{display:flex;gap:6px;flex-wrap:wrap}
     /* the page never moves sideways on a phone, whatever is too wide inside it (clip keeps the sticky tabs) */
     html{overflow-x:clip}
     .day>*,.apv-item>*,.ev,.item{min-width:0}
@@ -264,6 +282,13 @@
         <label class="check"><input type="checkbox" id="set-footer"> להוסיף בסוף כל הודעה את השורה „כל הפוסטים הקודמים מחכים כאן” והקישור לסקול</label>
         <p class="hint" id="set-footer-hint">רק בערוץ העדכונים. אפשר לוותר עליה גם בהודעה אחת, בעורך.</p>
         <span class="msg" id="set-msg"></span>
+      </div>
+      <div class="setting" id="set-channels-box">
+        <p><b>📣 ערוצים נוספים</b></p>
+        <p class="hint">קבוצות פייסבוק, קבוצות וואטסאפ אחרות וכל מקום אחר שמדביקים בו את אותה הודעה. אחרי שליחה או אישור של הודעה עם קישור נפתחת גרסה לכל ערוץ: אותו טקסט, עם קישור משלו, כדי לראות כמה לחצו ונרשמו מכל ערוץ. ההדבקה עצמה ידנית. קישור לקבוצה הוא לא חובה, והוא מוסיף כפתור שפותח אותה.</p>
+        <div id="set-channels"></div>
+        <div class="row"><button class="btn ghost" id="set-ch-add" type="button">+ ערוץ</button><button class="btn primary" id="set-ch-save" type="button">שמירה</button></div>
+        <span class="msg" id="set-ch-msg"></span>
       </div>
       <div class="setting" id="set-push-box">
         <label class="check"><input type="checkbox" id="set-push"> 🔔 התראות במכשיר הזה</label>
@@ -330,6 +355,15 @@
         <button class="btn ghost" id="ed-send" title="מה שכתוב כאן יוצא מיד, בלי לחכות ליום ולשעה">📤 לשלוח עכשיו</button>
         <button class="btn danger" id="ed-delete" hidden>מחיקה</button>
       </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="vr-overlay">
+    <div class="versions" role="dialog" aria-modal="true" aria-labelledby="vr-title">
+      <h3 id="vr-title">📣 גרסאות לערוצים נוספים</h3>
+      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול.</p>
+      <div id="vr-list"></div>
+      <div class="actions" style="margin-top:14px"><button class="btn ghost" id="vr-close" type="button">סגירה</button><span class="msg" id="vr-msg"></span></div>
     </div>
   </div>
 
@@ -646,6 +680,11 @@
           fx.onclick=()=>{ if(Date.now()>p.deadline){ toast('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); fx.remove(); return; } openEditor(p); };
           it.appendChild(fx);
         }
+        // the same post for the other channels (Facebook groups…): sent, or approved and waiting
+        if(firstUrl(p.text)&&!p.draft&&!p.skipped){
+          const vb=document.createElement('button'); vb.type='button'; vb.className='fixsent'; vb.textContent='📣 גרסאות לערוצים';
+          vb.onclick=()=>openVersions(p.text); it.appendChild(vb);
+        }
         if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
         chat.appendChild(it);
       }
@@ -710,6 +749,7 @@
 
     // ---- ⚙️ settings (kept on the server: they count from the next send) ----
     function renderSettings(){
+      renderChannels();
       $('set-footer').checked=footerOn();
       $('set-footer-hint').textContent=footerOn()
         ?'רק בערוץ העדכונים. אפשר לוותר עליה גם בהודעה אחת, בעורך.'
@@ -726,6 +766,85 @@
       }catch(e){ box.checked=!on; $('set-msg').textContent=e.message; $('set-msg').className='msg err'; }
       finally{ box.disabled=false; }
     });
+
+    // ---- 📣 the other channels, and a post's version for each (Omri, 2026-10-22: "when I send, it pops up
+    // more versions of the same message with the links of the different channels"). Copy only: Facebook
+    // has no way in, and Omri chose to paste in WhatsApp groups himself too. ----
+    const CH_KINDS={facebook:'פייסבוק',whatsapp:'וואטסאפ',other:'אחר'};
+    let chDirty=false;
+    function channels(){ return (state&&state.settings&&state.settings.channels)||[]; }
+    function chRow(c){
+      const r=document.createElement('div'); r.className='chrow'; r.dataset.id=c.id||'';
+      r.innerHTML='<input class="n" placeholder="שם, למשל: פייסבוק – מורים ו-AI" dir="auto">'+
+        '<select class="k">'+Object.entries(CH_KINDS).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select>'+
+        '<input class="u" placeholder="קישור לקבוצה (לא חובה)" dir="ltr">'+
+        '<button class="x" type="button" title="להסיר">✕</button>';
+      r.querySelector('.n').value=c.name||''; r.querySelector('.k').value=c.kind||'facebook'; r.querySelector('.u').value=c.url||'';
+      r.querySelector('.x').onclick=()=>{ r.remove(); chDirty=true; };
+      r.addEventListener('input',()=>{ chDirty=true; });
+      return r;
+    }
+    function renderChannels(){
+      if(chDirty) return;   // a list being edited is not wiped by a reload
+      const box=$('set-channels'); box.innerHTML='';
+      for(const c of channels()) box.appendChild(chRow(c));
+      if(!channels().length) box.appendChild(chRow({}));
+    }
+    $('set-ch-add').onclick=()=>{ const r=chRow({}); $('set-channels').appendChild(r); r.querySelector('.n').focus(); chDirty=true; };
+    $('set-ch-save').onclick=async()=>{
+      const list=[...$('set-channels').querySelectorAll('.chrow')].map(r=>({id:r.dataset.id,name:r.querySelector('.n').value.trim(),
+        kind:r.querySelector('.k').value,url:r.querySelector('.u').value.trim()})).filter(c=>c.name);
+      $('set-ch-msg').textContent='שומר…'; $('set-ch-msg').className='msg'; $('set-ch-save').disabled=true;
+      try{
+        const r=await apiJson('/channels',{method:'PUT',json:{channels:list}});
+        Object.assign(state.settings,r.settings); chDirty=false; renderChannels(); renderBoard();
+        $('set-ch-msg').textContent='✓ נשמר ('+channels().length+' ערוצים)';
+      }catch(e){ $('set-ch-msg').textContent=e.message; $('set-ch-msg').className='msg err'; }
+      finally{ $('set-ch-save').disabled=false; }
+    };
+
+    function showSettings(){ document.querySelector('.tab[data-pane="settings"]').click(); $('set-channels-box').scrollIntoView({block:'start'}); }
+    async function copyText(t){
+      try{ await navigator.clipboard.writeText(t); return true; }
+      catch(_){ const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
+        ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(_){ } ta.remove(); return ok; }
+    }
+    function closeVersions(){ $('vr-overlay').classList.remove('open'); }
+    $('vr-close').onclick=closeVersions;
+    $('vr-overlay').addEventListener('click',e=>{ if(e.target===$('vr-overlay')) closeVersions(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('vr-overlay').classList.contains('open')) closeVersions(); });
+    async function openVersions(text){
+      const list=$('vr-list'); list.innerHTML=''; $('vr-msg').textContent=''; $('vr-msg').className='msg';
+      $('vr-overlay').classList.add('open');
+      if(!channels().length){
+        list.innerHTML='<p class="evnote" style="margin-top:12px">עוד אין ערוצים ברשימה. מוסיפים אותם פעם אחת ב„⚙️ הגדרות”, ומאז כל הודעה מקבלת גרסה לכל אחד.</p>';
+        const b=document.createElement('button'); b.className='btn primary'; b.type='button'; b.textContent='⚙️ להוסיף ערוצים';
+        b.onclick=()=>{ closeVersions(); showSettings(); }; list.appendChild(b); return;
+      }
+      $('vr-msg').textContent='מכין קישור לכל ערוץ…';
+      try{
+        const r=await apiJson('/versions',{method:'POST',json:{text}});
+        $('vr-msg').textContent='';
+        for(const v of r.versions){
+          const c=v.channel, card=document.createElement('div'); card.className='vcard';
+          card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+'</span>'+
+            (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vbtns"></div>';
+          card.querySelector('.vtext').textContent=v.text;
+          const btns=card.querySelector('.vbtns');
+          const copied=async(open)=>{
+            if(!await copyText(v.text)){ $('vr-msg').textContent='ההעתקה לא הצליחה: סמנו את הטקסט והעתיקו ידנית'; $('vr-msg').className='msg err'; return; }
+            card.classList.add('done'); $('vr-msg').className='msg';
+            $('vr-msg').textContent='📋 הועתק ל„'+c.name+'”'+(open?'. עכשיו מדביקים בקבוצה שנפתחה':'');
+            if(open) window.open(c.url,'_blank','noopener');
+          };
+          if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn primary'; a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
+          const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
+          list.appendChild(card);
+        }
+      }catch(e){ $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
+    }
+    // after a send or an approve: pops up by itself only for a post with a link, once channels are listed
+    function offerVersions(text){ if(firstUrl(text)&&channels().length) openVersions(text); }
 
     // ---- results ----
     let results=null, sortKey='at', sortDir=-1;
@@ -1069,6 +1188,7 @@
         for(const jid of also){ say('שומר עותק ל'+groupName(jid)+'…');
           await apiJson('/posts',{method:'POST',json:Object.assign({},body,{group:jid,approve:false,draft:asDraft})}); }
         closeEditor(); await load();
+        if(approve===true&&!auto&&!body.skip) offerVersions(body.text);
       }catch(e){ say((auto?'לא נשמר כטיוטה: ':'')+e.message,true); }
       finally{ setBusy(false); }
     }
@@ -1107,6 +1227,7 @@
         await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
+        offerVersions(text);
       }catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
     // a sent post's typo, fixed in WhatsApp itself (within 15 minutes of the send)
