@@ -186,13 +186,55 @@
     footer a{color:var(--muted)}
     /* drafts waiting for approval, at the top of the board */
     .apv{background:var(--card);border:1px solid rgba(196,181,253,.45);border-radius:14px;padding:4px 14px;margin-bottom:10px}
-    .apv-item{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+    .apv-item{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid var(--line)}
     .apv-item:first-child{border-top:0}
-    .apv-when{font-size:.84rem;color:#c4b5fd}
-    .apv-text{white-space:pre-line;overflow-wrap:anywhere;font-size:.9rem;max-height:6.6em;overflow:hidden;cursor:pointer}
+    .apv-head{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .apv-when{font-size:.95rem;font-weight:700;color:var(--ink);margin-inline-end:4px}
+    .apv-head .chip{font-size:.74rem;padding:1px 9px}
+    .chip.bot{color:var(--muted)}
+    .apv-text{white-space:pre-line;overflow-wrap:anywhere;font-size:.92rem;line-height:1.55;cursor:pointer;color:var(--ink);
+              display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
+    .apv-text.open{display:block;-webkit-line-clamp:unset}
+    .apv-more{align-self:flex-start;background:none;border:0;color:#c4b5fd;font-family:inherit;font-size:.84rem;cursor:pointer;padding:0}
     .apv-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .apv-btns[hidden]{display:none}
     .apv-btns .btn{padding:8px 14px;font-size:.9rem}
+    .btn.reject{background:transparent;border:1px solid rgba(248,113,113,.45);color:var(--danger)}
+    .btn.reject:hover{background:rgba(248,113,113,.08)}
+    .apv-why{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:10px 12px}
+    .apv-why p{font-size:.86rem;color:var(--muted)}
+    .apv-why .reasons{display:flex;flex-wrap:wrap;gap:6px}
+    .reason{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px;font-family:inherit;font-size:.86rem;cursor:pointer}
+    .reason:hover{border-color:var(--danger);color:var(--danger)}
+    .reason.plain{color:var(--muted)} .reason.back{border:0;color:var(--faint)}
+    .apv-gone{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+    .apv-gone:first-child{border-top:0}
+    .apv-gone .btn{padding:6px 12px;font-size:.86rem}
     .apv-none{color:var(--faint);font-size:.86rem;margin:0 4px 8px}
+    #toast .undo{background:none;border:0;color:var(--accent);font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;margin-inline-start:12px;padding:0}
+    /* 🧠 what was learned from the drafts */
+    .lrn-intro{color:var(--muted);font-size:.9rem;margin:0 4px 12px;max-width:720px}
+    .lrn-kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+    .lrn{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .lrn.stopped{border-style:dashed;opacity:.75}
+    .lrn h4{font-size:.95rem;font-weight:700;line-height:1.35}
+    .lrn .bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.06)}
+    .lrn .bar i{display:block;height:100%}
+    .lrn .bar .b-ok{background:var(--accent)} .lrn .bar .b-ed{background:#c4b5fd} .lrn .bar .b-no{background:var(--danger)} .lrn .bar .b-ig{background:var(--faint)}
+    .lrn .nums{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;color:var(--muted)}
+    .lrn .nums b{color:var(--ink);font-variant-numeric:tabular-nums}
+    .lrn .why{font-size:.78rem;color:var(--faint)}
+    .lrn .state{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:auto}
+    .lrn .state .btn{padding:5px 12px;font-size:.82rem}
+    .lrn .warn{color:var(--warn);font-size:.8rem}
+    .lrn-empty{color:var(--faint);font-size:.84rem;margin:8px 4px}
+    .edits{display:flex;flex-direction:column;gap:10px}
+    .edit{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+    .edit .ehead{font-size:.8rem;color:var(--muted);margin-bottom:8px}
+    .edit .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .edit .pair div{white-space:pre-line;overflow-wrap:anywhere;font-size:.84rem;line-height:1.5;background:var(--panel);border-radius:10px;padding:8px 10px;max-height:14em;overflow:auto}
+    .edit .pair .was{color:var(--faint)} .edit .pair .now{color:var(--ink);box-shadow:inset 0 0 0 1px rgba(196,181,253,.4)}
+    .edit .pair small{display:block;font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:4px}
     /* the app on the phone: install, notifications, the new-post button */
     .appbar{display:flex;flex-direction:column;gap:8px;max-width:640px;margin:0 auto 14px}
     .appbar:empty{display:none}
@@ -256,6 +298,11 @@
       .actions .btn{padding:12px 14px;flex:1 1 auto}
       .fab{display:block}
       table{font-size:.8rem}
+      .tabs{gap:5px}
+      .tab{font-size:.8rem;white-space:nowrap;padding:10px 2px}
+      .apv-btns .btn{flex:1 1 0;padding:11px 8px;min-height:44px}
+      .reason{padding:9px 12px}
+      .edit .pair{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -272,11 +319,13 @@
     <nav class="tabs">
       <button class="tab active" data-pane="board">📅 הלוח</button>
       <button class="tab" data-pane="results">🏆 מה עבד</button>
+      <button class="tab" data-pane="learn">🧠 מה למדתי</button>
       <button class="tab" data-pane="settings">⚙️ הגדרות</button>
     </nav>
     <section class="pane active" id="board"><div class="loading">טוען…</div></section>
     <div id="toast"></div>
     <section class="pane" id="results"><div class="loading">טוען…</div></section>
+    <section class="pane" id="learn"><div class="loading">טוען…</div></section>
     <section class="pane" id="settings">
       <div class="setting">
         <label class="check"><input type="checkbox" id="set-footer"> להוסיף בסוף כל הודעה את השורה „כל הפוסטים הקודמים מחכים כאן” והקישור לסקול</label>
@@ -562,6 +611,14 @@
     function suggestionsFor(day){ return (state.events||[]).filter(e=>e.suggest&&e.suggest.date===day&&!e.posts.length); }
     function toast(t,err){ const el=$('toast'); el.textContent=t; el.className=err?'err':''; el.style.display='block';
       clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',err?6000:3500); }
+    // a toast with "↩️ ביטול" for a few seconds (after an approve)
+    function undoToast(t,onUndo,ms=6000){
+      const el=$('toast'); el.textContent=t; el.className=''; el.style.display='block';
+      const b=document.createElement('button'); b.type='button'; b.className='undo'; b.textContent='↩️ ביטול';
+      b.onclick=()=>{ clearTimeout(toast.t); el.style.display='none'; onUndo(); };
+      el.appendChild(b);
+      clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',ms);
+    }
 
     // ---- drag a post or a suggestion to another day ----
     let drag=null;
@@ -874,10 +931,61 @@
       try{ results=await apiJson('/results'); renderResults(); }
       catch(e){ $('results').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
     }
+    // ---- 🧠 what the system learned from the drafts (bot/learn.py) ----
+    function renderLearn(L){
+      const el=$('learn'), R=L.reasons||{};
+      el.innerHTML='<p class="lrn-intro">כל טיוטה שהמערכת כותבת נרשמת כאן: אושרה כמו שהיא, אושרה אחרי עריכה, או נדחתה ולמה. '+
+        'העריכות שלך הופכות לדוגמאות ל-Gemini כשהוא כותב פוסט על סרטון או סדנה, וסוג טיוטה שנדחה '+L.stop_after+' פעמים ברציפות '+
+        '(„לא רלוונטי”, „כבר פרסמתי” או בלי סיבה) מגיע אליך בטלגרם עם שאלה: להפסיק להציע אותו?</p>';
+      const used=L.kinds.filter(k=>k.made||k.stopped), unused=L.kinds.filter(k=>!k.made&&!k.stopped);
+      const grid=document.createElement('div'); grid.className='lrn-kinds';
+      for(const k of used){
+        const decided=k.as_is+k.edited+k.rejected+k.ignored, pct=n=>decided?(100*n/decided).toFixed(1):0;
+        const c=document.createElement('div'); c.className='lrn'+(k.stopped?' stopped':'');
+        const why=Object.entries(k.reasons).sort((a,b)=>b[1]-a[1]).map(([r,n])=>(R[r]||'בלי סיבה')+' ×'+n).join(' · ');
+        c.innerHTML='<h4>'+esc(k.label)+'</h4>'+
+          '<div class="bar" title="ירוק = כמו שהיא · סגול = אחרי עריכה · אדום = נדחתה · אפור = לא טופלה">'+
+            '<i class="b-ok" style="width:'+pct(k.as_is)+'%"></i><i class="b-ed" style="width:'+pct(k.edited)+'%"></i>'+
+            '<i class="b-no" style="width:'+pct(k.rejected)+'%"></i><i class="b-ig" style="width:'+pct(k.ignored)+'%"></i></div>'+
+          '<div class="nums"><span>✅ כמו שהיא <b>'+k.as_is+'</b></span><span>✏️ אחרי עריכה <b>'+k.edited+'</b></span>'+
+            '<span>🗑 נדחו <b>'+k.rejected+'</b></span>'+(k.ignored?'<span>⏭ לא טופלו <b>'+k.ignored+'</b></span>':'')+
+            (k.pending?'<span>📝 מחכות <b>'+k.pending+'</b></span>':'')+'</div>'+
+          (why?'<div class="why">למה נדחו: '+esc(why)+'</div>':'')+
+          (k.streak>=2&&!k.stopped?'<div class="warn">נדחתה '+k.streak+' פעמים ברציפות</div>':'')+
+          '<div class="state"></div>';
+        const st=c.querySelector('.state'), b=document.createElement('button'); b.type='button';
+        st.insertAdjacentHTML('afterbegin','<span>'+(k.stopped?'🛑 לא מוצעת יותר':'✓ המערכת מציעה אותה')+'</span>');
+        b.className='btn ghost'; b.textContent=k.stopped?'להחזיר':'להפסיק להציע';
+        b.onclick=async()=>{ b.disabled=true;
+          try{ renderLearn(await apiJson('/learn',{method:'PUT',json:{kind:k.kind,stopped:!k.stopped}}));
+            toast(k.stopped?'✓ חוזרת להציע: '+k.label:'🛑 לא תוצע יותר: '+k.label); }
+          catch(e){ toast(e.message,true); b.disabled=false; } };
+        st.appendChild(b); grid.appendChild(c);
+      }
+      if(used.length) el.appendChild(grid);
+      else el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין טיוטות רשומות. מהטיוטה הבאה שהמערכת כותבת (אירוע, סדנה או סרטון), מה שיקרה איתה יופיע כאן.</p>');
+      if(unused.length) el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד לא נכתבו: '+unused.map(k=>esc(k.label)).join(' · ')+'</p>');
+      el.insertAdjacentHTML('beforeend','<h2>✍️ העריכות שלך לפני אישור</h2>');
+      if(!L.edits.length){ el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין. טיוטה שנערכה ואז אושרה תופיע כאן: הנוסח של המערכת מול הנוסח שלך.</p>'); return; }
+      const list=document.createElement('div'); list.className='edits';
+      for(const e of L.edits){
+        const c=document.createElement('div'); c.className='edit';
+        c.innerHTML='<div class="ehead">'+esc(e.label)+(e.day?' · '+dm(e.day):'')+'</div><div class="pair">'+
+          '<div class="was" dir="auto"><small>מה שהמערכת כתבה</small></div><div class="now" dir="auto"><small>מה שיצא</small></div></div>';
+        c.querySelector('.was').append(e.draft); c.querySelector('.now').append(e.final);
+        list.appendChild(c);
+      }
+      el.appendChild(list);
+    }
+    async function loadLearn(){
+      try{ renderLearn(await apiJson('/learn')); }
+      catch(e){ $('learn').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
+    }
     document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
       document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
       document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id===t.dataset.pane));
       if(t.dataset.pane==='results') loadResults();
+      if(t.dataset.pane==='learn') loadLearn();
     });
 
     // ---- the editor ----
@@ -1265,33 +1373,84 @@
       return state.weeks.flatMap(w=>w.days).filter(d=>!d.past)
         .flatMap(d=>d.posts.filter(p=>p.draft&&!p.sent).map(p=>({p,d})));
     }
+    // "🗑 לא לשלוח" (Omri, 2026-10-28): why, in one tap, so the system learns what to suggest (bot/learn.py)
+    const REASONS=[['not_relevant','לא רלוונטי'],['wrong_group','קבוצה לא נכונה'],['wrong_time','יום או שעה לא מתאימים'],
+                   ['bad_text','הנוסח לא טוב'],['already_posted','כבר פרסמתי על זה']];
+    const UNDO_MS=5000;
+    const rejecting=new Map();   // row → the delete waiting UNDO_MS, so "↩️ ביטול" can still stop it
+    function reject(p,reason){
+      const go=()=>{ if(!rejecting.has(p.row)) return; rejecting.delete(p.row);
+        return apiJson('/posts/'+p.row+'?key='+encodeURIComponent(p.key)+'&reason='+encodeURIComponent(reason),{method:'DELETE',keepalive:true})
+          .then(load).catch(e=>{ toast(e.message,true); load(); }); };
+      rejecting.set(p.row,{timer:setTimeout(go,UNDO_MS),go,p});
+      renderBoard();
+    }
+    function unreject(row){ const r=rejecting.get(row); if(!r) return; clearTimeout(r.timer); rejecting.delete(row); renderBoard(); }
+    window.addEventListener('pagehide',()=>{ for(const r of [...rejecting.values()]){ clearTimeout(r.timer); r.go(); } });
     function renderApprovals(el){
-      const list=draftsAhead();
-      if(!list.length){ if(startView==='approve') el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור</h2><p class="apv-none">✓ אין טיוטות שמחכות לאישור.</p>'); return; }
+      const all=draftsAhead(), list=all.filter(({p})=>!rejecting.has(p.row)), gone=all.filter(({p})=>rejecting.has(p.row));
+      if(!all.length){ if(startView==='approve') el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור</h2><p class="apv-none">✓ אין טיוטות שמחכות לאישור.</p>'); return; }
       el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור ('+list.length+')</h2>');
       const box=document.createElement('div'); box.className='apv';
+      for(const {p} of gone){
+        const g=document.createElement('div'); g.className='apv-gone';
+        g.innerHTML='<span dir="auto">🗑 לא תצא: '+esc(p.text.split('\n')[0].slice(0,60))+'</span>';
+        const u=document.createElement('button'); u.type='button'; u.className='btn ghost'; u.textContent='↩️ ביטול';
+        u.onclick=()=>unreject(p.row); g.appendChild(u); box.appendChild(g);
+      }
       for(const {p,d} of list){
         const it=document.createElement('div'); it.className='apv-item';
-        const ev=eventOf(p), md=ev?null:mediaOf(p);
-        const about=ev?' · 📅 '+esc(ev.name):md?' · '+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name):'';
-        it.innerHTML='<div class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+(p.group?' → '+esc(p.group_name):' · ערוץ העדכונים')+(p.image?' · 🖼':'')+about+'</div>'+
-          '<div class="apv-text" dir="auto">'+esc(p.text)+'</div><div class="apv-btns"></div>';
-        const btns=it.querySelector('.apv-btns'), ctx=ev||(md&&md.ev);
+        const ev=eventOf(p), md=ev?null:mediaOf(p), ctx=ev||(md&&md.ev);
+        const chips=['<span class="chip to" dir="auto">→ '+esc(p.group?p.group_name:'ערוץ העדכונים')+'</span>'];
+        if(ev) chips.push('<span class="chip ev" dir="auto">📅 '+esc(ev.name)+'</span>');
+        else if(md) chips.push('<span class="chip md" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>');
+        if(p.image) chips.push('<span class="chip bot">🖼 עם תמונה</span>');
+        if(p.made_by) chips.push('<span class="chip bot" title="טיוטה שהמערכת כתבה">🤖 '+esc(p.made_by)+'</span>');
+        it.innerHTML='<div class="apv-head"><span class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+'</span>'+chips.join('')+'</div>'+
+          '<div class="apv-text" dir="auto"></div><button class="apv-more" type="button" hidden>עוד ▾</button><div class="apv-btns"></div>';
+        const txt=it.querySelector('.apv-text'), more=it.querySelector('.apv-more');
+        txt.textContent=p.text; txt.onclick=()=>openEditor(p,ctx);
+        more.onclick=()=>{ const open=txt.classList.toggle('open'); more.textContent=open?'פחות ▴':'עוד ▾'; };
+        const btns=it.querySelector('.apv-btns');
         const ok=document.createElement('button'); ok.type='button'; ok.className='btn primary'; ok.textContent='✅ לאשר';
         ok.onclick=()=>quickApprove(p,ctx);
         const ed=document.createElement('button'); ed.type='button'; ed.className='btn ghost'; ed.textContent='✏️ לעריכה';
         ed.onclick=()=>openEditor(p,ctx);
-        it.querySelector('.apv-text').onclick=()=>openEditor(p,ctx);
-        btns.append(ok,ed); box.appendChild(it);
+        const no=document.createElement('button'); no.type='button'; no.className='btn reject'; no.textContent='🗑 לא לשלוח';
+        no.onclick=()=>{ btns.hidden=true; it.appendChild(whyBox(p,()=>{ btns.hidden=false; })); };
+        btns.append(ok,ed,no); box.appendChild(it);
       }
       el.appendChild(box);
+      requestAnimationFrame(()=>box.querySelectorAll('.apv-item').forEach(it=>{
+        const t=it.querySelector('.apv-text'); it.querySelector('.apv-more').hidden=t.scrollHeight<=t.clientHeight+2; }));
+    }
+    function whyBox(p,back){
+      const w=document.createElement('div'); w.className='apv-why';
+      w.innerHTML='<p>למה לא? לחיצה אחת, והמערכת לומדת מה להציע (אפשר לבטל עוד 5 שניות).</p><div class="reasons"></div>';
+      const rs=w.querySelector('.reasons');
+      for(const [code,label] of [...REASONS,['','בלי סיבה']]){
+        const b=document.createElement('button'); b.type='button'; b.className='reason'+(code?'':' plain'); b.textContent=label;
+        b.onclick=()=>reject(p,code); rs.appendChild(b);
+      }
+      const c=document.createElement('button'); c.type='button'; c.className='reason back'; c.textContent='חזרה';
+      c.onclick=()=>{ w.remove(); back(); }; rs.appendChild(c);
+      return w;
     }
     // approve = the editor's own "✅ לאשר": the typo check runs, and shows what it found in the editor
     async function quickApprove(p,ctx){
       openEditor(p,ctx);
       const when=p.date===today()?'היום':dm(p.date);
       await save(true);
-      if(!$('overlay').classList.contains('open')) toast('✅ אושרה. יוצאת '+when+' ב-'+p.due+'.');
+      if(!$('overlay').classList.contains('open')) undoToast('✅ אושרה. יוצאת '+when+' ב-'+p.due+'.',()=>unapprove(p.row));
+    }
+    // "↩️ ביטול" right after an approve: the post waits for approval again
+    async function unapprove(row){
+      const p=state.weeks.flatMap(w=>w.days).flatMap(d=>d.posts).find(x=>x.row===row);
+      if(!p||p.sent||p.draft){ toast(p&&p.sent?'היא כבר יצאה, אי אפשר לבטל':'אין מה לבטל',!!(p&&p.sent)); return; }
+      try{
+        await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:p.date,time:p.time,text:p.text,image:p.image,group:p.group,draft:true}});
+        toast('↩️ בוטל: חזרה לטיוטה שמחכה לאישור'); await load();
+      }catch(e){ toast(e.message,true); }
     }
 
     // what was shared into the app from another app (sw.js keeps it): a new post, open in the editor
