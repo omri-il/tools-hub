@@ -13,11 +13,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
   <style>
-    :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#6c727c;
+    :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#848a94;
            --line:rgba(255,255,255,0.09); --accent:#25d366; --accent-ink:#04230f; --danger:#f87171; --warn:#fbbf24;
            --wa-bg:#0b141a; --bubble:#202c33; --wa-ink:#e9edef; --wa-muted:#8696a0; --wa-link:#53bdeb; --wa-name:#25d366;
            font-family:'Heebo',system-ui,sans-serif; }
     *{box-sizing:border-box;margin:0;padding:0}
+    ::placeholder{color:var(--faint);opacity:1}
+    ::selection{background:rgba(37,211,102,.32);color:var(--ink)}
     body{background:radial-gradient(90% 60% at 50% -10%,rgba(37,211,102,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:28px 16px 80px;line-height:1.5}
     .wrap{max-width:1040px;margin:0 auto}
     .back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:14px}
@@ -174,6 +176,46 @@
     .proof .pbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
     .fixsent{background:transparent;border:1px dashed rgba(37,211,102,.55);color:var(--accent);border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
     .spacer{flex:1}
+    /* the editor's ⋯: test, send now, delete, away from the main button */
+    .more-wrap{position:relative}
+    #ed-more{min-width:48px;padding:10px 14px;font-size:1.15rem;line-height:1}
+    .menu{position:absolute;bottom:calc(100% + 8px);left:0;z-index:6;min-width:270px;background:var(--panel);border:1px solid var(--line);
+          border-radius:12px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.5);display:flex;flex-direction:column}
+    .menu[hidden],.menu button[hidden]{display:none}
+    .menu button{background:none;border:0;border-radius:8px;color:var(--ink);font-family:inherit;font-size:.94rem;font-weight:600;text-align:start;
+                 padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+    .menu button small{font-weight:400;font-size:.78rem;color:var(--muted)}
+    .menu button:hover,.menu button:focus-visible{background:rgba(255,255,255,.06);outline:none}
+    .menu button:disabled{opacity:.5;cursor:default}
+    .menu .del{color:var(--danger);border-top:1px solid var(--line);border-radius:0 0 8px 8px;margin-top:4px}
+    /* the phone: writing or the preview, one at a time */
+    .ed-views{display:none}
+    /* a step that can't be taken back asks here, showing what will happen */
+    .sheet-ov{z-index:30;align-items:center}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(520px,100%);padding:18px 18px 16px;margin:auto;
+           display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.55)}
+    .sheet h3{font-size:1.1rem}
+    .sheet .to{list-style:none;display:flex;flex-direction:column;gap:3px;font-size:.92rem;color:var(--muted)}
+    .sheet .to b{color:var(--ink);font-weight:600}
+    .sheet .phone{min-height:0;max-height:46vh;overflow:auto}
+    .sh-note{font-size:.86rem;color:var(--warn)}
+    .sh-note:empty{display:none}
+    .sh-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .sh-btns .btn{flex:1 1 auto}
+    .btn.danger.solid{background:var(--danger);color:#2a0606;border:0}
+    /* the end of "today": all ready, or what is still missing */
+    .ready{display:flex;flex-direction:column;gap:6px;border-radius:14px;padding:12px 16px;margin:0 0 10px;font-size:.92rem}
+    .ready.ok{background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.35)}
+    .ready.ok b{color:var(--accent);font-size:1.05rem}
+    .ready.todo{background:var(--card);border:1px solid rgba(251,191,36,.4)}
+    .ready.todo b{color:var(--warn)}
+    .ready span{color:var(--muted)}
+    .ready ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+    .ready li{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .ready li .add{margin:0;padding:4px 12px}
+    .empty-add{width:100%;background:transparent;border:1.5px dashed rgba(255,255,255,.14);color:var(--muted);border-radius:8px;padding:10px;
+               font-family:inherit;font-size:.9rem;cursor:pointer}
+    .empty-add:hover{border-color:rgba(37,211,102,.5);color:var(--accent)}
     /* results */
     .report{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;white-space:pre-wrap;line-height:1.7;font-size:.94rem}
     .report a{color:var(--wa-link)}
@@ -192,9 +234,11 @@
     .apv-when{font-size:.95rem;font-weight:700;color:var(--ink);margin-inline-end:4px}
     .apv-head .chip{font-size:.74rem;padding:1px 9px}
     .chip.bot{color:var(--muted)}
-    .apv-text{white-space:pre-line;overflow-wrap:anywhere;font-size:.92rem;line-height:1.55;cursor:pointer;color:var(--ink);
-              display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}
-    .apv-text.open{display:block;-webkit-line-clamp:unset}
+    /* each draft as the bubble it will be (Omri chose this round, 2026-10-28); long ones folded */
+    .apv-chat{background:var(--wa-bg);border-radius:12px;padding:10px 14px 10px 10px;
+              background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:14px 14px}
+    .bubble.clamp .text{max-height:133px;overflow:hidden}
+    .bubble.clamp.cut .text{-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
     .apv-more{align-self:flex-start;background:none;border:0;color:#c4b5fd;font-family:inherit;font-size:.84rem;cursor:pointer;padding:0}
     .apv-btns{display:flex;gap:8px;flex-wrap:wrap}
     .apv-btns[hidden]{display:none}
@@ -243,7 +287,11 @@
     .banner .btn{padding:8px 14px;font-size:.88rem}
     .banner .x{background:none;border:0;color:var(--faint);font-size:1.1rem;cursor:pointer;padding:4px}
     .fab{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:15;width:58px;height:58px;border-radius:18px;border:0;
-         background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none}
+         background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none;
+         transition:transform .22s cubic-bezier(.16,1,.3,1),opacity .22s}
+    /* scrolling down it steps aside, so it never covers a button; scrolling up brings it back */
+    .fab.away{transform:translateY(calc(100% + 40px));opacity:0;pointer-events:none}
+    @media (prefers-reduced-motion:reduce){ .fab{transition:none} }
     .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     /* the other channels (⚙️) and a post's version for each (Omri, 2026-10-22) */
     .chrow{display:grid;grid-template-columns:1.3fr 110px 1.4fr 36px;grid-template-areas:"n k u x" "g g g .";gap:6px;margin-top:8px}
@@ -273,11 +321,11 @@
     @media (max-width:760px){
       body{padding:12px 10px 96px}
       .back{margin-bottom:6px}
-      .masthead{margin-bottom:8px}
-      .lede{display:none}
-      h1{font-size:1.55rem;margin-top:2px}
+      .masthead{margin-bottom:4px}
+      .lede,.kicker,.statusbar .pill.info{display:none}
+      h1{font-size:1.3rem;margin-top:0}
       /* the pills wrap: a sideways-scrolling row stuck out of the page on the left on Omri's phone (2026-10-22) */
-      .statusbar{margin:10px 0;gap:6px;font-size:.8rem}
+      .statusbar{margin:6px 0 8px;gap:6px;font-size:.8rem}
       .pill{padding:4px 10px}
       .tabs{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -10px 12px;padding:8px 10px}
       .tab{flex:1;padding:10px 4px}
@@ -287,7 +335,9 @@
       .bubble,.sugpost{max-width:100%}
       .events{grid-template-columns:1fr}
       .overlay{padding:0}
-      .editor{grid-template-columns:1fr;border-radius:0;min-height:100vh;min-height:100dvh;padding:14px 12px 0;gap:6px;border:0}
+      /* one column; the buttons at the bottom however short the page (the preview alone stretched a grid's rows) */
+      .editor{display:flex;flex-direction:column;border-radius:0;min-height:100vh;min-height:100dvh;padding:14px 12px 0;gap:6px;border:0}
+      .editor>.actions{margin-top:auto}
       input[type=date],input[type=time],textarea,select,.drivelink{font-size:16px}  /* no zoom on focus */
       textarea{min-height:38vh}
       .tb{min-width:44px;height:40px}
@@ -305,6 +355,16 @@
       .apv-btns .btn{flex:1 1 0;padding:11px 8px;min-height:44px}
       .reason{padding:9px 12px}
       .edit .pair{grid-template-columns:1fr}
+      .ed-views{display:flex;gap:6px;grid-column:1/-1;margin:2px 0 6px}
+      .ed-views button{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--muted);font-family:inherit;
+                       font-size:.9rem;font-weight:600;padding:9px 6px;cursor:pointer}
+      .ed-views button.on{background:rgba(37,211,102,.14);border-color:rgba(37,211,102,.5);color:var(--ink)}
+      .editor[data-view=preview] .ed-main,.editor:not([data-view=preview]) .ed-side{display:none}
+      .sheet-ov{align-items:flex-end}
+      .sheet{border-radius:16px 16px 0 0;margin:0;width:100%;border-width:1px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+      .sh-btns .btn{min-height:48px}
+      .menu{min-width:min(290px,calc(100vw - 24px))}
+      .menu button{padding:12px}
     }
   </style>
 </head>
@@ -358,9 +418,10 @@
   <button class="fab" id="fab" type="button" aria-label="הודעה חדשה" title="הודעה חדשה">✍️</button>
 
   <div class="overlay" id="overlay">
-    <div class="editor" role="dialog" aria-modal="true">
+    <div class="editor" id="editor" role="dialog" aria-modal="true" aria-labelledby="ed-title">
       <h3 id="ed-title">הודעה חדשה</h3>
-      <div>
+      <div class="ed-views" role="group" aria-label="תצוגה"><button type="button" data-view="write" class="on">✍️ כתיבה</button><button type="button" data-view="preview">👁 איך זה ייראה</button></div>
+      <div class="ed-main">
         <div class="row2">
           <div class="field"><label for="ed-date">תאריך</label><input type="date" id="ed-date"></div>
           <div class="field"><label for="ed-time">מתי ביום</label><select id="ed-time"></select><div class="hint" id="ed-time-hint"></div></div>
@@ -389,7 +450,7 @@
         <label class="check" id="ed-nofooter-box"><input type="checkbox" id="ed-nofooter"> <span id="ed-nofooter-label">בלי השורה „כל הפוסטים הקודמים” בסוף ההודעה הזאת</span></label>
         <label class="check"><input type="checkbox" id="ed-skip"> לא לשלוח את ההודעה הזאת (נשמרת, אבל לא יוצאת)</label>
       </div>
-      <div>
+      <div class="ed-side">
         <label id="ed-where">כך זה ייראה בערוץ העדכונים</label>
         <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
         <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים; מכבים אותה כאן להודעה אחת, או ב„⚙️ הגדרות” לכולן). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
@@ -398,14 +459,29 @@
       <div class="actions">
         <button class="btn primary" id="ed-fix" hidden>✏️ לתקן בוואטסאפ</button>
         <button class="btn primary" id="ed-approve" hidden>✅ לאשר לשליחה</button>
-<button class="btn primary" id="ed-save">שמירה</button>
+        <button class="btn primary" id="ed-save">שמירה</button>
         <button class="btn ghost" id="ed-cancel" title="מה שנכתב נשמר כטיוטה">סגירה</button>
-        <button class="btn ghost" id="ed-test" title="ההודעה כמו שהיא תצא, לצ'אט שלך עם עצמך בוואטסאפ. לא נשמרת ולא נספרת.">🧪 לשלוח לי לבדיקה</button>
-        <span class="msg" id="ed-msg"></span>
+        <span class="msg" id="ed-msg" role="status"></span>
         <span class="spacer"></span>
-        <button class="btn ghost" id="ed-send" title="מה שכתוב כאן יוצא מיד, בלי לחכות ליום ולשעה">📤 לשלוח עכשיו</button>
-        <button class="btn danger" id="ed-delete" hidden>מחיקה</button>
+        <!-- one main button; the rest behind ⋯, so "send now" never sits next to it (Omri chose this round, 2026-10-28) -->
+        <div class="more-wrap">
+          <button class="btn ghost" id="ed-more" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="עוד פעולות" title="עוד פעולות">⋯</button>
+          <div class="menu" id="ed-menu" role="menu" hidden>
+            <button type="button" role="menuitem" id="ed-test">🧪 לשלוח לי לבדיקה<small>לצ'אט שלך עם עצמך. לא נשמרת ולא נספרת.</small></button>
+            <button type="button" role="menuitem" id="ed-send">📤 לשלוח עכשיו…<small>יוצאת מיד, בלי לחכות ליום ולשעה</small></button>
+            <button type="button" role="menuitem" class="del" id="ed-delete" hidden>🗑 מחיקה</button>
+          </div>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <div class="overlay sheet-ov" id="sh-overlay">
+    <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="sh-title">
+      <h3 id="sh-title"></h3>
+      <div id="sh-body"></div>
+      <p class="sh-note" id="sh-note"></p>
+      <div class="sh-btns"><button class="btn primary" id="sh-go" type="button"></button><button class="btn ghost" id="sh-back" type="button">חזרה</button></div>
     </div>
   </div>
 
@@ -560,8 +636,8 @@
         '<span class="pill '+(ok?'ok':'bad')+'">וואטסאפ: <b>'+esc(waText)+'</b></span>'+
         (sendable()||(s.whatsapp2||{}).state==='open'?(()=>{ const w2=s.whatsapp2||{}, t2={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק',down:'השירות לא עונה',connecting:'מתחבר…'}[w2.state]||w2.state;
           return '<span class="pill '+(w2.state==='open'?'ok':'bad')+'">052: <b>'+esc(t2)+'</b></span>'; })():'')+
-        '<span class="pill">הודעה בלי שעה יוצאת בסביבות <b>'+esc(s.settings.time)+'</b></span>'+
-        '<span class="pill">ימים: <b>ראשון–חמישי</b></span>';
+        '<span class="pill info">הודעה בלי שעה יוצאת בסביבות <b>'+esc(s.settings.time)+'</b></span>'+
+        '<span class="pill info">ימים: <b>ראשון–חמישי</b></span>';
       $('sheetlink').href=s.sheet;
     }
     function findPost(row){
@@ -715,15 +791,12 @@
       const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' 📣':'')+'</div>').join('');
       card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+evs+plan+'</aside><div class="chat"></div>';
       const aside=card.querySelector('aside');
-      if(!d.past){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
       const chat=card.querySelector('.chat');
       dropTarget(card,d);
-      const ghosts=d.past?[]:suggestionsFor(d.date);
-      if(!d.posts.length&&!ghosts.length){
-        const n=document.createElement('div'); n.className='none'+(d.past?' past':''); n.textContent=d.past?'לא נשלחה הודעה':'אין הודעה ליום הזה';
-        if(!d.past){ n.style.cursor='pointer'; n.onclick=()=>openEditor({date:d.date}); }
-        chat.appendChild(n);
-      }
+      const ghosts=d.past?[]:suggestionsFor(d.date), empty=!d.posts.length&&!ghosts.length;
+      if(!d.past&&!empty){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
+      if(empty&&d.past) chat.insertAdjacentHTML('beforeend','<div class="none past">לא נשלחה הודעה</div>');
+      else if(empty){ const n=document.createElement('button'); n.type='button'; n.className='empty-add'; n.textContent='+ הודעה ליום הזה'; n.onclick=()=>openEditor({date:d.date}); chat.appendChild(n); }
       for(const p of d.posts){
         const it=document.createElement('div'); it.className='item';
         const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
@@ -772,12 +845,13 @@
         el.insertAdjacentHTML('beforeend','<h2>'+(first.today?'היום':'הבא בתור')+'</h2>');
         el.appendChild(dayCard(first));
       }
+      renderReady(el,first);
       renderEvents(el);
       renderMedia(el);
       el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, או הצעה לאירוע, ליום אחר.</p>');
       for(const ds of ahead){
         if(!ds.length) continue;
-        const h=document.createElement('h2'); h.textContent=ds[0].label+' – '+ds[ds.length-1].label; el.appendChild(h);
+        const h=document.createElement('h2'); h.textContent=ds.length>1?ds[0].label+' – '+ds[ds.length-1].label:'יום '+ds[0].day+' '+ds[0].label; el.appendChild(h);
         for(const d of ds) el.appendChild(dayCard(d));
       }
       const more=document.createElement('button'); more.className='more';
@@ -785,6 +859,34 @@
       more.onclick=()=>{ weeks+=3; load(); };
       el.appendChild(more);
       renderArchive(el,gone);
+    }
+    // the end of "today" (Omri chose a simple "today" screen, 2026-10-28): "✓ הכול מוכן", or what is still missing
+    function renderReady(el,first){
+      const waiting=draftsAhead().filter(({p})=>!rejecting.has(p.row)).length;
+      const live=d=>d.posts.filter(p=>!p.skipped&&!p.draft&&!p.failed);
+      const name=d=>d.today?'היום':'יום '+d.day+' '+d.label;
+      const next=state.weeks.flatMap(w=>w.days).find(d=>!d.past&&d.post_day&&d!==first&&(!first||d.date>first.date));
+      const todo=[];
+      if(waiting) todo.push([waiting===1?'טיוטה אחת מחכה לאישור, למעלה':waiting+' טיוטות מחכות לאישור, למעלה']);
+      const failed=first?first.posts.filter(p=>p.failed).length:0;
+      if(failed) todo.push([(failed===1?'הודעה אחת לא יצאה':failed+' הודעות לא יצאו')+' '+(first.today?'היום':'ב'+name(first))]);
+      for(const d of [first,next]) if(d&&d.post_day&&!live(d).length&&!(d===first&&failed)) todo.push(['ל'+(d.today?'היום':name(d))+' עוד אין הודעה',d]);
+      const box=document.createElement('div');
+      if(!todo.length){
+        box.className='ready ok';
+        // whole sentences: "29.10: 2" read backwards right to left
+        const bits=[first,next].filter(d=>d&&d.post_day).map(d=>{ const ps=live(d), wait=ps.filter(p=>!p.sent).length, at=d.today?'היום':'ביום '+d.day+' '+d.label;
+          if(!wait) return ps.length===1?at+' יצאה הודעה אחת ✓':at+' יצאו '+ps.length+' הודעות ✓';
+          return wait===1?at+' מחכה הודעה אחת לשעה שלה':at+' מחכות '+wait+' הודעות לשעה שלהן'; });
+        box.innerHTML='<b>✓ הכול מוכן</b>'+(bits.length?'<span></span>':'');
+        if(bits.length) box.lastChild.textContent=bits.join(' · ');
+      }else{
+        box.className='ready todo'; box.innerHTML='<b>⏳ עוד לא הכול מוכן</b><ul></ul>';
+        for(const [t,d] of todo){ const li=document.createElement('li'); li.append(t);
+          if(d){ const a=document.createElement('button'); a.type='button'; a.className='add'; a.textContent='+ הודעה'; a.onclick=()=>openEditor({date:d.date}); li.appendChild(a); }
+          box.lastChild.appendChild(li); }
+      }
+      el.appendChild(box);
     }
     function renderArchive(el,gone){
       const box=document.createElement('details'); box.className='evs archive';
@@ -1068,11 +1170,12 @@
     }
     $('ed-group').addEventListener('change',()=>{ also.delete($('ed-group').value); renderSuggest(); preview(); });
     // the time of day: four choices, no minutes (Omri, 2026-10-18). The Sheet keeps HH:MM, "" = the usual time.
-    function timeSlots(){ return [['','☀️ אחר הצהריים · '+state.settings.time+' (הרגיל)'],['08:00','🌅 בוקר · 08:00'],['12:00','🕛 צהריים · 12:00'],['20:00','🌙 ערב · 20:00']]; }
+    // the time first: a phone's half-width box cut it off (2026-10-28)
+    function timeSlots(){ return [['','☀️ '+state.settings.time+' · הרגיל'],['08:00','🌅 08:00 · בוקר'],['12:00','🕛 12:00 · צהריים'],['20:00','🌙 20:00 · ערב']]; }
     function fillTimes(current){
       const sel=$('ed-time'); sel.innerHTML='';
       const slots=timeSlots();
-      if(current&&!slots.some(s=>s[0]===current)) slots.push([current,'🕒 '+current+' (כפי שנקבע)']);
+      if(current&&!slots.some(s=>s[0]===current)) slots.push([current,'🕒 '+current+' · כפי שנקבע']);
       for(const [v,label] of slots){ const o=document.createElement('option'); o.value=v; o.textContent=label; sel.appendChild(o); }
       sel.value=current;
     }
@@ -1082,23 +1185,21 @@
       fillGroups(p.group||''); renderSuggest();
       image=p.image||'';
       $('ed-title').textContent=editing?(editing.draft?'📝 טיוטה: עורכים ומאשרים':'עריכת הודעה'):'הודעה חדשה';
-      $('ed-approve').hidden=!(editing&&editing.draft);
-      $('ed-save').textContent=(editing&&editing.draft)?'שמירה כטיוטה':'שמירה';
       $('ed-date').value=p.date; fillTimes(p.time||''); $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
       $('ed-nofooter').checked=p.footer===false;
-      $('ed-time-hint').textContent='הרגיל יוצא עד רבע שעה אחרי '+state.settings.time+'. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
-      $('ed-delete').hidden=!editing;
+      $('ed-time-hint').textContent='הרגיל יוצא ב-'+state.settings.time+' או עד רבע שעה אחרי. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
       proofed=''; hideProof();
-      // a sent post: only its text can change, and only the "fix in WhatsApp" button sends it
-      const fix=!!(editing&&editing.sent);
-      ['ed-approve','ed-save','ed-send','ed-delete','ed-test'].forEach(id=>{ if(fix) $(id).hidden=true; });
-      if(!fix) $('ed-save').hidden=$('ed-send').hidden=$('ed-test').hidden=false;
-      $('ed-fix').hidden=!fix;
+      // one main button by the post's state: a draft → approve, a sent post → fix in WhatsApp, else save.
+      // A sent post: only its text can change, and only the "fix in WhatsApp" button sends it.
+      const fix=!!(editing&&editing.sent), draft=!!(editing&&editing.draft);
+      $('ed-fix').hidden=!fix; $('ed-approve').hidden=fix||!draft; $('ed-save').hidden=fix||draft;
+      $('ed-more').closest('.more-wrap').hidden=fix; $('ed-delete').hidden=!editing||fix; toggleMenu(false);
+      edView('write');
       ['ed-date','ed-time','ed-group','ed-skip'].forEach(id=>$(id).disabled=fix);
       $('ed-image').closest('.field').hidden=fix; $('ed-skip').closest('.check').hidden=fix;
       $('ed-nofooter-box').hidden=fix;   // a fix goes out with the footer as the post had it
-      $('ed-cancel').textContent=fix?'ביטול':'סגירה';
+      $('ed-cancel').textContent=fix?'ביטול':draft?'שמירה כטיוטה':'סגירה';
       if(fix){ $('ed-title').textContent='✏️ תיקון הודעה שכבר נשלחה';
         say('אפשר לתקן את הטקסט עד '+new Date(editing.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+'. בוואטסאפ יופיע ליד ההודעה „נערכה”.'); }
       if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
@@ -1108,12 +1209,14 @@
       // the phone's back button closes the editor (as "סגירה": what changed becomes a draft), not the app
       if(!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); hideProof();
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof();
       if(edHist){ edHist=false; try{ history.back(); }catch(_){ } } }
     let edHist=false;
     window.addEventListener('popstate',async()=>{
       if(!edHist||!$('overlay').classList.contains('open')) return;
-      edHist=false; await leaveEditor();
+      edHist=false;
+      if(sheetDone){ sheetDone(false); try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } return; }   // back = "חזרה" in the sheet
+      await leaveEditor();
       if($('overlay').classList.contains('open')&&!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     });
 
@@ -1122,12 +1225,17 @@
     // goes on only when Omri says so. The same text is not checked twice.
     let proofed='';
     function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-    async function proofGate(date,go){
+    async function proofread(text,date){
+      try{ return Object.assign(await apiJson('/proofread',{method:'POST',json:{text,date}}),{text}); }
+      catch(e){ return {ok:false,issues:[],error:e.message,text}; }
+    }
+    // pre: the check already run on this text (approve from the list), so it isn't run twice
+    async function proofGate(date,go,pre){
       const text=$('ed-text').value;
       if(proofed&&proofed===text) return true;
-      setBusy(true); say('🔎 בודק טעויות…');
-      let r;
-      try{ r=await apiJson('/proofread',{method:'POST',json:{text,date}}); }catch(e){ r={ok:false,issues:[],error:e.message}; }
+      setBusy(true);
+      let r=pre&&pre.text===text?pre:null;
+      if(!r){ say('🔎 בודק טעויות…'); r=await proofread(text,date); }
       if(r.ok&&!r.issues.length){ setBusy(false); proofed=text; say('✓ לא נמצאו טעויות'); return true; }
       say('');
       return new Promise(resolve=>showProof(r,go,v=>{ setBusy(false); resolve(v); }));
@@ -1312,13 +1420,53 @@
     $('ed-text').addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
       if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(false); } } });
     function say(t,err){ $('ed-msg').textContent=t; $('ed-msg').className='msg'+(err?' err':''); }
-    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve','ed-test','ed-cancel','ed-fix'].forEach(id=>$(id).disabled=v); }
+    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve','ed-test','ed-cancel','ed-fix','ed-more'].forEach(id=>$(id).disabled=v); }
+
+    // ---- ⋯ : test, send now, delete ----
+    function toggleMenu(open){ $('ed-menu').hidden=!open; $('ed-more').setAttribute('aria-expanded',String(open));
+      if(open){ const f=$('ed-menu').querySelector('button:not([hidden])'); if(f) f.focus(); } }
+    $('ed-more').onclick=e=>{ e.stopPropagation(); toggleMenu($('ed-menu').hidden); };
+    $('ed-menu').addEventListener('click',e=>{ if(e.target.closest('button')) toggleMenu(false); });
+    document.addEventListener('click',e=>{ if(!$('ed-menu').hidden&&!e.target.closest('#ed-menu,#ed-more')) toggleMenu(false); });
+    // the phone: writing or the preview (the preview sat below the fold)
+    function edView(v){ $('editor').dataset.view=v; document.querySelectorAll('.ed-views button').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); }
+    document.querySelectorAll('.ed-views button').forEach(b=>b.onclick=()=>edView(b.dataset.view));
+
+    // ---- a step that can't be taken back asks here, showing what will happen (not the browser's confirm()) ----
+    let sheetDone=null;
+    function sheet({title,body,note,go,danger}){
+      return new Promise(res=>{
+        const ov=$('sh-overlay'), back=document.activeElement;
+        $('sh-title').textContent=title; $('sh-body').replaceChildren(...[].concat(body||[]));
+        $('sh-note').textContent=note||''; $('sh-go').textContent=go; $('sh-go').className='btn '+(danger?'danger solid':'primary');
+        ov.classList.add('open'); setTimeout(()=>$('sh-back').focus(),30);
+        const key=e=>{ if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation(); done(false); }
+          else if(e.key==='Tab'){ const a=$('sh-go'), b=$('sh-back'); if(document.activeElement===b&&!e.shiftKey){ e.preventDefault(); a.focus(); }
+            else if(document.activeElement===a&&e.shiftKey){ e.preventDefault(); b.focus(); } } };
+        const done=v=>{ if(!sheetDone) return; sheetDone=null; ov.classList.remove('open'); document.removeEventListener('keydown',key,true);
+          if(back&&back.focus) try{ back.focus(); }catch(_){ } res(v); };
+        sheetDone=done; document.addEventListener('keydown',key,true);
+        $('sh-go').onclick=()=>done(true); $('sh-back').onclick=()=>done(false);
+        ov.onclick=e=>{ if(e.target===ov) done(false); };
+      });
+    }
+    // the post as it will go out, in a phone frame, for the sheet
+    function sheetPreview(text,group,bar){
+      const ph=document.createElement('div'); ph.className='phone';
+      ph.innerHTML='<div class="bar"></div><div class="item"></div>'; ph.firstChild.textContent=bar;
+      ph.lastChild.appendChild(bubble(text,{time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),imageId:driveId(image),
+        footer:footerFor(text,group,!$('ed-nofooter').checked),clickable:false}));
+      return ph;
+    }
+    function groupOf(jid){ return (state.groups||[]).find(g=>jid?g.jid===jid:g.kind==='announce')||null; }
+
     // auto: the editor was closed without "save" → what changed is kept as a draft
-    async function save(approve,auto){
+    // pre: a typo check already run on this text (approve from the list)
+    async function save(approve,auto,pre){
       if(busy||(editing&&editing.sent)) return;
       // a post that will go out is checked for typos first; a draft kept as a draft is not
       const goesOut=!auto&&!$('ed-skip').checked&&(approve===true||!(editing&&editing.draft));
-      if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור')) return;
+      if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור',pre)) return;
       const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       if(auto) body.draft=true;
@@ -1341,7 +1489,9 @@
     $('ed-approve').onclick=()=>save(true);
     $('ed-cancel').onclick=leaveEditor;
     $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) leaveEditor(); });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')){ if(emojisOpen()){ toggleEmojis(false); $('ed-text').focus(); } else leaveEditor(); } });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')&&!sheetDone){
+      if(!$('ed-menu').hidden){ toggleMenu(false); $('ed-more').focus(); }
+      else if(emojisOpen()){ toggleEmojis(false); $('ed-text').focus(); } else leaveEditor(); } });
     // the tab closing with unsaved text: kept in this browser, and the browser asks first
     window.addEventListener('beforeunload',e=>{ if($('overlay').classList.contains('open')&&$('ed-text').value.trim()&&changed()){ saveBackup(); e.preventDefault(); e.returnValue=''; } });
     $('ed-test').onclick=async()=>{
@@ -1353,7 +1503,10 @@
       catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
     $('ed-delete').onclick=async()=>{
-      if(!editing||busy||!confirm('למחוק את ההודעה?')) return;
+      if(!editing||busy) return;
+      const first=$('ed-text').value.trim().split('\n')[0].slice(0,80);
+      const q=Object.assign(document.createElement('p'),{textContent:'„'+first+(first.length>=80?'…':'')+'”',dir:'auto'}); q.style.color='var(--muted)';
+      if(!await sheet({title:'🗑 למחוק את ההודעה?',body:q,note:editing.draft?'הטיוטה נמחקת מהגיליון ולא תצא.':'ההודעה נמחקת מהגיליון ולא תצא.',go:'🗑 למחוק',danger:true})) return;
       setBusy(true); say('מוחק…');
       try{ await apiJson('/posts/'+editing.row+'?key='+encodeURIComponent(editing.key),{method:'DELETE'}); closeEditor(); await load(); }
       catch(e){ say(e.message,true); } finally{ setBusy(false); }
@@ -1365,8 +1518,13 @@
       if(!$('ed-text').value.trim()){ say('ההודעה ריקה',true); return; }
       if(!await proofGate(today(),'לשלוח')) return;
       const text=$('ed-text').value;
-      const group=$('ed-group').value, where=[group,...also].map(j=>j?'קבוצה „'+groupName(j)+'”':'ערוץ העדכונים');
-      if(!confirm('לשלוח עכשיו, כמו שזה כתוב כאן, ל'+where.join(' ול')+'?\nההודעה יוצאת מיד לכל החברים, ואי אפשר להחזיר אותה.')) return;
+      const group=$('ed-group').value, where=[group,...also];
+      // where it goes and to how many, then the post itself
+      const to=document.createElement('ul'); to.className='to'; let total=0;
+      for(const j of where){ const g=groupOf(j), li=document.createElement('li'); total+=(g&&g.size)||0;
+        li.innerHTML='<b dir="auto"></b>'+(g&&g.size?' · '+g.size+' חברים':''); li.firstChild.textContent=j?'👥 '+groupName(j):'📢 ערוץ העדכונים'; to.appendChild(li); }
+      if(!await sheet({title:'📤 לשלוח עכשיו?',body:[to,sheetPreview(text,group,group?groupName(group):'בינה בהוראה 🧠')],
+        note:'יוצאת מיד, כמו שהיא כאן, ואי אפשר להחזיר אותה.',go:'📤 לשלוח עכשיו'+(total?' ל-'+total+' חברים':'')})) return;
       setBusy(true); say('שולח…');
       try{
         await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
@@ -1381,7 +1539,8 @@
       if(!$('ed-text').value.trim()){ say('ההודעה ריקה',true); return; }
       if(Date.now()>editing.deadline){ say('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); return; }
       if(!await proofGate(editing.date,'לשלוח את התיקון')) return;
-      if(!confirm('לתקן את ההודעה שכבר יצאה? כל מי שקיבל אותה יראה את הנוסח החדש, וליד ההודעה יופיע „נערכה”.')) return;
+      if(!await sheet({title:'✏️ לתקן את ההודעה שכבר יצאה?',body:sheetPreview($('ed-text').value,editing.group||'',editing.group?groupName(editing.group):'בינה בהוראה 🧠'),
+        note:'כל מי שקיבל אותה יראה את הנוסח החדש, וליד ההודעה יופיע „נערכה”.',go:'✏️ לתקן בוואטסאפ'})) return;
       setBusy(true); say('מתקן בוואטסאפ…');
       try{
         await apiJson('/edit-sent',{method:'POST',json:{row:editing.row,key:editing.key,text:$('ed-text').value}});
@@ -1404,6 +1563,9 @@
     }
     function newPost(){ if(state) openEditor({date:nextPostDay()}); }
     $('fab').onclick=newPost;
+    // it steps aside while scrolling down, so it never sits on a button (the next draft's "לא לשלוח" was under it)
+    let lastY=scrollY;
+    addEventListener('scroll',()=>{ const y=scrollY; if(Math.abs(y-lastY)<8) return; $('fab').classList.toggle('away',y>lastY&&y>60); lastY=y; },{passive:true});
 
     // drafts waiting for approval, first thing on the board (from the notification: ?view=approve)
     function draftsAhead(){
@@ -1444,13 +1606,15 @@
         if(p.image) chips.push('<span class="chip bot">🖼 עם תמונה</span>');
         if(p.made_by) chips.push('<span class="chip bot" title="טיוטה שהמערכת כתבה">🤖 '+esc(p.made_by)+'</span>');
         it.innerHTML='<div class="apv-head"><span class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+'</span>'+chips.join('')+'</div>'+
-          '<div class="apv-text" dir="auto"></div><button class="apv-more" type="button" hidden>עוד ▾</button><div class="apv-btns"></div>';
-        const txt=it.querySelector('.apv-text'), more=it.querySelector('.apv-more');
-        txt.textContent=p.text; txt.onclick=()=>openEditor(p,ctx);
-        more.onclick=()=>{ const open=txt.classList.toggle('open'); more.textContent=open?'פחות ▴':'עוד ▾'; };
+          '<div class="apv-chat"></div><button class="apv-more" type="button" hidden>עוד ▾</button><div class="apv-btns"></div>';
+        // the draft as the bubble it will be: *bold* bold, the footer, the picture or link card
+        const b=bubble(p.text,{time:p.due,imageId:p.image_id,footer:boardFooter(p)}), more=it.querySelector('.apv-more');
+        b.classList.add('clamp'); b.title='לחיצה פותחת לעריכה'; b.onclick=()=>openEditor(p,ctx);
+        it.querySelector('.apv-chat').appendChild(b);
+        more.onclick=()=>{ const open=!b.classList.toggle('clamp'); more.textContent=open?'פחות ▴':'עוד ▾'; };
         const btns=it.querySelector('.apv-btns');
         const ok=document.createElement('button'); ok.type='button'; ok.className='btn primary'; ok.textContent='✅ לאשר';
-        ok.onclick=()=>quickApprove(p,ctx);
+        ok.onclick=()=>quickApprove(p,ctx,ok);
         const ed=document.createElement('button'); ed.type='button'; ed.className='btn ghost'; ed.textContent='✏️ לעריכה';
         ed.onclick=()=>openEditor(p,ctx);
         const no=document.createElement('button'); no.type='button'; no.className='btn reject'; no.textContent='🗑 לא לשלוח';
@@ -1459,7 +1623,8 @@
       }
       el.appendChild(box);
       requestAnimationFrame(()=>box.querySelectorAll('.apv-item').forEach(it=>{
-        const t=it.querySelector('.apv-text'); it.querySelector('.apv-more').hidden=t.scrollHeight<=t.clientHeight+2; }));
+        const b=it.querySelector('.bubble'), t=b.querySelector('.text'), cut=t.scrollHeight>t.clientHeight+2;
+        b.classList.toggle('cut',cut); it.querySelector('.apv-more').hidden=!cut; }));
     }
     function whyBox(p,back){
       const w=document.createElement('div'); w.className='apv-why';
@@ -1473,13 +1638,25 @@
       c.onclick=()=>{ w.remove(); back(); }; rs.appendChild(c);
       return w;
     }
-    // approve = the editor's own "✅ לאשר": the typo check runs, and shows what it found in the editor
-    async function quickApprove(p,ctx){
-      openEditor(p,ctx);
-      const when=p.date===today()?'היום':dm(p.date);
-      await save(true);
-      if(!$('overlay').classList.contains('open')) undoToast('✅ אושרה. יוצאת '+when+' ב-'+p.due+'.',()=>unapprove(p.row));
+    // approve right here (Omri chose this round, 2026-10-28): the typo check runs in place; only when it finds
+    // something (or can't run) does the editor open, with what it found
+    async function quickApprove(p,ctx,btn){
+      const it=btn.closest('.apv-item'); it.querySelectorAll('button').forEach(b=>b.disabled=true);
+      btn.textContent='🔎 בודק טעויות…';
+      const r=await proofread(p.text,p.date);
+      if(!r.ok||r.issues.length){
+        renderBoard(); openEditor(p,ctx); await save(true,false,r);
+        if(!$('overlay').classList.contains('open')) approvedToast(p);
+        return;
+      }
+      btn.textContent='מאשר…';
+      try{
+        await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:p.date,time:p.time||'',text:p.text,image:p.image||'',skip:false,
+          approve:true,group:p.group||'',no_footer:p.footer===false}});
+        await load(); approvedToast(p); offerVersions(p.text,p.image);
+      }catch(e){ toast(e.message,true); renderBoard(); }
     }
+    function approvedToast(p){ undoToast('✅ אושרה. יוצאת '+(p.date===today()?'היום':dm(p.date))+' ב-'+p.due+'.',()=>unapprove(p.row)); }
     // "↩️ ביטול" right after an approve: the post waits for approval again
     async function unapprove(row){
       const p=state.weeks.flatMap(w=>w.days).flatMap(d=>d.posts).find(x=>x.row===row);
