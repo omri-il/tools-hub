@@ -246,9 +246,10 @@
          background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none}
     .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     /* the other channels (⚙️) and a post's version for each (Omri, 2026-10-22) */
-    .chrow{display:grid;grid-template-columns:1.3fr 110px 1.4fr 36px;grid-template-areas:"n k u x";gap:6px;margin-top:8px}
-    .chrow .n{grid-area:n} .chrow .k{grid-area:k} .chrow .u{grid-area:u} .chrow .x{grid-area:x}
-    @media (max-width:760px){ .chrow{grid-template-columns:110px 1fr 40px;grid-template-areas:"n n x" "k u u";padding-bottom:8px;border-bottom:1px solid var(--line)}
+    .chrow{display:grid;grid-template-columns:1.3fr 110px 1.4fr 36px;grid-template-areas:"n k u x" "g g g .";gap:6px;margin-top:8px}
+    .chrow .n{grid-area:n} .chrow .k{grid-area:k} .chrow .u{grid-area:u} .chrow .x{grid-area:x} .chrow .g{grid-area:g}
+    .chrow .g[hidden]{display:none}
+    @media (max-width:760px){ .chrow{grid-template-columns:110px 1fr 40px;grid-template-areas:"n n x" "k u u" "g g g";padding-bottom:8px;border-bottom:1px solid var(--line)}
       .versions{border-radius:0;min-height:100vh;min-height:100dvh;border:0;padding:16px 12px 0} }
     .chrow input,.chrow select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:.9rem;padding:7px 9px}
     .chrow .x{background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--faint);cursor:pointer;font-size:1rem}
@@ -259,6 +260,7 @@
     .vhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}
     .vhead .kind{font-weight:400;font-size:.76rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 8px}
     .vhead .clicks{font-weight:400;font-size:.8rem;color:var(--accent);margin-inline-start:auto}
+    .vhead .sent2{font-weight:400;font-size:.8rem;color:var(--muted)}
     .vtext{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.88rem;color:var(--muted);margin:8px 0;max-height:9em;overflow:auto;background:var(--bg);border-radius:8px;padding:8px 10px}
     .vbtns{display:flex;gap:8px;flex-wrap:wrap}
     .vbtns .btn{padding:8px 14px;font-size:.9rem}
@@ -556,6 +558,8 @@
       const waText={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק, צריך לקשר מחדש',down:'השירות לא עונה',connecting:'מתחבר…'}[wa.state]||wa.state;
       $('statusbar').innerHTML=
         '<span class="pill '+(ok?'ok':'bad')+'">וואטסאפ: <b>'+esc(waText)+'</b></span>'+
+        (sendable()||(s.whatsapp2||{}).state==='open'?(()=>{ const w2=s.whatsapp2||{}, t2={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק',down:'השירות לא עונה',connecting:'מתחבר…'}[w2.state]||w2.state;
+          return '<span class="pill '+(w2.state==='open'?'ok':'bad')+'">052: <b>'+esc(t2)+'</b></span>'; })():'')+
         '<span class="pill">הודעה בלי שעה יוצאת בסביבות <b>'+esc(s.settings.time)+'</b></span>'+
         '<span class="pill">ימים: <b>ראשון–חמישי</b></span>';
       $('sheetlink').href=s.sheet;
@@ -738,9 +742,9 @@
           it.appendChild(fx);
         }
         // the same post for the other channels (Facebook groups…): sent, or approved and waiting
-        if(firstUrl(p.text)&&!p.draft&&!p.skipped){
+        if((firstUrl(p.text)||sendable())&&!p.draft&&!p.skipped){
           const vb=document.createElement('button'); vb.type='button'; vb.className='fixsent'; vb.textContent='📣 גרסאות לערוצים';
-          vb.onclick=()=>openVersions(p.text); it.appendChild(vb);
+          vb.onclick=()=>openVersions(p.text,p.image); it.appendChild(vb);
         }
         if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
         chat.appendChild(it);
@@ -825,18 +829,28 @@
     });
 
     // ---- 📣 the other channels, and a post's version for each (Omri, 2026-10-22: "when I send, it pops up
-    // more versions of the same message with the links of the different channels"). Copy only: Facebook
-    // has no way in, and Omri chose to paste in WhatsApp groups himself too. ----
+    // more versions of the same message with the links of the different channels"). Facebook: copy only.
+    // A WhatsApp channel tied to a group of Omri's second number (2026-10-28) also gets "📤 send from 052". ----
     const CH_KINDS={facebook:'פייסבוק',whatsapp:'וואטסאפ',other:'אחר'};
     let chDirty=false;
     function channels(){ return (state&&state.settings&&state.settings.channels)||[]; }
+    function sendable(){ return channels().some(c=>c.jid); }
     function chRow(c){
       const r=document.createElement('div'); r.className='chrow'; r.dataset.id=c.id||'';
       r.innerHTML='<input class="n" placeholder="שם, למשל: פייסבוק – מורים ו-AI" dir="auto">'+
         '<select class="k">'+Object.entries(CH_KINDS).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select>'+
         '<input class="u" placeholder="קישור לקבוצה (לא חובה)" dir="ltr">'+
-        '<button class="x" type="button" title="להסיר">✕</button>';
+        '<button class="x" type="button" title="להסיר">✕</button>'+
+        '<select class="g" title="קבוצה של המספר השני: הגרסה יוצאת ממנו בלחיצה"></select>';
       r.querySelector('.n').value=c.name||''; r.querySelector('.k').value=c.kind||'facebook'; r.querySelector('.u').value=c.url||'';
+      // the group on 052 (the server's /state lists them while 052 is connected)
+      const g=r.querySelector('.g'), groups2=(state&&state.groups2)||[];
+      g.innerHTML='<option value="">בלי שליחה: רק להעתיק</option>'+groups2.map(x=>'<option value="'+esc(x.jid)+'">📤 לשלוח מ-052 לקבוצה „'+esc(x.name)+'” ('+x.size+')</option>').join('');
+      if(c.jid&&!groups2.some(x=>x.jid===c.jid)) g.insertAdjacentHTML('beforeend','<option value="'+esc(c.jid)+'">📤 לשלוח מ-052 (הקבוצה לא נראית עכשיו: 052 לא מחובר?)</option>');
+      g.value=c.jid||'';
+      const kind=()=>{ g.hidden=r.querySelector('.k').value!=='whatsapp'||(!groups2.length&&!c.jid); };
+      r.querySelector('.k').addEventListener('change',kind); kind();
+      g.addEventListener('change',()=>{ if(g.value&&!r.querySelector('.n').value.trim()) r.querySelector('.n').value=g.selectedOptions[0].textContent.replace(/^.*„(.*)”.*$/,'$1'); chDirty=true; });
       r.querySelector('.x').onclick=()=>{ r.remove(); chDirty=true; };
       r.addEventListener('input',()=>{ chDirty=true; });
       return r;
@@ -850,7 +864,8 @@
     $('set-ch-add').onclick=()=>{ const r=chRow({}); $('set-channels').appendChild(r); r.querySelector('.n').focus(); chDirty=true; };
     $('set-ch-save').onclick=async()=>{
       const list=[...$('set-channels').querySelectorAll('.chrow')].map(r=>({id:r.dataset.id,name:r.querySelector('.n').value.trim(),
-        kind:r.querySelector('.k').value,url:r.querySelector('.u').value.trim()})).filter(c=>c.name);
+        kind:r.querySelector('.k').value,url:r.querySelector('.u').value.trim(),
+        jid:r.querySelector('.k').value==='whatsapp'?r.querySelector('.g').value:''})).filter(c=>c.name);
       $('set-ch-msg').textContent='שומר…'; $('set-ch-msg').className='msg'; $('set-ch-save').disabled=true;
       try{
         const r=await apiJson('/channels',{method:'PUT',json:{channels:list}});
@@ -870,7 +885,7 @@
     $('vr-close').onclick=closeVersions;
     $('vr-overlay').addEventListener('click',e=>{ if(e.target===$('vr-overlay')) closeVersions(); });
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('vr-overlay').classList.contains('open')) closeVersions(); });
-    async function openVersions(text){
+    async function openVersions(text,image){
       const list=$('vr-list'); list.innerHTML=''; $('vr-msg').textContent=''; $('vr-msg').className='msg';
       $('vr-overlay').classList.add('open');
       if(!channels().length){
@@ -884,24 +899,46 @@
         $('vr-msg').textContent='';
         for(const v of r.versions){
           const c=v.channel, card=document.createElement('div'); card.className='vcard';
-          card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+'</span>'+
+          const sentLine=s=>'<span class="sent2">✓ נשלח מ-052 ב-'+esc(s.at.slice(11,16))+(s.at.slice(0,10)!==today()?' ('+esc(s.at.slice(8,10)+'.'+s.at.slice(5,7))+')':'')+
+            (v.reactions?' · ❤️ '+v.reactions:'')+(v.replies?' · 💬 '+v.replies:'')+'</span>';
+          card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+(c.jid?' · 052':'')+'</span>'+
+            (v.sent?sentLine(v.sent):'')+
             (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vbtns"></div>';
           card.querySelector('.vtext').textContent=v.text;
+          if(v.sent) card.classList.add('done');
           const btns=card.querySelector('.vbtns');
+          // straight to the group from Omri's second number, once
+          if(c.jid&&!v.sent){
+            const s=document.createElement('button'); s.type='button'; s.className='btn primary';
+            s.textContent='📤 לשלוח מ-052'+(image?' (עם התמונה)':'');
+            s.onclick=async()=>{
+              if(!confirm('לשלוח את הגרסה הזאת מהמספר 052 לקבוצה „'+c.name+'”?\nהיא יוצאת מיד, ואי אפשר להחזיר אותה.')) return;
+              s.disabled=true; s.textContent='שולח…'; $('vr-msg').className='msg'; $('vr-msg').textContent='';
+              try{
+                const r=await apiJson('/versions/send',{method:'POST',json:{text,channel:c.id,image:image||''}});
+                card.classList.add('done'); s.remove();
+                card.querySelector('.vhead .kind').insertAdjacentHTML('afterend',sentLine(r.sent));
+                $('vr-msg').textContent='📤 נשלח מ-052 ל„'+c.name+'”';
+              }catch(e){ s.disabled=false; s.textContent='📤 לשלוח מ-052'; $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
+            };
+            btns.appendChild(s);
+          }
           const copied=async(open)=>{
             if(!await copyText(v.text)){ $('vr-msg').textContent='ההעתקה לא הצליחה: סמנו את הטקסט והעתיקו ידנית'; $('vr-msg').className='msg err'; return; }
             card.classList.add('done'); $('vr-msg').className='msg';
             $('vr-msg').textContent='📋 הועתק ל„'+c.name+'”'+(open?'. עכשיו מדביקים בקבוצה שנפתחה':'');
             if(open) window.open(c.url,'_blank','noopener');
           };
-          if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn primary'; a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
-          const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
+          const lead=!c.jid;  // with "send from 052" the copy buttons are the second way
+          if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn '+(lead?'primary':'ghost'); a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
+          const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url||!lead?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
           list.appendChild(card);
         }
       }catch(e){ $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
     }
-    // after a send or an approve: pops up by itself only for a post with a link, once channels are listed
-    function offerVersions(text){ if(firstUrl(text)&&channels().length) openVersions(text); }
+    // after a send or an approve: pops up by itself for a post with a link once channels are listed, and for
+    // every post once a channel sends from 052 (Omri, 2026-10-28)
+    function offerVersions(text,image){ if((firstUrl(text)||sendable())&&channels().length) openVersions(text,image); }
 
     // ---- results ----
     let results=null, sortKey='at', sortDir=-1;
@@ -1296,7 +1333,7 @@
         for(const jid of also){ say('שומר עותק ל'+groupName(jid)+'…');
           await apiJson('/posts',{method:'POST',json:Object.assign({},body,{group:jid,approve:false,draft:asDraft})}); }
         closeEditor(); await load();
-        if(approve===true&&!auto&&!body.skip) offerVersions(body.text);
+        if(approve===true&&!auto&&!body.skip) offerVersions(body.text,body.image);
       }catch(e){ say((auto?'לא נשמר כטיוטה: ':'')+e.message,true); }
       finally{ setBusy(false); }
     }
@@ -1335,7 +1372,7 @@
         await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
-        offerVersions(text);
+        offerVersions(text,image);
       }catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
     // a sent post's typo, fixed in WhatsApp itself (within 15 minutes of the send)
