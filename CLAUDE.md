@@ -62,6 +62,18 @@ daily posts to the "בינה בהוראה" WhatsApp community. API `https://go.o
 `bot/wa_web.py` (systemd `content-machine-wa-web`), which checks `X-Session` by asking go-shortener. The posts
 live in the Google Sheet "פוסטים לוואטסאפ"; see content-machine CLAUDE.md → "WhatsApp post". For a local test,
 `localStorage.wa_api_base` overrides the API base.
+Drafts on "מחכות לאישור" (2026-10-28): each as the WhatsApp bubble it will be (footer, picture or link card), folded
+at 7 lines with "עוד ▾"; [✅ לאשר] runs the typo check in place (`/proofread`) and approves with a PUT, opening the
+editor only when the check finds something or can't run (the result is passed on, not run twice); "↩️ ביטול" in the
+toast puts it back to a draft. [✏️ לעריכה], [🗑 לא לשלוח] (a reason in one tap; the DELETE waits 5 s for "↩️ ביטול",
+flushed on `pagehide`); each says which kind of system draft it is (`made_by`). Tab "🧠 מה למדתי" = `GET/PUT /learn`
+(content-machine `bot/learn.py`).
+The board opens on "today" (UX round, 2026-10-28): the drafts, today's card, then "✓ הכול מוכן" or "⏳ עוד לא הכול
+מוכן" (drafts waiting, a failed post, today or the next posting day with no post); the rest below. The editor has
+ONE main button by state (draft → ✅ לאשר לשליחה, sent → ✏️ לתקן בוואטסאפ, else שמירה) and "⋯" for test / send now
+/ delete; send now, a fix and a delete ask in a sheet (`sheet()`, not `confirm()`) that shows the post, the group
+and its member count. On a phone the editor switches "✍️ כתיבה / 👁 איך זה ייראה", and the ✍️ button steps aside
+while scrolling down.
 **It is also an Android app (a PWA, 2026-10-22):** `whatsapp/manifest.webmanifest` (scope `/whatsapp/`, icons in
 `whatsapp/icons/`, a share target, shortcuts `?new=1` / `?view=approve`) and `whatsapp/sw.js` (the page network-first,
 the share POST to `/whatsapp/share` kept in the `wa-share` cache → `?share=1`, push notifications). Installed from

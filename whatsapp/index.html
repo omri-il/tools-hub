@@ -13,11 +13,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
   <style>
-    :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#6c727c;
+    :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#848a94;
            --line:rgba(255,255,255,0.09); --accent:#25d366; --accent-ink:#04230f; --danger:#f87171; --warn:#fbbf24;
            --wa-bg:#0b141a; --bubble:#202c33; --wa-ink:#e9edef; --wa-muted:#8696a0; --wa-link:#53bdeb; --wa-name:#25d366;
            font-family:'Heebo',system-ui,sans-serif; }
     *{box-sizing:border-box;margin:0;padding:0}
+    ::placeholder{color:var(--faint);opacity:1}
+    ::selection{background:rgba(37,211,102,.32);color:var(--ink)}
     body{background:radial-gradient(90% 60% at 50% -10%,rgba(37,211,102,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:28px 16px 80px;line-height:1.5}
     .wrap{max-width:1040px;margin:0 auto}
     .back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:14px}
@@ -234,6 +236,46 @@
     .proof .pbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
     .fixsent{background:transparent;border:1px dashed rgba(37,211,102,.55);color:var(--accent);border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
     .spacer{flex:1}
+    /* the editor's ⋯: test, send now, delete, away from the main button */
+    .more-wrap{position:relative}
+    #ed-more{min-width:48px;padding:10px 14px;font-size:1.15rem;line-height:1}
+    .menu{position:absolute;bottom:calc(100% + 8px);left:0;z-index:6;min-width:270px;background:var(--panel);border:1px solid var(--line);
+          border-radius:12px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.5);display:flex;flex-direction:column}
+    .menu[hidden],.menu button[hidden]{display:none}
+    .menu button{background:none;border:0;border-radius:8px;color:var(--ink);font-family:inherit;font-size:.94rem;font-weight:600;text-align:start;
+                 padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+    .menu button small{font-weight:400;font-size:.78rem;color:var(--muted)}
+    .menu button:hover,.menu button:focus-visible{background:rgba(255,255,255,.06);outline:none}
+    .menu button:disabled{opacity:.5;cursor:default}
+    .menu .del{color:var(--danger);border-top:1px solid var(--line);border-radius:0 0 8px 8px;margin-top:4px}
+    /* the phone: writing or the preview, one at a time */
+    .ed-views{display:none}
+    /* a step that can't be taken back asks here, showing what will happen */
+    .sheet-ov{z-index:30;align-items:center}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(520px,100%);padding:18px 18px 16px;margin:auto;
+           display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.55)}
+    .sheet h3{font-size:1.1rem}
+    .sheet .to{list-style:none;display:flex;flex-direction:column;gap:3px;font-size:.92rem;color:var(--muted)}
+    .sheet .to b{color:var(--ink);font-weight:600}
+    .sheet .phone{min-height:0;max-height:46vh;overflow:auto}
+    .sh-note{font-size:.86rem;color:var(--warn)}
+    .sh-note:empty{display:none}
+    .sh-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .sh-btns .btn{flex:1 1 auto}
+    .btn.danger.solid{background:var(--danger);color:#2a0606;border:0}
+    /* the end of "today": all ready, or what is still missing */
+    .ready{display:flex;flex-direction:column;gap:6px;border-radius:14px;padding:12px 16px;margin:0 0 10px;font-size:.92rem}
+    .ready.ok{background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.35)}
+    .ready.ok b{color:var(--accent);font-size:1.05rem}
+    .ready.todo{background:var(--card);border:1px solid rgba(251,191,36,.4)}
+    .ready.todo b{color:var(--warn)}
+    .ready span{color:var(--muted)}
+    .ready ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+    .ready li{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .ready li .add{margin:0;padding:4px 12px}
+    .empty-add{width:100%;background:transparent;border:1.5px dashed rgba(255,255,255,.14);color:var(--muted);border-radius:8px;padding:10px;
+               font-family:inherit;font-size:.9rem;cursor:pointer}
+    .empty-add:hover{border-color:rgba(37,211,102,.5);color:var(--accent)}
     /* results */
     .report{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;white-space:pre-wrap;line-height:1.7;font-size:.94rem}
     .report a{color:var(--wa-link)}
@@ -246,13 +288,57 @@
     footer a{color:var(--muted)}
     /* drafts waiting for approval, at the top of the board */
     .apv{background:var(--card);border:1px solid rgba(196,181,253,.45);border-radius:14px;padding:4px 14px;margin-bottom:10px}
-    .apv-item{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+    .apv-item{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid var(--line)}
     .apv-item:first-child{border-top:0}
-    .apv-when{font-size:.84rem;color:#c4b5fd}
-    .apv-text{white-space:pre-line;overflow-wrap:anywhere;font-size:.9rem;max-height:6.6em;overflow:hidden;cursor:pointer}
+    .apv-head{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .apv-when{font-size:.95rem;font-weight:700;color:var(--ink);margin-inline-end:4px}
+    .apv-head .chip{font-size:.74rem;padding:1px 9px}
+    .chip.bot{color:var(--muted)}
+    /* each draft as the bubble it will be (Omri chose this round, 2026-10-28); long ones folded */
+    .apv-chat{background:var(--wa-bg);border-radius:12px;padding:10px 14px 10px 10px;
+              background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:14px 14px}
+    .bubble.clamp .text{max-height:133px;overflow:hidden}
+    .bubble.clamp.cut .text{-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
+    .apv-more{align-self:flex-start;background:none;border:0;color:#c4b5fd;font-family:inherit;font-size:.84rem;cursor:pointer;padding:0}
     .apv-btns{display:flex;gap:8px;flex-wrap:wrap}
+    .apv-btns[hidden]{display:none}
     .apv-btns .btn{padding:8px 14px;font-size:.9rem}
+    .btn.reject{background:transparent;border:1px solid rgba(248,113,113,.45);color:var(--danger)}
+    .btn.reject:hover{background:rgba(248,113,113,.08)}
+    .apv-why{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid rgba(248,113,113,.35);border-radius:12px;padding:10px 12px}
+    .apv-why p{font-size:.86rem;color:var(--muted)}
+    .apv-why .reasons{display:flex;flex-wrap:wrap;gap:6px}
+    .reason{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px;font-family:inherit;font-size:.86rem;cursor:pointer}
+    .reason:hover{border-color:var(--danger);color:var(--danger)}
+    .reason.plain{color:var(--muted)} .reason.back{border:0;color:var(--faint)}
+    .apv-gone{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+    .apv-gone:first-child{border-top:0}
+    .apv-gone .btn{padding:6px 12px;font-size:.86rem}
     .apv-none{color:var(--faint);font-size:.86rem;margin:0 4px 8px}
+    #toast .undo{background:none;border:0;color:var(--accent);font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;margin-inline-start:12px;padding:0}
+    /* 🧠 what was learned from the drafts */
+    .lrn-intro{color:var(--muted);font-size:.9rem;margin:0 4px 12px;max-width:720px}
+    .lrn-kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+    .lrn{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .lrn.stopped{border-style:dashed;opacity:.75}
+    .lrn h4{font-size:.95rem;font-weight:700;line-height:1.35}
+    .lrn .bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.06)}
+    .lrn .bar i{display:block;height:100%}
+    .lrn .bar .b-ok{background:var(--accent)} .lrn .bar .b-ed{background:#c4b5fd} .lrn .bar .b-no{background:var(--danger)} .lrn .bar .b-ig{background:var(--faint)}
+    .lrn .nums{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;color:var(--muted)}
+    .lrn .nums b{color:var(--ink);font-variant-numeric:tabular-nums}
+    .lrn .why{font-size:.78rem;color:var(--faint)}
+    .lrn .state{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:auto}
+    .lrn .state .btn{padding:5px 12px;font-size:.82rem}
+    .lrn .warn{color:var(--warn);font-size:.8rem}
+    .lrn-empty{color:var(--faint);font-size:.84rem;margin:8px 4px}
+    .edits{display:flex;flex-direction:column;gap:10px}
+    .edit{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+    .edit .ehead{font-size:.8rem;color:var(--muted);margin-bottom:8px}
+    .edit .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .edit .pair div{white-space:pre-line;overflow-wrap:anywhere;font-size:.84rem;line-height:1.5;background:var(--panel);border-radius:10px;padding:8px 10px;max-height:14em;overflow:auto}
+    .edit .pair .was{color:var(--faint)} .edit .pair .now{color:var(--ink);box-shadow:inset 0 0 0 1px rgba(196,181,253,.4)}
+    .edit .pair small{display:block;font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:4px}
     /* the app on the phone: install, notifications, the new-post button */
     .appbar{display:flex;flex-direction:column;gap:8px;max-width:640px;margin:0 auto 14px}
     .appbar:empty{display:none}
@@ -261,12 +347,17 @@
     .banner .btn{padding:8px 14px;font-size:.88rem}
     .banner .x{background:none;border:0;color:var(--faint);font-size:1.1rem;cursor:pointer;padding:4px}
     .fab{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:15;width:58px;height:58px;border-radius:18px;border:0;
-         background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none}
+         background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none;
+         transition:transform .22s cubic-bezier(.16,1,.3,1),opacity .22s}
+    /* scrolling down it steps aside, so it never covers a button; scrolling up brings it back */
+    .fab.away{transform:translateY(calc(100% + 40px));opacity:0;pointer-events:none}
+    @media (prefers-reduced-motion:reduce){ .fab{transition:none} }
     .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     /* the other channels (⚙️) and a post's version for each (Omri, 2026-10-22) */
-    .chrow{display:grid;grid-template-columns:1.3fr 110px 1.4fr 36px;grid-template-areas:"n k u x";gap:6px;margin-top:8px}
-    .chrow .n{grid-area:n} .chrow .k{grid-area:k} .chrow .u{grid-area:u} .chrow .x{grid-area:x}
-    @media (max-width:760px){ .chrow{grid-template-columns:110px 1fr 40px;grid-template-areas:"n n x" "k u u";padding-bottom:8px;border-bottom:1px solid var(--line)}
+    .chrow{display:grid;grid-template-columns:1.3fr 110px 1.4fr 36px;grid-template-areas:"n k u x" "g g g .";gap:6px;margin-top:8px}
+    .chrow .n{grid-area:n} .chrow .k{grid-area:k} .chrow .u{grid-area:u} .chrow .x{grid-area:x} .chrow .g{grid-area:g}
+    .chrow .g[hidden]{display:none}
+    @media (max-width:760px){ .chrow{grid-template-columns:110px 1fr 40px;grid-template-areas:"n n x" "k u u" "g g g";padding-bottom:8px;border-bottom:1px solid var(--line)}
       .versions{border-radius:0;min-height:100vh;min-height:100dvh;border:0;padding:16px 12px 0} }
     .chrow input,.chrow select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:.9rem;padding:7px 9px}
     .chrow .x{background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--faint);cursor:pointer;font-size:1rem}
@@ -277,6 +368,7 @@
     .vhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}
     .vhead .kind{font-weight:400;font-size:.76rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 8px}
     .vhead .clicks{font-weight:400;font-size:.8rem;color:var(--accent);margin-inline-start:auto}
+    .vhead .sent2{font-weight:400;font-size:.8rem;color:var(--muted)}
     .vtext{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.88rem;color:var(--muted);margin:8px 0;max-height:9em;overflow:auto;background:var(--bg);border-radius:8px;padding:8px 10px}
     .vbtns{display:flex;gap:8px;flex-wrap:wrap}
     .vbtns .btn{padding:8px 14px;font-size:.9rem}
@@ -289,11 +381,11 @@
     @media (max-width:760px){
       body{padding:12px 10px 96px}
       .back{margin-bottom:6px}
-      .masthead{margin-bottom:8px}
-      .lede{display:none}
-      h1{font-size:1.55rem;margin-top:2px}
+      .masthead{margin-bottom:4px}
+      .lede,.kicker,.statusbar .pill.info{display:none}
+      h1{font-size:1.3rem;margin-top:0}
       /* the pills wrap: a sideways-scrolling row stuck out of the page on the left on Omri's phone (2026-10-22) */
-      .statusbar{margin:10px 0;gap:6px;font-size:.8rem}
+      .statusbar{margin:6px 0 8px;gap:6px;font-size:.8rem}
       .pill{padding:4px 10px}
       .tabs{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -10px 12px;padding:8px 10px}
       .tab{flex:1;padding:10px 4px}
@@ -303,7 +395,9 @@
       .bubble,.sugpost{max-width:100%}
       .events{grid-template-columns:1fr}
       .overlay{padding:0}
-      .editor{grid-template-columns:1fr;border-radius:0;min-height:100vh;min-height:100dvh;padding:14px 12px 0;gap:6px;border:0}
+      /* one column; the buttons at the bottom however short the page (the preview alone stretched a grid's rows) */
+      .editor{display:flex;flex-direction:column;border-radius:0;min-height:100vh;min-height:100dvh;padding:14px 12px 0;gap:6px;border:0}
+      .editor>.actions{margin-top:auto}
       input[type=date],input[type=time],textarea,select,.drivelink{font-size:16px}  /* no zoom on focus */
       textarea{min-height:38vh}
       .tb{min-width:44px;height:40px}
@@ -316,6 +410,21 @@
       .actions .btn{padding:12px 14px;flex:1 1 auto}
       .fab{display:block}
       table{font-size:.8rem}
+      .tabs{gap:5px}
+      .tab{font-size:.8rem;white-space:nowrap;padding:10px 2px}
+      .apv-btns .btn{flex:1 1 0;padding:11px 8px;min-height:44px}
+      .reason{padding:9px 12px}
+      .edit .pair{grid-template-columns:1fr}
+      .ed-views{display:flex;gap:6px;grid-column:1/-1;margin:2px 0 6px}
+      .ed-views button{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--muted);font-family:inherit;
+                       font-size:.9rem;font-weight:600;padding:9px 6px;cursor:pointer}
+      .ed-views button.on{background:rgba(37,211,102,.14);border-color:rgba(37,211,102,.5);color:var(--ink)}
+      .editor[data-view=preview] .ed-main,.editor:not([data-view=preview]) .ed-side{display:none}
+      .sheet-ov{align-items:flex-end}
+      .sheet{border-radius:16px 16px 0 0;margin:0;width:100%;border-width:1px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+      .sh-btns .btn{min-height:48px}
+      .menu{min-width:min(290px,calc(100vw - 24px))}
+      .menu button{padding:12px}
     }
   </style>
 </head>
@@ -332,11 +441,13 @@
     <nav class="tabs">
       <button class="tab active" data-pane="board">📅 הלוח</button>
       <button class="tab" data-pane="results">🏆 מה עבד</button>
+      <button class="tab" data-pane="learn">🧠 מה למדתי</button>
       <button class="tab" data-pane="settings">⚙️ הגדרות</button>
     </nav>
     <section class="pane active" id="board"><div class="loading">טוען…</div></section>
     <div id="toast"></div>
     <section class="pane" id="results"><div class="loading">טוען…</div></section>
+    <section class="pane" id="learn"><div class="loading">טוען…</div></section>
     <section class="pane" id="settings">
       <div class="setting">
         <label class="check"><input type="checkbox" id="set-footer"> להוסיף בסוף כל הודעה את השורה „כל הפוסטים הקודמים מחכים כאן” והקישור לסקול</label>
@@ -367,9 +478,10 @@
   <button class="fab" id="fab" type="button" aria-label="הודעה חדשה" title="הודעה חדשה">✍️</button>
 
   <div class="overlay" id="overlay">
-    <div class="editor" role="dialog" aria-modal="true">
+    <div class="editor" id="editor" role="dialog" aria-modal="true" aria-labelledby="ed-title">
       <h3 id="ed-title">הודעה חדשה</h3>
-      <div>
+      <div class="ed-views" role="group" aria-label="תצוגה"><button type="button" data-view="write" class="on">✍️ כתיבה</button><button type="button" data-view="preview">👁 איך זה ייראה</button></div>
+      <div class="ed-main">
         <div class="row2">
           <div class="field"><label for="ed-date">תאריך</label><input type="date" id="ed-date"></div>
           <div class="field"><label for="ed-time">מתי ביום</label><select id="ed-time"></select><div class="hint" id="ed-time-hint"></div></div>
@@ -398,7 +510,7 @@
         <label class="check" id="ed-nofooter-box"><input type="checkbox" id="ed-nofooter"> <span id="ed-nofooter-label">בלי השורה „כל הפוסטים הקודמים” בסוף ההודעה הזאת</span></label>
         <label class="check"><input type="checkbox" id="ed-skip"> לא לשלוח את ההודעה הזאת (נשמרת, אבל לא יוצאת)</label>
       </div>
-      <div>
+      <div class="ed-side">
         <label id="ed-where">כך זה ייראה בערוץ העדכונים</label>
         <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
         <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים; מכבים אותה כאן להודעה אחת, או ב„⚙️ הגדרות” לכולן). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
@@ -407,14 +519,29 @@
       <div class="actions">
         <button class="btn primary" id="ed-fix" hidden>✏️ לתקן בוואטסאפ</button>
         <button class="btn primary" id="ed-approve" hidden>✅ לאשר לשליחה</button>
-<button class="btn primary" id="ed-save">שמירה</button>
+        <button class="btn primary" id="ed-save">שמירה</button>
         <button class="btn ghost" id="ed-cancel" title="מה שנכתב נשמר כטיוטה">סגירה</button>
-        <button class="btn ghost" id="ed-test" title="ההודעה כמו שהיא תצא, לצ'אט שלך עם עצמך בוואטסאפ. לא נשמרת ולא נספרת.">🧪 לשלוח לי לבדיקה</button>
-        <span class="msg" id="ed-msg"></span>
+        <span class="msg" id="ed-msg" role="status"></span>
         <span class="spacer"></span>
-        <button class="btn ghost" id="ed-send" title="מה שכתוב כאן יוצא מיד, בלי לחכות ליום ולשעה">📤 לשלוח עכשיו</button>
-        <button class="btn danger" id="ed-delete" hidden>מחיקה</button>
+        <!-- one main button; the rest behind ⋯, so "send now" never sits next to it (Omri chose this round, 2026-10-28) -->
+        <div class="more-wrap">
+          <button class="btn ghost" id="ed-more" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="עוד פעולות" title="עוד פעולות">⋯</button>
+          <div class="menu" id="ed-menu" role="menu" hidden>
+            <button type="button" role="menuitem" id="ed-test">🧪 לשלוח לי לבדיקה<small>לצ'אט שלך עם עצמך. לא נשמרת ולא נספרת.</small></button>
+            <button type="button" role="menuitem" id="ed-send">📤 לשלוח עכשיו…<small>יוצאת מיד, בלי לחכות ליום ולשעה</small></button>
+            <button type="button" role="menuitem" class="del" id="ed-delete" hidden>🗑 מחיקה</button>
+          </div>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <div class="overlay sheet-ov" id="sh-overlay">
+    <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="sh-title">
+      <h3 id="sh-title"></h3>
+      <div id="sh-body"></div>
+      <p class="sh-note" id="sh-note"></p>
+      <div class="sh-btns"><button class="btn primary" id="sh-go" type="button"></button><button class="btn ghost" id="sh-back" type="button">חזרה</button></div>
     </div>
   </div>
 
@@ -567,8 +694,10 @@
       const waText={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק, צריך לקשר מחדש',down:'השירות לא עונה',connecting:'מתחבר…'}[wa.state]||wa.state;
       $('statusbar').innerHTML=
         '<span class="pill '+(ok?'ok':'bad')+'">וואטסאפ: <b>'+esc(waText)+'</b></span>'+
-        '<span class="pill">הודעה בלי שעה יוצאת בסביבות <b>'+esc(s.settings.time)+'</b></span>'+
-        '<span class="pill">ימים: <b>ראשון–חמישי</b></span>';
+        (sendable()||(s.whatsapp2||{}).state==='open'?(()=>{ const w2=s.whatsapp2||{}, t2={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק',down:'השירות לא עונה',connecting:'מתחבר…'}[w2.state]||w2.state;
+          return '<span class="pill '+(w2.state==='open'?'ok':'bad')+'">052: <b>'+esc(t2)+'</b></span>'; })():'')+
+        '<span class="pill info">הודעה בלי שעה יוצאת בסביבות <b>'+esc(s.settings.time)+'</b></span>'+
+        '<span class="pill info">ימים: <b>ראשון–חמישי</b></span>';
       $('sheetlink').href=s.sheet;
     }
     function findPost(row){
@@ -622,6 +751,14 @@
     function suggestionsFor(day){ return (state.events||[]).filter(e=>e.suggest&&e.suggest.date===day&&!e.posts.length); }
     function toast(t,err){ const el=$('toast'); el.textContent=t; el.className=err?'err':''; el.style.display='block';
       clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',err?6000:3500); }
+    // a toast with "↩️ ביטול" for a few seconds (after an approve)
+    function undoToast(t,onUndo,ms=6000){
+      const el=$('toast'); el.textContent=t; el.className=''; el.style.display='block';
+      const b=document.createElement('button'); b.type='button'; b.className='undo'; b.textContent='↩️ ביטול';
+      b.onclick=()=>{ clearTimeout(toast.t); el.style.display='none'; onUndo(); };
+      el.appendChild(b);
+      clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',ms);
+    }
 
     // ---- drag a post or a suggestion to another day ----
     let drag=null;
@@ -715,15 +852,12 @@
       const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' 📣':'')+'</div>').join('');
       card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+evs+plan+'</aside><div class="chat"></div>';
       const aside=card.querySelector('aside');
-      if(!d.past){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
       const chat=card.querySelector('.chat');
       dropTarget(card,d);
-      const ghosts=d.past?[]:suggestionsFor(d.date);
-      if(!d.posts.length&&!ghosts.length){
-        const n=document.createElement('div'); n.className='none'+(d.past?' past':''); n.textContent=d.past?'לא נשלחה הודעה':'אין הודעה ליום הזה';
-        if(!d.past){ n.style.cursor='pointer'; n.onclick=()=>openEditor({date:d.date}); }
-        chat.appendChild(n);
-      }
+      const ghosts=d.past?[]:suggestionsFor(d.date), empty=!d.posts.length&&!ghosts.length;
+      if(!d.past&&!empty){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
+      if(empty&&d.past) chat.insertAdjacentHTML('beforeend','<div class="none past">לא נשלחה הודעה</div>');
+      else if(empty){ const n=document.createElement('button'); n.type='button'; n.className='empty-add'; n.textContent='+ הודעה ליום הזה'; n.onclick=()=>openEditor({date:d.date}); chat.appendChild(n); }
       for(const p of d.posts){
         const it=document.createElement('div'); it.className='item';
         const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
@@ -742,9 +876,9 @@
           it.appendChild(fx);
         }
         // the same post for the other channels (Facebook groups…): sent, or approved and waiting
-        if(firstUrl(p.text)&&!p.draft&&!p.skipped){
+        if((firstUrl(p.text)||sendable())&&!p.draft&&!p.skipped){
           const vb=document.createElement('button'); vb.type='button'; vb.className='fixsent'; vb.textContent='📣 גרסאות לערוצים';
-          vb.onclick=()=>openVersions(p.text); it.appendChild(vb);
+          vb.onclick=()=>openVersions(p.text,p.image); it.appendChild(vb);
         }
         if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
         chat.appendChild(it);
@@ -951,12 +1085,13 @@
         el.insertAdjacentHTML('beforeend','<h2>'+(first.today?'היום':'הבא בתור')+'</h2>');
         el.appendChild(dayCard(first));
       }
+      renderReady(el,first);
       renderEvents(el);
       renderMedia(el);
       el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, או הצעה לאירוע, ליום אחר.</p>');
       for(const ds of ahead){
         if(!ds.length) continue;
-        const h=document.createElement('h2'); h.textContent=ds[0].label+' – '+ds[ds.length-1].label; el.appendChild(h);
+        const h=document.createElement('h2'); h.textContent=ds.length>1?ds[0].label+' – '+ds[ds.length-1].label:'יום '+ds[0].day+' '+ds[0].label; el.appendChild(h);
         for(const d of ds) el.appendChild(dayCard(d));
       }
       const more=document.createElement('button'); more.className='more';
@@ -964,6 +1099,34 @@
       more.onclick=()=>{ weeks+=3; load(); };
       el.appendChild(more);
       renderArchive(el,gone);
+    }
+    // the end of "today" (Omri chose a simple "today" screen, 2026-10-28): "✓ הכול מוכן", or what is still missing
+    function renderReady(el,first){
+      const waiting=draftsAhead().filter(({p})=>!rejecting.has(p.row)).length;
+      const live=d=>d.posts.filter(p=>!p.skipped&&!p.draft&&!p.failed);
+      const name=d=>d.today?'היום':'יום '+d.day+' '+d.label;
+      const next=state.weeks.flatMap(w=>w.days).find(d=>!d.past&&d.post_day&&d!==first&&(!first||d.date>first.date));
+      const todo=[];
+      if(waiting) todo.push([waiting===1?'טיוטה אחת מחכה לאישור, למעלה':waiting+' טיוטות מחכות לאישור, למעלה']);
+      const failed=first?first.posts.filter(p=>p.failed).length:0;
+      if(failed) todo.push([(failed===1?'הודעה אחת לא יצאה':failed+' הודעות לא יצאו')+' '+(first.today?'היום':'ב'+name(first))]);
+      for(const d of [first,next]) if(d&&d.post_day&&!live(d).length&&!(d===first&&failed)) todo.push(['ל'+(d.today?'היום':name(d))+' עוד אין הודעה',d]);
+      const box=document.createElement('div');
+      if(!todo.length){
+        box.className='ready ok';
+        // whole sentences: "29.10: 2" read backwards right to left
+        const bits=[first,next].filter(d=>d&&d.post_day).map(d=>{ const ps=live(d), wait=ps.filter(p=>!p.sent).length, at=d.today?'היום':'ביום '+d.day+' '+d.label;
+          if(!wait) return ps.length===1?at+' יצאה הודעה אחת ✓':at+' יצאו '+ps.length+' הודעות ✓';
+          return wait===1?at+' מחכה הודעה אחת לשעה שלה':at+' מחכות '+wait+' הודעות לשעה שלהן'; });
+        box.innerHTML='<b>✓ הכול מוכן</b>'+(bits.length?'<span></span>':'');
+        if(bits.length) box.lastChild.textContent=bits.join(' · ');
+      }else{
+        box.className='ready todo'; box.innerHTML='<b>⏳ עוד לא הכול מוכן</b><ul></ul>';
+        for(const [t,d] of todo){ const li=document.createElement('li'); li.append(t);
+          if(d){ const a=document.createElement('button'); a.type='button'; a.className='add'; a.textContent='+ הודעה'; a.onclick=()=>openEditor({date:d.date}); li.appendChild(a); }
+          box.lastChild.appendChild(li); }
+      }
+      el.appendChild(box);
     }
     function renderArchive(el,gone){
       const box=document.createElement('details'); box.className='evs archive';
@@ -1008,18 +1171,28 @@
     });
 
     // ---- 📣 the other channels, and a post's version for each (Omri, 2026-10-22: "when I send, it pops up
-    // more versions of the same message with the links of the different channels"). Copy only: Facebook
-    // has no way in, and Omri chose to paste in WhatsApp groups himself too. ----
+    // more versions of the same message with the links of the different channels"). Facebook: copy only.
+    // A WhatsApp channel tied to a group of Omri's second number (2026-10-28) also gets "📤 send from 052". ----
     const CH_KINDS={facebook:'פייסבוק',whatsapp:'וואטסאפ',other:'אחר'};
     let chDirty=false;
     function channels(){ return (state&&state.settings&&state.settings.channels)||[]; }
+    function sendable(){ return channels().some(c=>c.jid); }
     function chRow(c){
       const r=document.createElement('div'); r.className='chrow'; r.dataset.id=c.id||'';
       r.innerHTML='<input class="n" placeholder="שם, למשל: פייסבוק – מורים ו-AI" dir="auto">'+
         '<select class="k">'+Object.entries(CH_KINDS).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select>'+
         '<input class="u" placeholder="קישור לקבוצה (לא חובה)" dir="ltr">'+
-        '<button class="x" type="button" title="להסיר">✕</button>';
+        '<button class="x" type="button" title="להסיר">✕</button>'+
+        '<select class="g" title="קבוצה של המספר השני: הגרסה יוצאת ממנו בלחיצה"></select>';
       r.querySelector('.n').value=c.name||''; r.querySelector('.k').value=c.kind||'facebook'; r.querySelector('.u').value=c.url||'';
+      // the group on 052 (the server's /state lists them while 052 is connected)
+      const g=r.querySelector('.g'), groups2=(state&&state.groups2)||[];
+      g.innerHTML='<option value="">בלי שליחה: רק להעתיק</option>'+groups2.map(x=>'<option value="'+esc(x.jid)+'">📤 לשלוח מ-052 לקבוצה „'+esc(x.name)+'” ('+x.size+')</option>').join('');
+      if(c.jid&&!groups2.some(x=>x.jid===c.jid)) g.insertAdjacentHTML('beforeend','<option value="'+esc(c.jid)+'">📤 לשלוח מ-052 (הקבוצה לא נראית עכשיו: 052 לא מחובר?)</option>');
+      g.value=c.jid||'';
+      const kind=()=>{ g.hidden=r.querySelector('.k').value!=='whatsapp'||(!groups2.length&&!c.jid); };
+      r.querySelector('.k').addEventListener('change',kind); kind();
+      g.addEventListener('change',()=>{ if(g.value&&!r.querySelector('.n').value.trim()) r.querySelector('.n').value=g.selectedOptions[0].textContent.replace(/^.*„(.*)”.*$/,'$1'); chDirty=true; });
       r.querySelector('.x').onclick=()=>{ r.remove(); chDirty=true; };
       r.addEventListener('input',()=>{ chDirty=true; });
       return r;
@@ -1033,7 +1206,8 @@
     $('set-ch-add').onclick=()=>{ const r=chRow({}); $('set-channels').appendChild(r); r.querySelector('.n').focus(); chDirty=true; };
     $('set-ch-save').onclick=async()=>{
       const list=[...$('set-channels').querySelectorAll('.chrow')].map(r=>({id:r.dataset.id,name:r.querySelector('.n').value.trim(),
-        kind:r.querySelector('.k').value,url:r.querySelector('.u').value.trim()})).filter(c=>c.name);
+        kind:r.querySelector('.k').value,url:r.querySelector('.u').value.trim(),
+        jid:r.querySelector('.k').value==='whatsapp'?r.querySelector('.g').value:''})).filter(c=>c.name);
       $('set-ch-msg').textContent='שומר…'; $('set-ch-msg').className='msg'; $('set-ch-save').disabled=true;
       try{
         const r=await apiJson('/channels',{method:'PUT',json:{channels:list}});
@@ -1053,7 +1227,7 @@
     $('vr-close').onclick=closeVersions;
     $('vr-overlay').addEventListener('click',e=>{ if(e.target===$('vr-overlay')) closeVersions(); });
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('vr-overlay').classList.contains('open')) closeVersions(); });
-    async function openVersions(text){
+    async function openVersions(text,image){
       const list=$('vr-list'); list.innerHTML=''; $('vr-msg').textContent=''; $('vr-msg').className='msg';
       $('vr-overlay').classList.add('open');
       if(!channels().length){
@@ -1067,24 +1241,46 @@
         $('vr-msg').textContent='';
         for(const v of r.versions){
           const c=v.channel, card=document.createElement('div'); card.className='vcard';
-          card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+'</span>'+
+          const sentLine=s=>'<span class="sent2">✓ נשלח מ-052 ב-'+esc(s.at.slice(11,16))+(s.at.slice(0,10)!==today()?' ('+esc(s.at.slice(8,10)+'.'+s.at.slice(5,7))+')':'')+
+            (v.reactions?' · ❤️ '+v.reactions:'')+(v.replies?' · 💬 '+v.replies:'')+'</span>';
+          card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+(c.jid?' · 052':'')+'</span>'+
+            (v.sent?sentLine(v.sent):'')+
             (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vbtns"></div>';
           card.querySelector('.vtext').textContent=v.text;
+          if(v.sent) card.classList.add('done');
           const btns=card.querySelector('.vbtns');
+          // straight to the group from Omri's second number, once
+          if(c.jid&&!v.sent){
+            const s=document.createElement('button'); s.type='button'; s.className='btn primary';
+            s.textContent='📤 לשלוח מ-052'+(image?' (עם התמונה)':'');
+            s.onclick=async()=>{
+              if(!confirm('לשלוח את הגרסה הזאת מהמספר 052 לקבוצה „'+c.name+'”?\nהיא יוצאת מיד, ואי אפשר להחזיר אותה.')) return;
+              s.disabled=true; s.textContent='שולח…'; $('vr-msg').className='msg'; $('vr-msg').textContent='';
+              try{
+                const r=await apiJson('/versions/send',{method:'POST',json:{text,channel:c.id,image:image||''}});
+                card.classList.add('done'); s.remove();
+                card.querySelector('.vhead .kind').insertAdjacentHTML('afterend',sentLine(r.sent));
+                $('vr-msg').textContent='📤 נשלח מ-052 ל„'+c.name+'”';
+              }catch(e){ s.disabled=false; s.textContent='📤 לשלוח מ-052'; $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
+            };
+            btns.appendChild(s);
+          }
           const copied=async(open)=>{
             if(!await copyText(v.text)){ $('vr-msg').textContent='ההעתקה לא הצליחה: סמנו את הטקסט והעתיקו ידנית'; $('vr-msg').className='msg err'; return; }
             card.classList.add('done'); $('vr-msg').className='msg';
             $('vr-msg').textContent='📋 הועתק ל„'+c.name+'”'+(open?'. עכשיו מדביקים בקבוצה שנפתחה':'');
             if(open) window.open(c.url,'_blank','noopener');
           };
-          if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn primary'; a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
-          const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
+          const lead=!c.jid;  // with "send from 052" the copy buttons are the second way
+          if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn '+(lead?'primary':'ghost'); a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
+          const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url||!lead?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
           list.appendChild(card);
         }
       }catch(e){ $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
     }
-    // after a send or an approve: pops up by itself only for a post with a link, once channels are listed
-    function offerVersions(text){ if(firstUrl(text)&&channels().length) openVersions(text); }
+    // after a send or an approve: pops up by itself for a post with a link once channels are listed, and for
+    // every post once a channel sends from 052 (Omri, 2026-10-28)
+    function offerVersions(text,image){ if((firstUrl(text)||sendable())&&channels().length) openVersions(text,image); }
 
     // ---- results ----
     let results=null, sortKey='at', sortDir=-1;
@@ -1114,10 +1310,61 @@
       try{ results=await apiJson('/results'); renderResults(); }
       catch(e){ $('results').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
     }
+    // ---- 🧠 what the system learned from the drafts (bot/learn.py) ----
+    function renderLearn(L){
+      const el=$('learn'), R=L.reasons||{};
+      el.innerHTML='<p class="lrn-intro">כל טיוטה שהמערכת כותבת נרשמת כאן: אושרה כמו שהיא, אושרה אחרי עריכה, או נדחתה ולמה. '+
+        'העריכות שלך הופכות לדוגמאות ל-Gemini כשהוא כותב פוסט על סרטון או סדנה, וסוג טיוטה שנדחה '+L.stop_after+' פעמים ברציפות '+
+        '(„לא רלוונטי”, „כבר פרסמתי” או בלי סיבה) מגיע אליך בטלגרם עם שאלה: להפסיק להציע אותו?</p>';
+      const used=L.kinds.filter(k=>k.made||k.stopped), unused=L.kinds.filter(k=>!k.made&&!k.stopped);
+      const grid=document.createElement('div'); grid.className='lrn-kinds';
+      for(const k of used){
+        const decided=k.as_is+k.edited+k.rejected+k.ignored, pct=n=>decided?(100*n/decided).toFixed(1):0;
+        const c=document.createElement('div'); c.className='lrn'+(k.stopped?' stopped':'');
+        const why=Object.entries(k.reasons).sort((a,b)=>b[1]-a[1]).map(([r,n])=>(R[r]||'בלי סיבה')+' ×'+n).join(' · ');
+        c.innerHTML='<h4>'+esc(k.label)+'</h4>'+
+          '<div class="bar" title="ירוק = כמו שהיא · סגול = אחרי עריכה · אדום = נדחתה · אפור = לא טופלה">'+
+            '<i class="b-ok" style="width:'+pct(k.as_is)+'%"></i><i class="b-ed" style="width:'+pct(k.edited)+'%"></i>'+
+            '<i class="b-no" style="width:'+pct(k.rejected)+'%"></i><i class="b-ig" style="width:'+pct(k.ignored)+'%"></i></div>'+
+          '<div class="nums"><span>✅ כמו שהיא <b>'+k.as_is+'</b></span><span>✏️ אחרי עריכה <b>'+k.edited+'</b></span>'+
+            '<span>🗑 נדחו <b>'+k.rejected+'</b></span>'+(k.ignored?'<span>⏭ לא טופלו <b>'+k.ignored+'</b></span>':'')+
+            (k.pending?'<span>📝 מחכות <b>'+k.pending+'</b></span>':'')+'</div>'+
+          (why?'<div class="why">למה נדחו: '+esc(why)+'</div>':'')+
+          (k.streak>=2&&!k.stopped?'<div class="warn">נדחתה '+k.streak+' פעמים ברציפות</div>':'')+
+          '<div class="state"></div>';
+        const st=c.querySelector('.state'), b=document.createElement('button'); b.type='button';
+        st.insertAdjacentHTML('afterbegin','<span>'+(k.stopped?'🛑 לא מוצעת יותר':'✓ המערכת מציעה אותה')+'</span>');
+        b.className='btn ghost'; b.textContent=k.stopped?'להחזיר':'להפסיק להציע';
+        b.onclick=async()=>{ b.disabled=true;
+          try{ renderLearn(await apiJson('/learn',{method:'PUT',json:{kind:k.kind,stopped:!k.stopped}}));
+            toast(k.stopped?'✓ חוזרת להציע: '+k.label:'🛑 לא תוצע יותר: '+k.label); }
+          catch(e){ toast(e.message,true); b.disabled=false; } };
+        st.appendChild(b); grid.appendChild(c);
+      }
+      if(used.length) el.appendChild(grid);
+      else el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין טיוטות רשומות. מהטיוטה הבאה שהמערכת כותבת (אירוע, סדנה או סרטון), מה שיקרה איתה יופיע כאן.</p>');
+      if(unused.length) el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד לא נכתבו: '+unused.map(k=>esc(k.label)).join(' · ')+'</p>');
+      el.insertAdjacentHTML('beforeend','<h2>✍️ העריכות שלך לפני אישור</h2>');
+      if(!L.edits.length){ el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין. טיוטה שנערכה ואז אושרה תופיע כאן: הנוסח של המערכת מול הנוסח שלך.</p>'); return; }
+      const list=document.createElement('div'); list.className='edits';
+      for(const e of L.edits){
+        const c=document.createElement('div'); c.className='edit';
+        c.innerHTML='<div class="ehead">'+esc(e.label)+(e.day?' · '+dm(e.day):'')+'</div><div class="pair">'+
+          '<div class="was" dir="auto"><small>מה שהמערכת כתבה</small></div><div class="now" dir="auto"><small>מה שיצא</small></div></div>';
+        c.querySelector('.was').append(e.draft); c.querySelector('.now').append(e.final);
+        list.appendChild(c);
+      }
+      el.appendChild(list);
+    }
+    async function loadLearn(){
+      try{ renderLearn(await apiJson('/learn')); }
+      catch(e){ $('learn').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
+    }
     document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
       document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
       document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id===t.dataset.pane));
       if(t.dataset.pane==='results') loadResults();
+      if(t.dataset.pane==='learn') loadLearn();
     });
 
     // ---- the editor ----
@@ -1163,11 +1410,12 @@
     }
     $('ed-group').addEventListener('change',()=>{ also.delete($('ed-group').value); renderSuggest(); preview(); });
     // the time of day: four choices, no minutes (Omri, 2026-10-18). The Sheet keeps HH:MM, "" = the usual time.
-    function timeSlots(){ return [['','☀️ אחר הצהריים · '+state.settings.time+' (הרגיל)'],['08:00','🌅 בוקר · 08:00'],['12:00','🕛 צהריים · 12:00'],['20:00','🌙 ערב · 20:00']]; }
+    // the time first: a phone's half-width box cut it off (2026-10-28)
+    function timeSlots(){ return [['','☀️ '+state.settings.time+' · הרגיל'],['08:00','🌅 08:00 · בוקר'],['12:00','🕛 12:00 · צהריים'],['20:00','🌙 20:00 · ערב']]; }
     function fillTimes(current){
       const sel=$('ed-time'); sel.innerHTML='';
       const slots=timeSlots();
-      if(current&&!slots.some(s=>s[0]===current)) slots.push([current,'🕒 '+current+' (כפי שנקבע)']);
+      if(current&&!slots.some(s=>s[0]===current)) slots.push([current,'🕒 '+current+' · כפי שנקבע']);
       for(const [v,label] of slots){ const o=document.createElement('option'); o.value=v; o.textContent=label; sel.appendChild(o); }
       sel.value=current;
     }
@@ -1177,23 +1425,21 @@
       fillGroups(p.group||''); renderSuggest();
       image=p.image||'';
       $('ed-title').textContent=editing?(editing.draft?'📝 טיוטה: עורכים ומאשרים':'עריכת הודעה'):'הודעה חדשה';
-      $('ed-approve').hidden=!(editing&&editing.draft);
-      $('ed-save').textContent=(editing&&editing.draft)?'שמירה כטיוטה':'שמירה';
       $('ed-date').value=p.date; fillTimes(p.time||''); $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
       $('ed-nofooter').checked=p.footer===false;
-      $('ed-time-hint').textContent='הרגיל יוצא עד רבע שעה אחרי '+state.settings.time+'. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
-      $('ed-delete').hidden=!editing;
+      $('ed-time-hint').textContent='הרגיל יוצא ב-'+state.settings.time+' או עד רבע שעה אחרי. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
       proofed=''; hideProof();
-      // a sent post: only its text can change, and only the "fix in WhatsApp" button sends it
-      const fix=!!(editing&&editing.sent);
-      ['ed-approve','ed-save','ed-send','ed-delete','ed-test'].forEach(id=>{ if(fix) $(id).hidden=true; });
-      if(!fix) $('ed-save').hidden=$('ed-send').hidden=$('ed-test').hidden=false;
-      $('ed-fix').hidden=!fix;
+      // one main button by the post's state: a draft → approve, a sent post → fix in WhatsApp, else save.
+      // A sent post: only its text can change, and only the "fix in WhatsApp" button sends it.
+      const fix=!!(editing&&editing.sent), draft=!!(editing&&editing.draft);
+      $('ed-fix').hidden=!fix; $('ed-approve').hidden=fix||!draft; $('ed-save').hidden=fix||draft;
+      $('ed-more').closest('.more-wrap').hidden=fix; $('ed-delete').hidden=!editing||fix; toggleMenu(false);
+      edView('write');
       ['ed-date','ed-time','ed-group','ed-skip'].forEach(id=>$(id).disabled=fix);
       $('ed-image').closest('.field').hidden=fix; $('ed-skip').closest('.check').hidden=fix;
       $('ed-nofooter-box').hidden=fix;   // a fix goes out with the footer as the post had it
-      $('ed-cancel').textContent=fix?'ביטול':'סגירה';
+      $('ed-cancel').textContent=fix?'ביטול':draft?'שמירה כטיוטה':'סגירה';
       if(fix){ $('ed-title').textContent='✏️ תיקון הודעה שכבר נשלחה';
         say('אפשר לתקן את הטקסט עד '+new Date(editing.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+'. בוואטסאפ יופיע ליד ההודעה „נערכה”.'); }
       if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
@@ -1203,12 +1449,14 @@
       // the phone's back button closes the editor (as "סגירה": what changed becomes a draft), not the app
       if(!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); hideProof();
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof();
       if(edHist){ edHist=false; try{ history.back(); }catch(_){ } } }
     let edHist=false;
     window.addEventListener('popstate',async()=>{
       if(!edHist||!$('overlay').classList.contains('open')) return;
-      edHist=false; await leaveEditor();
+      edHist=false;
+      if(sheetDone){ sheetDone(false); try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } return; }   // back = "חזרה" in the sheet
+      await leaveEditor();
       if($('overlay').classList.contains('open')&&!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     });
 
@@ -1217,12 +1465,17 @@
     // goes on only when Omri says so. The same text is not checked twice.
     let proofed='';
     function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-    async function proofGate(date,go){
+    async function proofread(text,date){
+      try{ return Object.assign(await apiJson('/proofread',{method:'POST',json:{text,date}}),{text}); }
+      catch(e){ return {ok:false,issues:[],error:e.message,text}; }
+    }
+    // pre: the check already run on this text (approve from the list), so it isn't run twice
+    async function proofGate(date,go,pre){
       const text=$('ed-text').value;
       if(proofed&&proofed===text) return true;
-      setBusy(true); say('🔎 בודק טעויות…');
-      let r;
-      try{ r=await apiJson('/proofread',{method:'POST',json:{text,date}}); }catch(e){ r={ok:false,issues:[],error:e.message}; }
+      setBusy(true);
+      let r=pre&&pre.text===text?pre:null;
+      if(!r){ say('🔎 בודק טעויות…'); r=await proofread(text,date); }
       if(r.ok&&!r.issues.length){ setBusy(false); proofed=text; say('✓ לא נמצאו טעויות'); return true; }
       say('');
       return new Promise(resolve=>showProof(r,go,v=>{ setBusy(false); resolve(v); }));
@@ -1407,13 +1660,53 @@
     $('ed-text').addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
       if(k==='b'){ e.preventDefault(); wrapSel('*'); } else if(k==='i'){ e.preventDefault(); wrapSel('_'); } else if(k==='enter'){ e.preventDefault(); save(false); } } });
     function say(t,err){ $('ed-msg').textContent=t; $('ed-msg').className='msg'+(err?' err':''); }
-    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve','ed-test','ed-cancel','ed-fix'].forEach(id=>$(id).disabled=v); }
+    function setBusy(v){ busy=v; ['ed-save','ed-send','ed-delete','ed-approve','ed-test','ed-cancel','ed-fix','ed-more'].forEach(id=>$(id).disabled=v); }
+
+    // ---- ⋯ : test, send now, delete ----
+    function toggleMenu(open){ $('ed-menu').hidden=!open; $('ed-more').setAttribute('aria-expanded',String(open));
+      if(open){ const f=$('ed-menu').querySelector('button:not([hidden])'); if(f) f.focus(); } }
+    $('ed-more').onclick=e=>{ e.stopPropagation(); toggleMenu($('ed-menu').hidden); };
+    $('ed-menu').addEventListener('click',e=>{ if(e.target.closest('button')) toggleMenu(false); });
+    document.addEventListener('click',e=>{ if(!$('ed-menu').hidden&&!e.target.closest('#ed-menu,#ed-more')) toggleMenu(false); });
+    // the phone: writing or the preview (the preview sat below the fold)
+    function edView(v){ $('editor').dataset.view=v; document.querySelectorAll('.ed-views button').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); }
+    document.querySelectorAll('.ed-views button').forEach(b=>b.onclick=()=>edView(b.dataset.view));
+
+    // ---- a step that can't be taken back asks here, showing what will happen (not the browser's confirm()) ----
+    let sheetDone=null;
+    function sheet({title,body,note,go,danger}){
+      return new Promise(res=>{
+        const ov=$('sh-overlay'), back=document.activeElement;
+        $('sh-title').textContent=title; $('sh-body').replaceChildren(...[].concat(body||[]));
+        $('sh-note').textContent=note||''; $('sh-go').textContent=go; $('sh-go').className='btn '+(danger?'danger solid':'primary');
+        ov.classList.add('open'); setTimeout(()=>$('sh-back').focus(),30);
+        const key=e=>{ if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation(); done(false); }
+          else if(e.key==='Tab'){ const a=$('sh-go'), b=$('sh-back'); if(document.activeElement===b&&!e.shiftKey){ e.preventDefault(); a.focus(); }
+            else if(document.activeElement===a&&e.shiftKey){ e.preventDefault(); b.focus(); } } };
+        const done=v=>{ if(!sheetDone) return; sheetDone=null; ov.classList.remove('open'); document.removeEventListener('keydown',key,true);
+          if(back&&back.focus) try{ back.focus(); }catch(_){ } res(v); };
+        sheetDone=done; document.addEventListener('keydown',key,true);
+        $('sh-go').onclick=()=>done(true); $('sh-back').onclick=()=>done(false);
+        ov.onclick=e=>{ if(e.target===ov) done(false); };
+      });
+    }
+    // the post as it will go out, in a phone frame, for the sheet
+    function sheetPreview(text,group,bar){
+      const ph=document.createElement('div'); ph.className='phone';
+      ph.innerHTML='<div class="bar"></div><div class="item"></div>'; ph.firstChild.textContent=bar;
+      ph.lastChild.appendChild(bubble(text,{time:new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}),imageId:driveId(image),
+        footer:footerFor(text,group,!$('ed-nofooter').checked),clickable:false}));
+      return ph;
+    }
+    function groupOf(jid){ return (state.groups||[]).find(g=>jid?g.jid===jid:g.kind==='announce')||null; }
+
     // auto: the editor was closed without "save" → what changed is kept as a draft
-    async function save(approve,auto){
+    // pre: a typo check already run on this text (approve from the list)
+    async function save(approve,auto,pre){
       if(busy||(editing&&editing.sent)) return;
       // a post that will go out is checked for typos first; a draft kept as a draft is not
       const goesOut=!auto&&!$('ed-skip').checked&&(approve===true||!(editing&&editing.draft));
-      if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור')) return;
+      if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור',pre)) return;
       const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       if(auto) body.draft=true;
@@ -1428,7 +1721,7 @@
         for(const jid of also){ say('שומר עותק ל'+groupName(jid)+'…');
           await apiJson('/posts',{method:'POST',json:Object.assign({},body,{group:jid,approve:false,draft:asDraft})}); }
         closeEditor(); await load();
-        if(approve===true&&!auto&&!body.skip) offerVersions(body.text);
+        if(approve===true&&!auto&&!body.skip) offerVersions(body.text,body.image);
       }catch(e){ say((auto?'לא נשמר כטיוטה: ':'')+e.message,true); }
       finally{ setBusy(false); }
     }
@@ -1436,7 +1729,9 @@
     $('ed-approve').onclick=()=>save(true);
     $('ed-cancel').onclick=leaveEditor;
     $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) leaveEditor(); });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')){ if(emojisOpen()){ toggleEmojis(false); $('ed-text').focus(); } else leaveEditor(); } });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('overlay').classList.contains('open')&&!sheetDone){
+      if(!$('ed-menu').hidden){ toggleMenu(false); $('ed-more').focus(); }
+      else if(emojisOpen()){ toggleEmojis(false); $('ed-text').focus(); } else leaveEditor(); } });
     // the tab closing with unsaved text: kept in this browser, and the browser asks first
     window.addEventListener('beforeunload',e=>{ if($('overlay').classList.contains('open')&&$('ed-text').value.trim()&&changed()){ saveBackup(); e.preventDefault(); e.returnValue=''; } });
     $('ed-test').onclick=async()=>{
@@ -1448,7 +1743,10 @@
       catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
     $('ed-delete').onclick=async()=>{
-      if(!editing||busy||!confirm('למחוק את ההודעה?')) return;
+      if(!editing||busy) return;
+      const first=$('ed-text').value.trim().split('\n')[0].slice(0,80);
+      const q=Object.assign(document.createElement('p'),{textContent:'„'+first+(first.length>=80?'…':'')+'”',dir:'auto'}); q.style.color='var(--muted)';
+      if(!await sheet({title:'🗑 למחוק את ההודעה?',body:q,note:editing.draft?'הטיוטה נמחקת מהגיליון ולא תצא.':'ההודעה נמחקת מהגיליון ולא תצא.',go:'🗑 למחוק',danger:true})) return;
       setBusy(true); say('מוחק…');
       try{ await apiJson('/posts/'+editing.row+'?key='+encodeURIComponent(editing.key),{method:'DELETE'}); closeEditor(); await load(); }
       catch(e){ say(e.message,true); } finally{ setBusy(false); }
@@ -1460,14 +1758,19 @@
       if(!$('ed-text').value.trim()){ say('ההודעה ריקה',true); return; }
       if(!await proofGate(today(),'לשלוח')) return;
       const text=$('ed-text').value;
-      const group=$('ed-group').value, where=[group,...also].map(j=>j?'קבוצה „'+groupName(j)+'”':'ערוץ העדכונים');
-      if(!confirm('לשלוח עכשיו, כמו שזה כתוב כאן, ל'+where.join(' ול')+'?\nההודעה יוצאת מיד לכל החברים, ואי אפשר להחזיר אותה.')) return;
+      const group=$('ed-group').value, where=[group,...also];
+      // where it goes and to how many, then the post itself
+      const to=document.createElement('ul'); to.className='to'; let total=0;
+      for(const j of where){ const g=groupOf(j), li=document.createElement('li'); total+=(g&&g.size)||0;
+        li.innerHTML='<b dir="auto"></b>'+(g&&g.size?' · '+g.size+' חברים':''); li.firstChild.textContent=j?'👥 '+groupName(j):'📢 ערוץ העדכונים'; to.appendChild(li); }
+      if(!await sheet({title:'📤 לשלוח עכשיו?',body:[to,sheetPreview(text,group,group?groupName(group):'בינה בהוראה 🧠')],
+        note:'יוצאת מיד, כמו שהיא כאן, ואי אפשר להחזיר אותה.',go:'📤 לשלוח עכשיו'+(total?' ל-'+total+' חברים':'')})) return;
       setBusy(true); say('שולח…');
       try{
         await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
-        offerVersions(text);
+        offerVersions(text,image);
       }catch(e){ say(e.message,true); } finally{ setBusy(false); }
     };
     // a sent post's typo, fixed in WhatsApp itself (within 15 minutes of the send)
@@ -1476,7 +1779,8 @@
       if(!$('ed-text').value.trim()){ say('ההודעה ריקה',true); return; }
       if(Date.now()>editing.deadline){ say('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); return; }
       if(!await proofGate(editing.date,'לשלוח את התיקון')) return;
-      if(!confirm('לתקן את ההודעה שכבר יצאה? כל מי שקיבל אותה יראה את הנוסח החדש, וליד ההודעה יופיע „נערכה”.')) return;
+      if(!await sheet({title:'✏️ לתקן את ההודעה שכבר יצאה?',body:sheetPreview($('ed-text').value,editing.group||'',editing.group?groupName(editing.group):'בינה בהוראה 🧠'),
+        note:'כל מי שקיבל אותה יראה את הנוסח החדש, וליד ההודעה יופיע „נערכה”.',go:'✏️ לתקן בוואטסאפ'})) return;
       setBusy(true); say('מתקן בוואטסאפ…');
       try{
         await apiJson('/edit-sent',{method:'POST',json:{row:editing.row,key:editing.key,text:$('ed-text').value}});
@@ -1499,6 +1803,9 @@
     }
     function newPost(){ if(state) openEditor({date:nextPostDay()}); }
     $('fab').onclick=newPost;
+    // it steps aside while scrolling down, so it never sits on a button (the next draft's "לא לשלוח" was under it)
+    let lastY=scrollY;
+    addEventListener('scroll',()=>{ const y=scrollY; if(Math.abs(y-lastY)<8) return; $('fab').classList.toggle('away',y>lastY&&y>60); lastY=y; },{passive:true});
 
     // drafts waiting for approval, first thing on the board (from the notification: ?view=approve)
     // the coming three weeks only, however far the calendar has loaded (the rest wait in their days)
@@ -1507,33 +1814,99 @@
       return state.weeks.flatMap(w=>w.days).filter(d=>!d.past&&d.date<end)
         .flatMap(d=>d.posts.filter(p=>p.draft&&!p.sent).map(p=>({p,d})));
     }
+    // "🗑 לא לשלוח" (Omri, 2026-10-28): why, in one tap, so the system learns what to suggest (bot/learn.py)
+    const REASONS=[['not_relevant','לא רלוונטי'],['wrong_group','קבוצה לא נכונה'],['wrong_time','יום או שעה לא מתאימים'],
+                   ['bad_text','הנוסח לא טוב'],['already_posted','כבר פרסמתי על זה']];
+    const UNDO_MS=5000;
+    const rejecting=new Map();   // row → the delete waiting UNDO_MS, so "↩️ ביטול" can still stop it
+    function reject(p,reason){
+      const go=()=>{ if(!rejecting.has(p.row)) return; rejecting.delete(p.row);
+        return apiJson('/posts/'+p.row+'?key='+encodeURIComponent(p.key)+'&reason='+encodeURIComponent(reason),{method:'DELETE',keepalive:true})
+          .then(load).catch(e=>{ toast(e.message,true); load(); }); };
+      rejecting.set(p.row,{timer:setTimeout(go,UNDO_MS),go,p});
+      renderBoard();
+    }
+    function unreject(row){ const r=rejecting.get(row); if(!r) return; clearTimeout(r.timer); rejecting.delete(row); renderBoard(); }
+    window.addEventListener('pagehide',()=>{ for(const r of [...rejecting.values()]){ clearTimeout(r.timer); r.go(); } });
     function renderApprovals(el){
-      const list=draftsAhead();
-      if(!list.length){ if(startView==='approve') el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור</h2><p class="apv-none">✓ אין טיוטות שמחכות לאישור.</p>'); return; }
+      const all=draftsAhead(), list=all.filter(({p})=>!rejecting.has(p.row)), gone=all.filter(({p})=>rejecting.has(p.row));
+      if(!all.length){ if(startView==='approve') el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור</h2><p class="apv-none">✓ אין טיוטות שמחכות לאישור.</p>'); return; }
       el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור ('+list.length+')</h2>');
       const box=document.createElement('div'); box.className='apv';
+      for(const {p} of gone){
+        const g=document.createElement('div'); g.className='apv-gone';
+        g.innerHTML='<span dir="auto">🗑 לא תצא: '+esc(p.text.split('\n')[0].slice(0,60))+'</span>';
+        const u=document.createElement('button'); u.type='button'; u.className='btn ghost'; u.textContent='↩️ ביטול';
+        u.onclick=()=>unreject(p.row); g.appendChild(u); box.appendChild(g);
+      }
       for(const {p,d} of list){
         const it=document.createElement('div'); it.className='apv-item';
-        const ev=eventOf(p), md=ev?null:mediaOf(p);
-        const about=ev?' · 📅 '+esc(ev.name):md?' · '+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name):'';
-        it.innerHTML='<div class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+(p.group?' → '+esc(p.group_name):' · ערוץ העדכונים')+(p.image?' · 🖼':'')+about+'</div>'+
-          '<div class="apv-text" dir="auto">'+esc(p.text)+'</div><div class="apv-btns"></div>';
-        const btns=it.querySelector('.apv-btns'), ctx=ev||(md&&md.ev);
+        const ev=eventOf(p), md=ev?null:mediaOf(p), ctx=ev||(md&&md.ev);
+        const chips=['<span class="chip to" dir="auto">→ '+esc(p.group?p.group_name:'ערוץ העדכונים')+'</span>'];
+        if(ev) chips.push('<span class="chip ev" dir="auto">📅 '+esc(ev.name)+'</span>');
+        else if(md) chips.push('<span class="chip md" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>');
+        if(p.image) chips.push('<span class="chip bot">🖼 עם תמונה</span>');
+        if(p.made_by) chips.push('<span class="chip bot" title="טיוטה שהמערכת כתבה">🤖 '+esc(p.made_by)+'</span>');
+        it.innerHTML='<div class="apv-head"><span class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+'</span>'+chips.join('')+'</div>'+
+          '<div class="apv-chat"></div><button class="apv-more" type="button" hidden>עוד ▾</button><div class="apv-btns"></div>';
+        // the draft as the bubble it will be: *bold* bold, the footer, the picture or link card
+        const b=bubble(p.text,{time:p.due,imageId:p.image_id,footer:boardFooter(p)}), more=it.querySelector('.apv-more');
+        b.classList.add('clamp'); b.title='לחיצה פותחת לעריכה'; b.onclick=()=>openEditor(p,ctx);
+        it.querySelector('.apv-chat').appendChild(b);
+        more.onclick=()=>{ const open=!b.classList.toggle('clamp'); more.textContent=open?'פחות ▴':'עוד ▾'; };
+        const btns=it.querySelector('.apv-btns');
         const ok=document.createElement('button'); ok.type='button'; ok.className='btn primary'; ok.textContent='✅ לאשר';
-        ok.onclick=()=>quickApprove(p,ctx);
+        ok.onclick=()=>quickApprove(p,ctx,ok);
         const ed=document.createElement('button'); ed.type='button'; ed.className='btn ghost'; ed.textContent='✏️ לעריכה';
         ed.onclick=()=>openEditor(p,ctx);
-        it.querySelector('.apv-text').onclick=()=>openEditor(p,ctx);
-        btns.append(ok,ed); box.appendChild(it);
+        const no=document.createElement('button'); no.type='button'; no.className='btn reject'; no.textContent='🗑 לא לשלוח';
+        no.onclick=()=>{ btns.hidden=true; it.appendChild(whyBox(p,()=>{ btns.hidden=false; })); };
+        btns.append(ok,ed,no); box.appendChild(it);
       }
       el.appendChild(box);
+      requestAnimationFrame(()=>box.querySelectorAll('.apv-item').forEach(it=>{
+        const b=it.querySelector('.bubble'), t=b.querySelector('.text'), cut=t.scrollHeight>t.clientHeight+2;
+        b.classList.toggle('cut',cut); it.querySelector('.apv-more').hidden=!cut; }));
     }
-    // approve = the editor's own "✅ לאשר": the typo check runs, and shows what it found in the editor
-    async function quickApprove(p,ctx){
-      openEditor(p,ctx);
-      const when=p.date===today()?'היום':dm(p.date);
-      await save(true);
-      if(!$('overlay').classList.contains('open')) toast('✅ אושרה. יוצאת '+when+' ב-'+p.due+'.');
+    function whyBox(p,back){
+      const w=document.createElement('div'); w.className='apv-why';
+      w.innerHTML='<p>למה לא? לחיצה אחת, והמערכת לומדת מה להציע (אפשר לבטל עוד 5 שניות).</p><div class="reasons"></div>';
+      const rs=w.querySelector('.reasons');
+      for(const [code,label] of [...REASONS,['','בלי סיבה']]){
+        const b=document.createElement('button'); b.type='button'; b.className='reason'+(code?'':' plain'); b.textContent=label;
+        b.onclick=()=>reject(p,code); rs.appendChild(b);
+      }
+      const c=document.createElement('button'); c.type='button'; c.className='reason back'; c.textContent='חזרה';
+      c.onclick=()=>{ w.remove(); back(); }; rs.appendChild(c);
+      return w;
+    }
+    // approve right here (Omri chose this round, 2026-10-28): the typo check runs in place; only when it finds
+    // something (or can't run) does the editor open, with what it found
+    async function quickApprove(p,ctx,btn){
+      const it=btn.closest('.apv-item'); it.querySelectorAll('button').forEach(b=>b.disabled=true);
+      btn.textContent='🔎 בודק טעויות…';
+      const r=await proofread(p.text,p.date);
+      if(!r.ok||r.issues.length){
+        renderBoard(); openEditor(p,ctx); await save(true,false,r);
+        if(!$('overlay').classList.contains('open')) approvedToast(p);
+        return;
+      }
+      btn.textContent='מאשר…';
+      try{
+        await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:p.date,time:p.time||'',text:p.text,image:p.image||'',skip:false,
+          approve:true,group:p.group||'',no_footer:p.footer===false}});
+        await load(); approvedToast(p); offerVersions(p.text,p.image);
+      }catch(e){ toast(e.message,true); renderBoard(); }
+    }
+    function approvedToast(p){ undoToast('✅ אושרה. יוצאת '+(p.date===today()?'היום':dm(p.date))+' ב-'+p.due+'.',()=>unapprove(p.row)); }
+    // "↩️ ביטול" right after an approve: the post waits for approval again
+    async function unapprove(row){
+      const p=state.weeks.flatMap(w=>w.days).flatMap(d=>d.posts).find(x=>x.row===row);
+      if(!p||p.sent||p.draft){ toast(p&&p.sent?'היא כבר יצאה, אי אפשר לבטל':'אין מה לבטל',!!(p&&p.sent)); return; }
+      try{
+        await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:p.date,time:p.time,text:p.text,image:p.image,group:p.group,draft:true}});
+        toast('↩️ בוטל: חזרה לטיוטה שמחכה לאישור'); await load();
+      }catch(e){ toast(e.message,true); }
     }
 
     // what was shared into the app from another app (sw.js keeps it): a new post, open in the editor
