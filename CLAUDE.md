@@ -98,6 +98,9 @@ light look (white bubble on `#efeae2`). theme-color and the manifest follow.
 **💡 Ideas for posts (2026-10-29):** a folded panel on the board from `/state` → `ideas` (🔗 what worked, 💭 the idea
 bank incl. Live-work, 📘 the Playbook); "✍️ לכתוב" = `GET /idea-text` into the editor (a save marks it used), a drag
 onto a day = a draft there, "לא עכשיו" = `POST /ideas/hide`. See content-machine CLAUDE.md → "Ideas for posts".
+**Drag, green, sent (2026-10-29):** a long press lifts a post on the phone (`touchDrag`, the finger carries a
+`.drag-ghost`, every `[data-drop]` day lights up); on the computer a ⠿ handle and the same lights. Approved and waiting
+= `.chip.ok` green ("✅ אושרה · יוצאת HH:MM"), sent = solid green. View "📜 נשלחו" = `GET /history` (90 days, +60 a click).
 
 **When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
 - **Public** → normal `<a class="tool-card">` in `index.html`.

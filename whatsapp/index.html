@@ -174,6 +174,30 @@
     .wcol .none{font-size:.8rem;padding:8px}
     .wcol .add{margin-top:0;align-self:stretch}
     .closednote{color:var(--faint);font-size:.82rem;text-align:center;padding:8px 0}
+    /* dragging (2026-10-29): every day that takes a post lights up while one is carried; a long press on the phone */
+    .movable{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+    .grip{color:var(--faint);font-size:.9rem;line-height:1;cursor:grab;margin-inline-end:2px}
+    body.dragging-on [data-drop]:not(.shut){outline:2px dashed #b9a6ef;outline-offset:-2px}
+    body.dragging-on [data-drop].drop-on{outline:2px solid var(--draft);background:var(--draft-bg)}
+    .drag-ghost{position:fixed;z-index:60;pointer-events:none;opacity:.92;box-shadow:0 8px 24px rgba(60,64,67,.35);transform:rotate(-2deg);
+           background:var(--card);border-radius:10px;max-height:160px;overflow:hidden}
+    /* approved = green (Omri, 2026-10-29: "if I approved it, it shows in green"); sent = solid green */
+    .chip.ok{color:var(--ok);background:var(--ok-bg)}
+    .chip.sent{color:#fff;background:var(--ok);border-color:var(--ok)}
+    .ce.ok{background:var(--ok-bg);color:var(--ok);box-shadow:inset 0 0 0 1px #9fd3ae}
+    .ce.sent{background:var(--ok);color:#fff}
+    .wpost.ok{border-color:#9fd3ae;box-shadow:inset 3px 0 0 var(--ok)}
+    .apv-ok{color:var(--ok)}
+    /* 📜 what was sent */
+    .hist-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+    .hist-tools input{flex:1 1 220px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:.95rem;padding:9px 12px}
+    .hist-day{margin:18px 4px 8px;font-size:.95rem;font-weight:600;color:var(--ink)}
+    .hist-item{display:grid;grid-template-columns:200px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+               box-shadow:var(--shadow);padding:12px;margin-bottom:8px}
+    .hist-item .hmeta{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--muted)}
+    .hist-item .hmeta b{color:var(--ink);font-size:.95rem}
+    .hist-item .chat{min-height:0}
+    @media (max-width:760px){ .hist-item{grid-template-columns:1fr} }
     /* 💡 ideas for posts */
     .ev.idea .post{color:var(--muted)}
     .ev.idea .outline{margin:0;padding-inline-start:18px;font-size:.8rem;color:var(--muted)}
@@ -728,8 +752,8 @@
       if(p.failed) return ['fail',p.status];
       if(p.skipped) return ['skip','לא לשלוח'];
       if(p.draft) return ['draft','📝 טיוטה · מחכה לאישור'];
-      if(/^שולח עכשיו/.test(p.status||'')) return ['wait','📤 יוצאת עכשיו'];
-      return ['wait','ממתין · '+p.due];
+      if(/^שולח עכשיו/.test(p.status||'')) return ['ok','📤 יוצאת עכשיו'];
+      return ['ok','✅ אושרה · יוצאת '+p.due];
     }
     function statsOf(r){
       if(!r) return '';
@@ -813,18 +837,62 @@
 
     // ---- drag a post or a suggestion to another day ----
     let drag=null;
+    function dragEnd(){ drag=null; document.body.classList.remove('dragging-on');
+      document.querySelectorAll('.drop-on').forEach(c=>c.classList.remove('drop-on')); }
     function draggable(node,what){
-      node.draggable=true;
-      node.addEventListener('dragstart',ev=>{ drag=what; node.classList.add('dragging'); ev.dataTransfer.effectAllowed='move';
-        try{ ev.dataTransfer.setData('text/plain','wa'); }catch(_){ } });
-      node.addEventListener('dragend',()=>{ node.classList.remove('dragging'); drag=null;
-        document.querySelectorAll('.drop-on').forEach(c=>c.classList.remove('drop-on')); });
+      node.draggable=true; node.classList.add('movable');
+      node.addEventListener('dragstart',ev=>{ drag=what; node.classList.add('dragging'); document.body.classList.add('dragging-on');
+        ev.dataTransfer.effectAllowed='move'; try{ ev.dataTransfer.setData('text/plain','wa'); }catch(_){ } });
+      node.addEventListener('dragend',()=>{ node.classList.remove('dragging'); dragEnd(); });
+      touchDrag(node,what);
     }
+    // on the phone (Omri, 2026-10-29: "easily drag from column to column"): a long press lifts the post,
+    // the finger carries it, letting go over a day puts it there
+    let touchMoving=null, swallowClick=false;
+    function touchDrag(node,what){
+      let timer=null, sx=0, sy=0;
+      node.addEventListener('pointerdown',e=>{
+        if(e.pointerType==='mouse') return;
+        sx=e.clientX; sy=e.clientY; clearTimeout(timer);
+        timer=setTimeout(()=>{
+          const r=node.getBoundingClientRect(), ghost=node.cloneNode(true);
+          ghost.className+=' drag-ghost'; ghost.style.width=Math.min(r.width,280)+'px';
+          document.body.appendChild(ghost);
+          touchMoving={what,node,ghost,over:null}; drag=what;
+          node.classList.add('dragging'); document.body.classList.add('dragging-on');
+          if(navigator.vibrate) try{ navigator.vibrate(15); }catch(_){ }
+          moveGhost(sx,sy);
+        },380);
+      });
+      const cancel=()=>clearTimeout(timer);
+      node.addEventListener('pointermove',e=>{ if(!touchMoving&&Math.hypot(e.clientX-sx,e.clientY-sy)>10) cancel(); });
+      node.addEventListener('pointerup',cancel); node.addEventListener('pointercancel',e=>{ if(!touchMoving) cancel(); });
+      node.addEventListener('contextmenu',e=>{ if(touchMoving||e.pointerType!=='mouse') e.preventDefault(); });
+    }
+    function targetAt(x,y){ const el=document.elementFromPoint(x,y); return el&&el.closest('[data-drop]'); }
+    function moveGhost(x,y){
+      const t=touchMoving; if(!t) return;
+      t.ghost.style.left=(x-20)+'px'; t.ghost.style.top=(y-24)+'px';
+      t.ghost.style.display='none'; const over=targetAt(x,y); t.ghost.style.display='';
+      if(over!==t.over){ if(t.over) t.over.classList.remove('drop-on'); t.over=over&&!over._shut()?over:null; if(t.over) t.over.classList.add('drop-on'); }
+      // near the top or bottom edge the page scrolls, so a day further away can be reached
+      if(y<70) scrollBy(0,-14); else if(y>innerHeight-70) scrollBy(0,14);
+    }
+    document.addEventListener('touchmove',e=>{ if(!touchMoving) return; e.preventDefault(); const p=e.touches[0]; moveGhost(p.clientX,p.clientY); },{passive:false});
+    document.addEventListener('touchend',()=>{
+      const t=touchMoving; if(!t) return; touchMoving=null; swallowClick=true; setTimeout(()=>swallowClick=false,400);
+      t.ghost.remove(); t.node.classList.remove('dragging');
+      const over=t.over, w=t.what; dragEnd();
+      if(over) moveTo(w,over._day);
+    });
+    document.addEventListener('click',e=>{ if(swallowClick){ e.stopPropagation(); e.preventDefault(); swallowClick=false; } },true);
     function dropTarget(card,d){
       const shut=()=>d.past||d.closed;
+      card.dataset.drop='1'; card._day=d; card._shut=shut;
+      if(shut()) card.classList.add('shut');
       card.addEventListener('dragover',ev=>{ if(!drag||shut()) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; card.classList.add('drop-on'); });
       card.addEventListener('dragleave',ev=>{ if(!card.contains(ev.relatedTarget)) card.classList.remove('drop-on'); });
-      card.addEventListener('drop',ev=>{ ev.preventDefault(); card.classList.remove('drop-on'); const w=drag; drag=null; if(w&&!shut()) moveTo(w,d); });
+      card.addEventListener('drop',ev=>{ ev.preventDefault(); const w=drag; dragEnd(); if(w&&!shut()) moveTo(w,d); });
     }
     async function moveTo(w,d){
       try{
@@ -962,7 +1030,7 @@
       for(const p of d.posts){
         const it=document.createElement('div'); it.className='item';
         const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
-        it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
+        it.innerHTML='<div class="meta">'+(!p.sent&&!d.past?'<span class="grip" title="גוררים ליום אחר">⠿</span>':'')+'<span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
           (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
           (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
         const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:boardFooter(p),clickable:!p.sent,skipped:p.skipped,draft:p.draft});
@@ -997,7 +1065,8 @@
       return card;
     }
     // ---- the calendar: month / week / day, beside the list (Omri, 2026-10-29: "easy to zoom out and in") ----
-    const VIEWS=[['month','חודש'],['week','שבוע'],['day','יום'],['list','רשימה']];
+    const VIEWS=[['month','חודש'],['week','שבוע'],['day','יום'],['list','רשימה'],['sent','📜 נשלחו']];
+    const FLAT=v=>v==='list'||v==='sent';   // no calendar range, no arrows
     let view=VIEWS.some(v=>v[0]===lsGet('wa_view'))?lsGet('wa_view'):'week', cursor=today();
     const DAY_HE=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'], DAY_S=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
     const dt=s=>new Date(s+'T12:00:00Z'), iso=d=>d.toISOString().slice(0,10);
@@ -1016,7 +1085,7 @@
     }
     // ask the API for enough weeks to cover what is shown; true = a new load is needed
     function fitRange(){
-      if(view==='list') return false;
+      if(FLAT(view)) return false;
       const f=firstWeek(), {from,to}=viewRange();
       const w=Math.min(MAXW,Math.max(weeks,Math.ceil((dt(to)-dt(f))/864e5/7+1/7)));
       const b=Math.min(MAXW,Math.max(back,Math.ceil((dt(f)-dt(from))/864e5/7)));
@@ -1064,7 +1133,7 @@
       const seg=document.createElement('div'); seg.className='seg';
       for(const [k,n] of VIEWS){ const b=document.createElement('button'); b.type='button'; b.textContent=n; if(k===view) b.className='on'; b.onclick=()=>go(k); seg.appendChild(b); }
       bar.appendChild(seg);
-      if(view==='list') return bar;
+      if(FLAT(view)) return bar;
       const nav=document.createElement('div'); nav.className='calnav';
       const btn=(t,title,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='navb'; b.textContent=t; b.title=title; b.onclick=fn; return b; };
       const {from,to}=viewRange(), f=firstWeek();
@@ -1076,7 +1145,7 @@
       return bar;
     }
     const plain=t=>(t||'').replace(/https?:\/\/\S+/g,'🔗').replace(/[*_~`]/g,'').replace(/\s+/g,' ').trim();
-    function postIcon(p){ return p.sent?'✓':p.failed?'✗':p.skipped?'⏭':p.draft?'📝':/^שולח עכשיו/.test(p.status||'')?'📤':'⏳'; }
+    function postIcon(p){ return p.sent?'✓':p.failed?'✗':p.skipped?'⏭':p.draft?'📝':/^שולח עכשיו/.test(p.status||'')?'📤':'✅'; }
     function postTime(p){ return p.sent?((p.status||'').match(/\d\d?:\d\d$/)||[p.due])[0]:p.due; }
     function monthCell(d,inMonth){
       const shut=d.closed&&!d.posts.length;
@@ -1105,7 +1174,7 @@
       grid.innerHTML=DAY_HE.map((n,i)=>'<div class="mhead"><span class="l">'+n+'</span><span class="s">'+DAY_S[i]+'</span></div>').join('');
       for(let s=from;s<=to;s=addDays(s,1)) grid.appendChild(monthCell(dayAt(m,s),s.slice(0,7)===mon));
       box.appendChild(grid);
-      box.insertAdjacentHTML('beforeend','<div class="legend"><span>✓ נשלחה</span><span>⏳ מחכה לצאת</span><span>📝 טיוטה, מחכה לאישור</span><span>💡 הצעה שעוד לא נכתבה</span><span>📅 אירוע</span><span>✗ נכשלה</span><span>○ אין הודעה</span></div>'+
+      box.insertAdjacentHTML('beforeend','<div class="legend"><span>✓ נשלחה</span><span>✅ אושרה, מחכה לצאת</span><span>📝 טיוטה, מחכה לאישור</span><span>💡 הצעה שעוד לא נכתבה</span><span>📅 אירוע</span><span>✗ נכשלה</span><span>○ אין הודעה</span></div>'+
         '<p class="calnote" style="margin-top:6px">הצעות לאירועים מופיעות כשהאירוע בשלושת השבועות הקרובים.</p>');
     }
     function weekCol(d){
@@ -1118,8 +1187,8 @@
       if(d.closed&&!d.posts.length){ c.insertAdjacentHTML('beforeend','<div class="closednote">'+(d.unloaded?'רחוק מדי לתצוגה':'לא יום פוסטים')+'</div>'); return c; }
       for(const p of d.posts){
         const ev=eventOf(p), md=ev?null:mediaOf(p), [cls,label]=chipOf(p);
-        const it=document.createElement('div'); it.className='wpost'+(p.draft?' draft':'')+(p.skipped?' skipped':'');
-        it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+(p.image?'<span title="עם תמונה">🖼</span>':'')+'</div>'+
+        const it=document.createElement('div'); it.className='wpost '+cls+(p.draft?' draft':'')+(p.skipped?' skipped':'');
+        it.innerHTML='<div class="meta">'+(!p.sent&&!d.past?'<span class="grip" title="גוררים ליום אחר">⠿</span>':'')+'<span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+(p.image?'<span title="עם תמונה">🖼</span>':'')+'</div>'+
           '<div class="wt" dir="auto">'+waHtml(p.text)+'</div>'+
           (ev?'<div class="evday" dir="auto">📅 '+esc(ev.name)+'</div>':md?'<div class="evday" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</div>':'')+
           (p.result?statsOf(p.result):'');
@@ -1167,15 +1236,56 @@
       keepCalInSight();
     }
     document.addEventListener('keydown',e=>{
-      if(view==='list'||!state||!$('board').classList.contains('active')||document.querySelector('.overlay.open')) return;
+      if(FLAT(view)||!state||!$('board').classList.contains('active')||document.querySelector('.overlay.open')) return;
       if(e.ctrlKey||e.metaKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||'')) return;
       if(e.key==='ArrowRight') step(-1); else if(e.key==='ArrowLeft') step(1); else return;
       e.preventDefault();
     });
 
+    // ---- 📜 what was sent (Omri, 2026-10-29: "to see a record of what was sent") ----
+    let sentLog=null, histAt=0, histDays=90, histQ='';
+    async function renderHistory(el){
+      const box=document.createElement('div'); box.id='hist'; el.appendChild(box);
+      if(!sentLog||Date.now()-histAt>60000||sentLog.days!==histDays){
+        box.innerHTML='<div class="loading">טוען…</div>';
+        try{ sentLog=await apiJson('/history?days='+histDays); histAt=Date.now(); }
+        catch(e){ box.innerHTML='<div class="error">'+esc(e.message)+'</div>'; return; }
+      }
+      drawHistory(box);
+    }
+    function drawHistory(box){
+      box.innerHTML='';
+      const tools=document.createElement('div'); tools.className='hist-tools';
+      const q=document.createElement('input'); q.type='search'; q.placeholder='חיפוש בהודעות שנשלחו…'; q.value=histQ; q.dir='auto';
+      const n=document.createElement('span'); n.className='calnote'; n.style.margin='0';
+      tools.append(q,n); box.appendChild(tools);
+      const list=document.createElement('div'); box.appendChild(list);
+      const draw=()=>{
+        const words=histQ.trim().toLowerCase().split(/\s+/).filter(Boolean);
+        const rows=sentLog.sent.filter(h=>words.every(w=>(h.text+' '+h.group_name).toLowerCase().includes(w)));
+        n.textContent=rows.length+' הודעות נשלחו מאז '+lab(sentLog.since)+(words.length?' (מתוך '+sentLog.sent.length+')':'');
+        list.innerHTML='';
+        if(!rows.length){ list.innerHTML='<p class="evnote">'+(words.length?'לא נמצאה הודעה כזאת.':'עוד לא נשלחו הודעות בתקופה הזאת.')+'</p>'; return; }
+        let day='';
+        for(const h of rows){
+          if(h.date!==day){ day=h.date; const c=rows.filter(x=>x.date===day).length;
+            list.insertAdjacentHTML('beforeend','<div class="hist-day">יום '+DAY_HE[wday(day)]+' '+lab(day)+' · '+c+(c===1?' הודעה':' הודעות')+'</div>'); }
+          const it=document.createElement('div'); it.className='hist-item';
+          it.innerHTML='<div class="hmeta"><b>✓ נשלחה '+esc(h.time||'')+'</b><span dir="auto">'+(h.group?'👥 '+esc(h.group_name):'📢 ערוץ העדכונים')+'</span>'+
+            (h.edited?'<span>✏️ תוקנה אחרי השליחה</span>':'')+(h.result?statsOf(h.result):'<span>עוד אין מספרים</span>')+'</div><div class="chat"></div>';
+          it.querySelector('.chat').appendChild(bubble(h.text,{time:h.time,imageId:h.image_id,footer:h.footer_sent?state.settings.footer:'',clickable:false}));
+          list.appendChild(it);
+        }
+      };
+      let t=null; q.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ histQ=q.value; draw(); },200); };
+      draw();
+      if(histDays<365){ const more=document.createElement('button'); more.className='more'; more.textContent='עוד חודשיים אחורה';
+        more.onclick=()=>{ histDays=Math.min(365,histDays+60); renderBoard(); }; box.appendChild(more); }
+    }
     function renderBoard(){
       const s=state; let el=$('board'); el.innerHTML='';
       renderApprovals(el);
+      if(view==='sent'){ el.appendChild(calBar()); renderHistory(el); return; }
       if(view!=='list'){ renderEvents(el); renderMedia(el); renderIdeas(el); renderCalendar(el); return; }
       el.appendChild(calBar()); keepCalInSight();
       // the list: today first; the days still ahead after it, week by week; the days gone by in the archive
