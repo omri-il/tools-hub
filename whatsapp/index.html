@@ -90,7 +90,7 @@
     .sugpost .gbtns{display:flex;gap:6px;margin-top:6px}
     .sugpost .gbtns button{background:transparent;border:1px solid rgba(196,181,253,.6);color:#c4b5fd;border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
     [draggable=true]{cursor:grab}
-    .day.drop{box-shadow:0 0 0 2px #c4b5fd;background:rgba(196,181,253,.06)}
+    .drop-on{box-shadow:0 0 0 2px #c4b5fd;background:rgba(196,181,253,.06)}
     .dragging{opacity:.4}
     .draghint{color:var(--faint);font-size:.8rem;margin:0 4px 8px}
     #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);color:var(--ink);
@@ -121,6 +121,66 @@
     .none{border:1.5px dashed rgba(248,113,113,.55);color:var(--danger);border-radius:8px;padding:10px;text-align:center;font-size:.9rem}
     .none.past{border-color:var(--line);color:var(--faint)}
     .more{display:block;margin:18px auto 0;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 18px;font-family:inherit;cursor:pointer}
+    /* the calendar: month / week / day / list (Omri, 2026-10-29) */
+    .calbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:22px 0 12px}
+    .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+    .seg button{background:transparent;border:0;color:var(--muted);border-radius:999px;padding:6px 14px;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer}
+    .seg button.on{background:var(--accent);color:var(--accent-ink)}
+    .calnav{display:flex;gap:6px;align-items:center}
+    .calnav h2{margin:0 8px;color:var(--ink);font-size:1.1rem;min-width:150px;text-align:center}
+    .navb{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;min-width:40px;height:36px;padding:0 12px;font-family:inherit;font-size:.9rem;cursor:pointer}
+    .navb:disabled{opacity:.35;cursor:default}
+    .calnote{color:var(--faint);font-size:.8rem;margin:0 4px 8px}
+    .legend{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--faint);font-size:.76rem;margin:8px 4px 0}
+    .mgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) repeat(2,minmax(0,.55fr));gap:4px}
+    .mhead{text-align:center;font-size:.78rem;color:var(--faint);font-weight:600;padding:2px 0}
+    .mhead .s{display:none}
+    .mcell{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:104px;padding:5px 6px;display:flex;flex-direction:column;gap:2px;cursor:pointer;min-width:0}
+    .mcell:hover{border-color:rgba(37,211,102,.45)}
+    .mcell.out{opacity:.35} .mcell.past{background:var(--panel)} .mcell.closed{background:transparent;cursor:default}
+    .mcell.closed:hover{border-color:var(--line)}
+    .mcell.today{box-shadow:0 0 0 2px var(--accent)}
+    .mcell .num{display:flex;justify-content:space-between;gap:4px;font-size:.84rem;font-weight:700}
+    .mcell .num small{font-weight:400;color:var(--faint);font-size:.68rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .mcell .es{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .ce{font-size:.72rem;line-height:1.3;border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(255,255,255,.05);color:var(--muted)}
+    .ce.sent{background:rgba(37,211,102,.13);color:#86efac} .ce.wait{background:rgba(251,191,36,.12);color:#fcd34d}
+    .ce.draft{background:rgba(196,181,253,.13);color:#c4b5fd} .ce.fail{background:rgba(248,113,113,.15);color:var(--danger)}
+    .ce.skip{color:var(--faint);text-decoration:line-through}
+    .ce.sug{background:transparent;border:1px dashed rgba(196,181,253,.7);color:#c4b5fd}
+    .ce.evt{background:transparent;color:#c4b5fd;padding-inline:2px}
+    .ce.more{background:transparent;color:var(--faint)}
+    .ce.none{background:transparent;color:var(--danger);opacity:.7}
+    .ce.x{display:none}
+    .wgrid{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;align-items:start}
+    .wcol{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+    .wcol.today{box-shadow:0 0 0 2px var(--accent)} .wcol.past{opacity:.7} .wcol.closed{background:transparent}
+    .wcol .wh{cursor:pointer;border-bottom:1px solid var(--line);padding-bottom:6px}
+    .wcol .wh h3{font-size:1rem;font-weight:700} .wcol .wh .cat{color:var(--faint);font-size:.78rem}
+    .wcol .wh:hover h3{color:var(--accent)}
+    .wcol .plan{font-size:.78rem}
+    .wpost{background:var(--wa-bg);border:1px solid var(--line);border-radius:10px;padding:7px 9px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+    .wpost:hover{border-color:rgba(37,211,102,.45)}
+    .wpost.draft{border:1.5px dashed #c4b5fd} .wpost.skipped{opacity:.55}
+    .wpost .wt a{pointer-events:none;color:var(--wa-link)}
+    .wpost .wt{font-size:.82rem;color:var(--wa-ink);white-space:pre-line;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+    .wpost .meta .chip{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+    .wcol .sugpost{max-width:100%;font-size:.8rem}
+    .wcol .none{font-size:.8rem;padding:8px}
+    .wcol .add{margin-top:0;align-self:stretch}
+    .closednote{color:var(--faint);font-size:.82rem;text-align:center;padding:8px 0}
+    @media (max-width:760px){
+      .calbar{gap:8px;margin-top:16px;scroll-margin-top:64px}  /* below the sticky tabs */
+      .seg{width:100%} .seg button{flex:1;padding:8px 4px}
+      .calnav{width:100%;justify-content:space-between} .calnav h2{min-width:0;font-size:1rem;margin:0}
+      .mgrid{grid-template-columns:repeat(5,minmax(0,1fr)) repeat(2,minmax(0,.45fr));gap:3px}
+      .mhead .l{display:none} .mhead .s{display:inline}
+      .mcell{min-height:64px;padding:3px}
+      .mcell .num{font-size:.78rem} .mcell .num small{display:none}
+      .mcell .es{flex-direction:row;flex-wrap:wrap;gap:1px}
+      .ce{padding:0 2px;font-size:.7rem} .ce .ct{display:none} .ce.x{display:block} .ce.more{display:none}
+      .wgrid{grid-template-columns:1fr}
+    }
     .loading,.error{text-align:center;color:var(--muted);padding:40px 0}
     .error{color:var(--danger)}
     /* editor */
@@ -570,12 +630,13 @@
       node.addEventListener('dragstart',ev=>{ drag=what; node.classList.add('dragging'); ev.dataTransfer.effectAllowed='move';
         try{ ev.dataTransfer.setData('text/plain','wa'); }catch(_){ } });
       node.addEventListener('dragend',()=>{ node.classList.remove('dragging'); drag=null;
-        document.querySelectorAll('.day.drop').forEach(c=>c.classList.remove('drop')); });
+        document.querySelectorAll('.drop-on').forEach(c=>c.classList.remove('drop-on')); });
     }
     function dropTarget(card,d){
-      card.addEventListener('dragover',ev=>{ if(!drag||d.past) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; card.classList.add('drop'); });
-      card.addEventListener('dragleave',ev=>{ if(!card.contains(ev.relatedTarget)) card.classList.remove('drop'); });
-      card.addEventListener('drop',ev=>{ ev.preventDefault(); card.classList.remove('drop'); const w=drag; drag=null; if(w&&!d.past) moveTo(w,d); });
+      const shut=()=>d.past||d.closed;
+      card.addEventListener('dragover',ev=>{ if(!drag||shut()) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; card.classList.add('drop-on'); });
+      card.addEventListener('dragleave',ev=>{ if(!card.contains(ev.relatedTarget)) card.classList.remove('drop-on'); });
+      card.addEventListener('drop',ev=>{ ev.preventDefault(); card.classList.remove('drop-on'); const w=drag; drag=null; if(w&&!shut()) moveTo(w,d); });
     }
     async function moveTo(w,d){
       try{
@@ -700,12 +761,191 @@
       }
       return card;
     }
+    // ---- the calendar: month / week / day, beside the list (Omri, 2026-10-29: "easy to zoom out and in") ----
+    const VIEWS=[['month','חודש'],['week','שבוע'],['day','יום'],['list','רשימה']];
+    let view=VIEWS.some(v=>v[0]===lsGet('wa_view'))?lsGet('wa_view'):'week', cursor=today();
+    const DAY_HE=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'], DAY_S=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+    const dt=s=>new Date(s+'T12:00:00Z'), iso=d=>d.toISOString().slice(0,10);
+    const addDays=(s,n)=>{ const d=dt(s); d.setUTCDate(d.getUTCDate()+n); return iso(d); };
+    const wday=s=>dt(s).getUTCDay(), sunday=s=>addDays(s,-wday(s)), lab=s=>(+s.slice(8))+'.'+(+s.slice(5,7));
+    // the API's weeks start at this Sunday (next Sunday on Friday / Saturday); it gives up to 12 weeks each way
+    const MAXW=12;
+    function firstWeek(){ if(state&&state.weeks.length) return state.weeks[0].start; const t=today(); return addDays(sunday(t),wday(t)>=5?7:0); }
+    function viewRange(){
+      if(view==='month'){
+        const f=cursor.slice(0,8)+'01', n=dt(f); n.setUTCMonth(n.getUTCMonth()+1);
+        return {from:sunday(f),to:addDays(sunday(addDays(iso(n),-1)),6)};
+      }
+      if(view==='week'){ const s=sunday(cursor); return {from:s,to:addDays(s,6)}; }
+      return {from:cursor,to:cursor};
+    }
+    // ask the API for enough weeks to cover what is shown; true = a new load is needed
+    function fitRange(){
+      if(view==='list') return false;
+      const f=firstWeek(), {from,to}=viewRange();
+      const w=Math.min(MAXW,Math.max(weeks,Math.ceil((dt(to)-dt(f))/864e5/7+1/7)));
+      const b=Math.min(MAXW,Math.max(back,Math.ceil((dt(f)-dt(from))/864e5/7)));
+      const more=w!==weeks||b!==back; weeks=w; back=b; return more;
+    }
+    function loaded(s){ const f=firstWeek(); return !!state&&s>=addDays(f,-7*(state.back||0))&&s<addDays(f,7*state.weeks.length); }
+    function dayMap(){ const m={}; for(const d of [...(state.archive||[]),...state.weeks.flatMap(w=>w.days)]) m[d.date]=d; return m; }
+    // a day the API leaves out (Friday, Saturday, a day with no posting): shown, but nothing goes out on it
+    function dayAt(m,s){
+      if(m[s]) return m[s];
+      const t=today();
+      return {date:s,day:DAY_HE[wday(s)],label:lab(s),past:s<t,today:s===t,post_day:false,closed:true,unloaded:!loaded(s),category:'',plan:[],events:[],posts:[]};
+    }
+    function go(v,c){
+      view=v; if(c) cursor=c; lsSet('wa_view',view); toCal=true;
+      if(fitRange()){ const cal=$('cal'); if(cal) cal.innerHTML='<div class="loading">טוען…</div>'; load(); }
+      else renderBoard();
+    }
+    // after a move, the toolbar stays in sight (a longer load can push it down)
+    let toCal=false;
+    function keepCalInSight(){
+      if(!toCal) return; toCal=false;
+      const bar=$('calbar'); if(!bar) return;
+      const top=bar.getBoundingClientRect().top;
+      if(top<0||top>innerHeight-120) bar.scrollIntoView({block:'start'});
+    }
+    function nextDay(s,dir,m){
+      for(let i=0;i<21;i++){ s=addDays(s,dir); if(m[s]||(!loaded(s)&&wday(s)<5)) return s; }
+      return s;
+    }
+    function step(dir){
+      if(view==='month'){
+        const d=dt(cursor.slice(0,8)+'01'); d.setUTCMonth(d.getUTCMonth()+dir);
+        const s=iso(d); go('month',s.slice(0,7)===today().slice(0,7)?today():s);
+      }else if(view==='week') go('week',addDays(cursor,7*dir));
+      else go('day',nextDay(cursor,dir,dayMap()));
+    }
+    function calTitle(){
+      if(view==='month') return dt(cursor).toLocaleDateString('he-IL',{month:'long',year:'numeric',timeZone:'UTC'});
+      if(view==='week'){ const s=sunday(cursor); return lab(s)+' – '+lab(addDays(s,4)); }
+      return 'יום '+DAY_HE[wday(cursor)]+' '+lab(cursor)+(cursor===today()?' · היום':'');
+    }
+    function calBar(){
+      const bar=document.createElement('div'); bar.className='calbar'; bar.id='calbar';
+      const seg=document.createElement('div'); seg.className='seg';
+      for(const [k,n] of VIEWS){ const b=document.createElement('button'); b.type='button'; b.textContent=n; if(k===view) b.className='on'; b.onclick=()=>go(k); seg.appendChild(b); }
+      bar.appendChild(seg);
+      if(view==='list') return bar;
+      const nav=document.createElement('div'); nav.className='calnav';
+      const btn=(t,title,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='navb'; b.textContent=t; b.title=title; b.onclick=fn; return b; };
+      const {from,to}=viewRange(), f=firstWeek();
+      const prev=btn('→','הקודם (חץ ימינה)',()=>step(-1)), next=btn('←','הבא (חץ שמאלה)',()=>step(1));
+      prev.disabled=from<=addDays(f,-7*MAXW); next.disabled=to>=addDays(f,7*MAXW-1);
+      const h=document.createElement('h2'); h.textContent=calTitle();
+      nav.append(btn('היום','חזרה להיום',()=>go(view,today())),prev,h,next);
+      bar.appendChild(nav);
+      return bar;
+    }
+    const plain=t=>(t||'').replace(/https?:\/\/\S+/g,'🔗').replace(/[*_~`]/g,'').replace(/\s+/g,' ').trim();
+    function postIcon(p){ return p.sent?'✓':p.failed?'✗':p.skipped?'⏭':p.draft?'📝':/^שולח עכשיו/.test(p.status||'')?'📤':'⏳'; }
+    function postTime(p){ return p.sent?((p.status||'').match(/\d\d?:\d\d$/)||[p.due])[0]:p.due; }
+    function monthCell(d,inMonth){
+      const shut=d.closed&&!d.posts.length;
+      const c=document.createElement('div');
+      c.className='mcell'+(inMonth&&!d.unloaded?'':' out')+(d.past?' past':'')+(d.today?' today':'')+(shut?' closed':'');
+      c.innerHTML='<div class="num"><span>'+(+d.date.slice(8))+'</span><small dir="auto">'+esc(d.category||'')+'</small></div><div class="es"></div>';
+      const es=c.querySelector('.es'), rows=[];
+      for(const e of d.events||[]) rows.push({cls:'evt',icon:'📅',text:e.time+' '+e.name});
+      for(const p of d.posts) rows.push({cls:chipOf(p)[0],icon:postIcon(p),text:postTime(p)+' '+(p.group?'→ '+p.group_name+' · ':'')+plain(p.text),drag:!p.sent&&!d.past?{post:p}:null});
+      if(!d.past) for(const e of suggestionsFor(d.date)) rows.push({cls:'sug',icon:'💡',text:'הצעה: '+e.name,drag:{event:e}});
+      if(!rows.some(r=>r.cls!=='evt')&&!d.closed&&!d.past) rows.push({cls:'none',icon:'○',text:'אין הודעה'});
+      rows.forEach((r,i)=>{
+        const n=document.createElement('div'); n.className='ce '+r.cls+(i>=4&&rows.length>5?' x':''); n.title=r.text;   // rtl: a line that starts "16:02 → Gemini…" stays right-aligned
+        n.innerHTML='<span class="ci">'+r.icon+'</span> <span class="ct">'+esc(r.text)+'</span>';
+        if(r.drag) draggable(n,r.drag);
+        es.appendChild(n);
+      });
+      if(rows.length>5) es.insertAdjacentHTML('beforeend','<div class="ce more">+ עוד '+(rows.length-4)+'</div>');
+      if(!shut){ c.onclick=()=>go('day',d.date); c.title='לחיצה פותחת את היום'; }
+      dropTarget(c,d);
+      return c;
+    }
+    function renderMonth(box,m){
+      const mon=cursor.slice(0,7), {from,to}=viewRange();
+      const grid=document.createElement('div'); grid.className='mgrid';
+      grid.innerHTML=DAY_HE.map((n,i)=>'<div class="mhead"><span class="l">'+n+'</span><span class="s">'+DAY_S[i]+'</span></div>').join('');
+      for(let s=from;s<=to;s=addDays(s,1)) grid.appendChild(monthCell(dayAt(m,s),s.slice(0,7)===mon));
+      box.appendChild(grid);
+      box.insertAdjacentHTML('beforeend','<div class="legend"><span>✓ נשלחה</span><span>⏳ מחכה לצאת</span><span>📝 טיוטה, מחכה לאישור</span><span>💡 הצעה שעוד לא נכתבה</span><span>📅 אירוע</span><span>✗ נכשלה</span><span>○ אין הודעה</span></div>'+
+        '<p class="calnote" style="margin-top:6px">הצעות לאירועים מופיעות כשהאירוע בשלושת השבועות הקרובים.</p>');
+    }
+    function weekCol(d){
+      const c=document.createElement('div'); c.className='wcol'+(d.today?' today':'')+(d.past?' past':'')+(d.closed?' closed':'');
+      const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.promote?' 📣':'')+'</div>').join('');
+      const plan=d.plan.map(p=>'<div class="plan" dir="auto">🎬 '+esc(p.title)+'</div>').join('');
+      c.innerHTML='<div class="wh" title="לחיצה פותחת את היום"><h3>'+esc(d.day)+' '+esc(d.label)+'</h3>'+(d.category?'<div class="cat">'+esc(d.category)+'</div>':'')+evs+plan+'</div>';
+      c.querySelector('.wh').onclick=()=>go('day',d.date);
+      dropTarget(c,d);
+      if(d.closed&&!d.posts.length){ c.insertAdjacentHTML('beforeend','<div class="closednote">'+(d.unloaded?'רחוק מדי לתצוגה':'לא יום פוסטים')+'</div>'); return c; }
+      for(const p of d.posts){
+        const ev=eventOf(p), md=ev?null:mediaOf(p), [cls,label]=chipOf(p);
+        const it=document.createElement('div'); it.className='wpost'+(p.draft?' draft':'')+(p.skipped?' skipped':'');
+        it.innerHTML='<div class="meta"><span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+(p.image?'<span title="עם תמונה">🖼</span>':'')+'</div>'+
+          '<div class="wt" dir="auto">'+waHtml(p.text)+'</div>'+
+          (ev?'<div class="evday" dir="auto">📅 '+esc(ev.name)+'</div>':md?'<div class="evday" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</div>':'')+
+          (p.result?statsOf(p.result):'');
+        it.title=p.sent?'לחיצה פותחת את היום':'לחיצה פותחת את ההודעה לעריכה';
+        it.onclick=()=>{ if(p.sent) go('day',d.date); else openEditor(p,ev||(md&&md.ev)); };
+        if(!p.sent&&!d.past) draggable(it,{post:p});
+        c.appendChild(it);
+      }
+      const ghosts=d.past?[]:suggestionsFor(d.date);
+      for(const e of ghosts){
+        const g=document.createElement('div'); g.className='sugpost'; g.dir='auto';
+        g.innerHTML='<div>💡 <b>הצעה: פוסט על „'+esc(e.name)+'”</b></div><div class="gtext">'+esc(e.suggest.text)+'</div>';
+        g.title='לחיצה פותחת את הפוסט לעריכה. גרירה ליום אחר כותבת טיוטה לשם.';
+        g.onclick=()=>openEditor({date:d.date,text:e.suggest.text},e);
+        draggable(g,{event:e}); c.appendChild(g);
+      }
+      if(!d.posts.length&&!ghosts.length) c.insertAdjacentHTML('beforeend','<div class="none'+(d.past?' past':'')+'">'+(d.past?'לא נשלחה הודעה':'אין הודעה')+'</div>');
+      if(!d.past&&!d.closed){ const add=document.createElement('button'); add.type='button'; add.className='add'; add.textContent='+ הודעה'; add.onclick=()=>openEditor({date:d.date}); c.appendChild(add); }
+      return c;
+    }
+    function renderWeek(box,m){
+      const s=sunday(cursor), ds=[];
+      for(let i=0;i<7;i++){ const k=addDays(s,i); if(i<5||m[k]) ds.push(dayAt(m,k)); }
+      const grid=document.createElement('div'); grid.className='wgrid'; grid.style.setProperty('--n',ds.length);
+      for(const d of ds) grid.appendChild(weekCol(d));
+      box.appendChild(grid);
+    }
+    function renderDay(box,m){
+      const d=dayAt(m,cursor);
+      if(d.closed&&!d.posts.length){ box.insertAdjacentHTML('beforeend','<div class="closednote">'+(d.unloaded?'היום הזה רחוק מדי לתצוגה.':'ביום '+esc(d.day)+' לא יוצאות הודעות. החצים עוברים ליום הפוסטים הבא.')+'</div>'); return; }
+      box.appendChild(dayCard(d));
+    }
+    function renderCalendar(el){
+      el.appendChild(calBar());
+      if(view!=='day') el.insertAdjacentHTML('beforeend','<p class="draghint">✋ לחיצה על יום פותחת אותו. אפשר לגרור הודעה שעוד לא יצאה, או הצעה 💡, ליום אחר.</p>');
+      const box=document.createElement('div'); box.id='cal';
+      const m=dayMap();
+      if(view==='month') renderMonth(box,m); else if(view==='week') renderWeek(box,m); else renderDay(box,m);
+      // on the phone, a swipe moves: finger to the right = the next one (the page reads right to left)
+      let sx=null, sy=0;
+      box.addEventListener('touchstart',e=>{ sx=e.touches[0].clientX; sy=e.touches[0].clientY; },{passive:true});
+      box.addEventListener('touchend',e=>{ if(sx===null) return; const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy; sx=null;
+        if(Math.abs(dx)>70&&Math.abs(dy)<45) step(dx>0?1:-1); },{passive:true});
+      el.appendChild(box);
+      keepCalInSight();
+    }
+    document.addEventListener('keydown',e=>{
+      if(view==='list'||!state||!$('board').classList.contains('active')||document.querySelector('.overlay.open')) return;
+      if(e.ctrlKey||e.metaKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||'')) return;
+      if(e.key==='ArrowRight') step(-1); else if(e.key==='ArrowLeft') step(1); else return;
+      e.preventDefault();
+    });
+
     function renderBoard(){
       const s=state; let el=$('board'); el.innerHTML='';
-      // today first; the days still ahead after it, week by week; the days gone by in the archive
+      renderApprovals(el);
+      if(view!=='list'){ renderEvents(el); renderMedia(el); renderCalendar(el); return; }
+      el.appendChild(calBar()); keepCalInSight();
+      // the list: today first; the days still ahead after it, week by week; the days gone by in the archive
       const ahead=s.weeks.map(w=>w.days.filter(d=>!d.past)).filter(ds=>ds.length);
       const gone=[...s.weeks.flatMap(w=>w.days.filter(d=>d.past)).reverse(),...(s.archive||[])];
-      renderApprovals(el);
       const first=ahead.length?ahead[0].shift():null;
       if(first){
         el.insertAdjacentHTML('beforeend','<h2>'+(first.today?'היום':'הבא בתור')+'</h2>');
@@ -1261,8 +1501,10 @@
     $('fab').onclick=newPost;
 
     // drafts waiting for approval, first thing on the board (from the notification: ?view=approve)
+    // the coming three weeks only, however far the calendar has loaded (the rest wait in their days)
     function draftsAhead(){
-      return state.weeks.flatMap(w=>w.days).filter(d=>!d.past)
+      const end=addDays(firstWeek(),21);
+      return state.weeks.flatMap(w=>w.days).filter(d=>!d.past&&d.date<end)
         .flatMap(d=>d.posts.filter(p=>p.draft&&!p.sent).map(p=>({p,d})));
     }
     function renderApprovals(el){
@@ -1410,7 +1652,7 @@
       navigator.serviceWorker.register('sw.js').then(r=>{ swReg=r; if(started) refreshPush(); }).catch(()=>{});
     }
 
-    load();
+    fitRange(); load();
   </script>
 </body>
 </html>

@@ -71,6 +71,13 @@ Chrome on the phone; under 760px the page has a phone layout. Notifications come
 (`PUT /channels`); after "✅ לאשר" or "📤 לשלוח עכשיו" of a post with a link (and on every such post's
 "📣 גרסאות לערוצים") a window shows the post per channel with its own tracked short link (`POST /versions`), with
 copy / copy-and-open buttons. Nothing is posted from here; see content-machine CLAUDE.md → "Versions for other channels".
+**📅 The calendar (2026-10-29, Omri: "a calendar … easy to go in and out of month, week, day"):** the board has
+חודש · שבוע · יום · רשימה (the choice kept in `localStorage.wa_view`, default שבוע; רשימה = the older list with the
+archive). Arrows / "היום", the keyboard's ← →, a swipe on the phone. Month: a cell per day, a line per post (✓ ⏳ 📝 ✗ ⏭),
+💡 an event's suggestion not written yet, 📅 an event; a click opens that day; on the phone icons only. Week: Sun–Thu
+columns (Fri/Sat only when they hold a post). Day: the usual day card. Dragging works in month and week. The page
+asks `/state` for the weeks the view needs (`fitRange`, the API's limit is 12 weeks each way); no API change.
+The approvals list at the top stays the coming three weeks however far the calendar loaded.
 
 **When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
 - **Public** → normal `<a class="tool-card">` in `index.html`.
