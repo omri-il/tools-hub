@@ -101,6 +101,10 @@ onto a day = a draft there, "לא עכשיו" = `POST /ideas/hide`. See content-
 **Drag, green, sent (2026-10-29):** a long press lifts a post on the phone (`touchDrag`, the finger carries a
 `.drag-ghost`, every `[data-drop]` day lights up); on the computer a ⠿ handle and the same lights. Approved and waiting
 = `.chip.ok` green ("✅ אושרה · יוצאת HH:MM"), sent = solid green. View "📜 נשלחו" = `GET /history` (90 days, +60 a click).
+**🎬 תוכן (2026-10-29):** Content Machine's kanban as a tab (`GET /content`): drag a card between columns (a long press
+on the phone; the same `draggable` / `dropTarget`, `moveTo` → `kanbanMove`), a click opens it (title, hook, visual,
+category, day; "💬 לפוסט בוואטסאפ" opens the editor). A move that needs title / hook / category / a day opens the card
+first. Every change = `POST /content/event`; see content-machine CLAUDE.md → "The WhatsApp app's 🎬 kanban".
 
 **When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
 - **Public** → normal `<a class="tool-card">` in `index.html`.

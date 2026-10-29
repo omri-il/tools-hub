@@ -198,6 +198,26 @@
     .hist-item .hmeta b{color:var(--ink);font-size:.95rem}
     .hist-item .chat{min-height:0}
     @media (max-width:760px){ .hist-item{grid-template-columns:1fr} }
+    /* 🎬 the content kanban */
+    .kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:start}
+    .kcol{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;display:flex;flex-direction:column;gap:8px;min-height:120px;min-width:0}
+    .kcol h3{font-size:.95rem;font-weight:600;display:flex;justify-content:space-between;padding:2px 4px}
+    .kcol h3 small{color:var(--faint);font-weight:400}
+    .kcard{background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 2px rgba(60,64,67,.1);padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+    .kcard:hover{border-color:#e6b04a}
+    .kcard .kt{font-weight:600;font-size:.9rem;line-height:1.35;overflow-wrap:anywhere}
+    .kcard .kh{font-size:.8rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .kcard .kchips{display:flex;flex-wrap:wrap;gap:4px;font-size:.72rem;color:var(--muted)}
+    .kcard .kchips span{background:var(--panel);border-radius:999px;padding:0 7px}
+    .kcard .kchips .miss{background:var(--warn-bg);color:var(--warn)}
+    .kcol .kmore{background:none;border:0;color:var(--muted);font-family:inherit;font-size:.82rem;cursor:pointer}
+    .kform{display:flex;flex-direction:column;gap:10px}
+    .kform label{margin-bottom:2px}
+    .kform input,.kform select,.kform textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:16px;padding:8px 10px}
+    .kform textarea{min-height:70px;resize:vertical}
+    .kform .idea{background:var(--panel);border-radius:8px;padding:8px 10px;font-size:.88rem;color:var(--muted);white-space:pre-line;max-height:9em;overflow:auto}
+    .kform .row2{gap:8px}
+    @media (max-width:760px){ .kgrid{grid-template-columns:1fr} }
     /* 💡 ideas for posts */
     .ev.idea .post{color:var(--muted)}
     .ev.idea .outline{margin:0;padding-inline-start:18px;font-size:.8rem;color:var(--muted)}
@@ -515,6 +535,7 @@
     <div class="appbar" id="appbar"></div>
     <nav class="tabs">
       <button class="tab active" data-pane="board">📅 הלוח</button>
+      <button class="tab" data-pane="content">🎬 תוכן</button>
       <button class="tab" data-pane="results">🏆 מה עבד</button>
       <button class="tab" data-pane="learn">🧠 מה למדתי</button>
       <button class="tab" data-pane="settings">⚙️ הגדרות</button>
@@ -522,6 +543,7 @@
     <section class="pane active" id="board"><div class="loading">טוען…</div></section>
     <div id="toast"></div>
     <section class="pane" id="results"><div class="loading">טוען…</div></section>
+    <section class="pane" id="content"><div class="loading">טוען…</div></section>
     <section class="pane" id="learn"><div class="loading">טוען…</div></section>
     <section class="pane" id="settings">
       <div class="setting">
@@ -895,6 +917,7 @@
       card.addEventListener('drop',ev=>{ ev.preventDefault(); const w=drag; dragEnd(); if(w&&!shut()) moveTo(w,d); });
     }
     async function moveTo(w,d){
+      if(w.card){ await kanbanMove(w.card,d.status); return; }
       try{
         if(w.post){
           const p=w.post; if(p.date===d.date) return;
@@ -1282,6 +1305,91 @@
       if(histDays<365){ const more=document.createElement('button'); more.className='more'; more.textContent='עוד חודשיים אחורה';
         more.onclick=()=>{ histDays=Math.min(365,histDays+60); renderBoard(); }; box.appendChild(more); }
     }
+    // ---- 🎬 the content kanban (Omri, 2026-10-29: "the kanban with my content ideas here too") ----
+    // Content Machine's items; a move or an edit goes to the bot as an inbox event, so the laptop picks it up
+    const KCOLS=[['idea','💭 רעיון'],['draft','✍️ טיוטה'],['approved','✅ מאושר'],['published','📢 פורסם']];
+    const VIA={'live-work':'🎙','telegram':'📱'};
+    let kanban=null, kMore=false;
+    async function loadContent(){
+      try{ kanban=await apiJson('/content'); renderKanban(); }
+      catch(e){ $('content').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
+    }
+    const kCat=k=>((kanban.categories||[]).find(c=>c.key===k)||{}).he||'';
+    const kFmt=k=>(kanban.formats||[]).find(f=>f.key===k)||{he:k,hook:'hook',visual:'visual'};
+    function kNeeds(c,s){
+      const out=[];
+      if(s!=='idea'){ if(!(c.title||'').trim()) out.push('כותרת'); if(!(c.hook||'').trim()) out.push('hook'); if(!c.category) out.push('קטגוריה'); }
+      if((s==='approved'||s==='published')&&!c.date) out.push('יום');
+      return out;
+    }
+    function renderKanban(){
+      const el=$('content'); el.innerHTML='';
+      el.insertAdjacentHTML('beforeend','<p class="evnote">הרעיונות של Content Machine: מהטלפון, מ-Live-work ומהמחשב. גוררים כרטיס לעמודה אחרת (בטלפון: לחיצה ארוכה); לחיצה פותחת אותו. רעיון יוצא מ„רעיון” רק עם כותרת ו-hook, ו„מאושר” צריך יום. השינוי נקלט ב-Content Machine במחשב בפקודת cm הבאה.</p>');
+      const grid=document.createElement('div'); grid.className='kgrid';
+      for(const [st,name] of KCOLS){
+        const cards=kanban.items.filter(c=>c.status===st);
+        cards.sort((a,b)=>st==='idea'?(b.created||'').localeCompare(a.created||''):(b.date||b.updated||'').localeCompare(a.date||a.updated||''));
+        const col=document.createElement('div'); col.className='kcol';
+        col.innerHTML='<h3>'+name+'<small>'+cards.length+'</small></h3>';
+        dropTarget(col,{status:st});
+        const limit=st==='published'&&!kMore?12:cards.length;
+        for(const c of cards.slice(0,limit)) col.appendChild(kCard(c));
+        if(cards.length>limit){ const m=document.createElement('button'); m.className='kmore'; m.textContent='עוד '+(cards.length-limit)+'…'; m.onclick=()=>{ kMore=true; renderKanban(); }; col.appendChild(m); }
+        if(!cards.length) col.insertAdjacentHTML('beforeend','<p class="calnote" style="text-align:center">ריק</p>');
+        grid.appendChild(col);
+      }
+      el.appendChild(grid);
+    }
+    function kCard(c){
+      const card=document.createElement('div'); card.className='kcard';
+      const f=kFmt(c.format), next=c.status==='idea'?kNeeds(c,'draft'):[];
+      card.innerHTML='<div class="kt" dir="auto">'+(VIA[c.via]?VIA[c.via]+' ':'')+esc(c.title||c.idea)+'</div>'+
+        (c.hook?'<div class="kh" dir="auto">'+esc(c.hook)+'</div>':(c.title&&c.idea!==c.title?'<div class="kh" dir="auto">'+esc(c.idea)+'</div>':''))+
+        '<div class="kchips"><span>'+esc(f.he)+'</span>'+(c.category?'<span>'+esc(kCat(c.category))+'</span>':'')+(c.date?'<span>📅 '+lab(c.date)+'</span>':'')+
+        (next.length&&next.length<4?'<span class="miss">חסר: '+esc(next.join(', '))+'</span>':'')+'</div>';
+      card.onclick=()=>openCard(c);
+      draggable(card,{card:c});
+      return card;
+    }
+    async function kSend(c,ev){ return apiJson('/content/event',{method:'POST',json:Object.assign({ref:c.ref},ev)}); }
+    async function kanbanMove(c,st){
+      if(c.status===st) return;
+      const name=(KCOLS.find(k=>k[0]===st)||['',st])[1];
+      const need=kNeeds(c,st);
+      if(need.length){ await openCard(c,{status:st,name,note:'כדי להעביר ל„'+name+'” חסרים: '+need.join(', ')}); return; }
+      try{ await kSend(c,{kind:'status',status:st}); toast('✓ עבר ל„'+name+'”'); }
+      catch(e){ toast(e.message,true); }
+      loadContent();
+    }
+    async function openCard(c,move){
+      const f=kFmt(c.format), form=document.createElement('div'); form.className='kform';
+      const field=(label,el)=>{ const w=document.createElement('div'); const l=document.createElement('label'); l.textContent=label; w.append(l,el); return w; };
+      const inp=(v,tag)=>{ const e=document.createElement(tag||'input'); if(!tag) e.type='text'; e.value=v||''; e.dir='auto'; return e; };
+      const idea=document.createElement('div'); idea.className='idea'; idea.dir='auto'; idea.textContent=c.idea+(c.notes?'\n\n'+c.notes:'');
+      const title=inp(c.title), hook=inp(c.hook,'textarea'), visual=inp(c.visual);
+      const cat=document.createElement('select'); cat.innerHTML='<option value="">— קטגוריה —</option>'+kanban.categories.map(k=>'<option value="'+esc(k.key)+'">'+esc(k.he)+'</option>').join(''); cat.value=c.category||'';
+      const day=document.createElement('input'); day.type='date'; day.value=c.date||'';
+      const two=document.createElement('div'); two.className='row2'; two.append(field('קטגוריה',cat),field('יום',day));
+      const wa=document.createElement('button'); wa.type='button'; wa.className='btn ghost'; wa.textContent='💬 לפוסט בוואטסאפ';
+      wa.onclick=()=>{ if(sheetDone) sheetDone(false);
+        const text=['*'+(title.value||c.idea).replace(/\*/g,'')+'*',hook.value,title.value?c.idea:''].filter(Boolean).join('\n\n');
+        openEditor({date:day.value&&day.value>=today()?day.value:nextPostDay(),text}); opened=''; };
+      form.append(field('הרעיון',idea),field('כותרת',title),field(f.hook||'hook',hook),field(f.visual||'visual',visual),two,wa);
+      const ok=await sheet({title:'🎬 '+(c.title||c.idea).slice(0,70),body:form,note:move?move.note:'',go:move?'שמירה והעברה ל„'+move.name+'”':'שמירה'});
+      if(!ok) return;
+      const now={...c,title:title.value.trim(),hook:hook.value.trim(),visual:visual.value.trim(),category:cat.value,date:day.value};
+      try{
+        if(now.title!==c.title||now.hook!==c.hook||now.visual!==c.visual) await kSend(c,{kind:'tth',title:now.title,hook:now.hook,visual:now.visual});
+        if(now.category&&now.category!==c.category) await kSend(c,{kind:'category',category:now.category});
+        if(now.date&&now.date!==c.date) await kSend(c,{kind:'schedule',date:now.date});
+        if(move){
+          const need=kNeeds(now,move.status);
+          if(need.length) toast('נשמר, אבל עדיין חסרים: '+need.join(', '),true);
+          else { await kSend(c,{kind:'status',status:move.status}); toast('✓ נשמר ועבר ל„'+move.name+'”'); }
+        } else toast('✓ נשמר');
+      }catch(e){ toast(e.message,true); }
+      loadContent();
+    }
     function renderBoard(){
       const s=state; let el=$('board'); el.innerHTML='';
       renderApprovals(el);
@@ -1577,6 +1685,7 @@
       document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id===t.dataset.pane));
       if(t.dataset.pane==='results') loadResults();
       if(t.dataset.pane==='learn') loadLearn();
+      if(t.dataset.pane==='content') loadContent();
     });
 
     // ---- the editor ----
