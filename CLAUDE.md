@@ -90,6 +90,11 @@ archive). Arrows / "היום", the keyboard's ← →, a swipe on the phone. Mon
 columns (Fri/Sat only when they hold a post). Day: the usual day card. Dragging works in month and week. The page
 asks `/state` for the weeks the view needs (`fitRange`, the API's limit is 12 weeks each way); no API change.
 The approvals list at the top stays the coming three weeks however far the calendar loaded.
+**Light, like Event Engine (2026-10-29, Omri: "like my other tools, like events"):** Event Engine's admin palette
+(`#f6f7f9` page, white cards, `#dadce0` lines, its soft shadow, Rubik) with the business navy `#002045` title and ochre
+`#ffc250` buttons / active tab (`--accent`; as TEXT `--accent-text` `#8a5a00`, ochre itself is unreadable on white). Sent /
+ok = `--ok` green, waiting = `--warn` on `--warn-bg`, drafts `--draft` purple. The WhatsApp previews use WhatsApp's own
+light look (white bubble on `#efeae2`). theme-color and the manifest follow.
 
 **When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
 - **Public** → normal `<a class="tool-card">` in `index.html`.
