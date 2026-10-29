@@ -174,6 +174,12 @@
     .wcol .none{font-size:.8rem;padding:8px}
     .wcol .add{margin-top:0;align-self:stretch}
     .closednote{color:var(--faint);font-size:.82rem;text-align:center;padding:8px 0}
+    /* 💡 ideas for posts */
+    .ev.idea .post{color:var(--muted)}
+    .ev.idea .outline{margin:0;padding-inline-start:18px;font-size:.8rem;color:var(--muted)}
+    .ev.idea .postbtns{margin-top:auto}
+    .ev.idea .add{margin-top:0}
+    .add.later{border-color:var(--line);color:var(--muted)}
     @media (max-width:760px){
       .calbar{gap:8px;margin-top:16px;scroll-margin-top:64px}  /* below the sticky tabs */
       .seg{width:100%} .seg button{flex:1;padding:8px 4px}
@@ -840,6 +846,12 @@
           const r=await apiJson('/event-text?id='+e.id+'&date='+d.date);
           await apiJson('/posts',{method:'POST',json:{date:d.date,time:'',text:r.text,image:'',skip:false,group:'',draft:true}});
           toast('📝 טיוטה נכתבה ל'+d.day+' '+d.label+'. היא תצא רק אחרי שתאשרו אותה.');
+        }else if(w.idea){
+          toast('כותב טיוטה ל'+d.day+' '+d.label+'…');
+          const r=await apiJson('/idea-text?id='+encodeURIComponent(w.idea.id));
+          await apiJson('/posts',{method:'POST',json:{date:d.date,time:'',text:r.text,image:'',skip:false,group:'',draft:true}});
+          await ideaDone(w.idea.id,true);
+          toast('📝 טיוטה נכתבה ל'+d.day+' '+d.label+(r.ai?'':' (בלי AI, נוסח פשוט)')+'. היא תצא רק אחרי שתאשרו אותה.');
         }
         await load();
       }catch(err){ toast(err.message,true); }
@@ -857,6 +869,50 @@
       if(kind==='video'){ toast('מנסח פוסט עם AI…'); try{ text=(await apiJson('/video-text?id='+encodeURIComponent(item.id))).text; $('toast').style.display='none'; }catch(e){ toast('ה-AI לא ענה, הנה נוסח פשוט',true); } }
       const g=item.suggest.group;
       openEditor({date:item.suggest.date,text,group:kind==='workshop'&&g?g.jid:''},{groups:{topic:g}});
+    }
+    // ---- 💡 ideas for posts (Omri, 2026-10-29): what worked, the Playbook, the idea bank (Live-work's too) ----
+    let ideaInEditor=null;   // the idea the open editor was started from: a save marks it written
+    const IDEA_FROM={worked:'מה שעבד',playbook:'Playbook',bank:'בנק הרעיונות'};
+    async function ideaDone(id,used){
+      try{ await apiJson('/ideas/hide',{method:'POST',json:{id,used:!!used}}); }catch(_){ }
+      if(state&&state.ideas) state.ideas=state.ideas.filter(i=>i.id!==id);
+    }
+    async function writeIdea(i){
+      toast('מנסח פוסט עם AI…');
+      let text='';
+      try{ const r=await apiJson('/idea-text?id='+encodeURIComponent(i.id)); text=r.text; if(r.ai) $('toast').style.display='none'; else toast('ה-AI לא ענה, הנה נוסח פשוט',true); }
+      catch(e){ toast(e.message,true); return; }
+      openEditor({date:nextPostDay(),text});
+      ideaInEditor=i.id;
+      opened='';   // never saved yet: closing keeps it as a draft
+      $('ed-title').textContent='💡 מרעיון: הודעה חדשה';
+    }
+    function renderIdeas(el){
+      const list=state.ideas||[];
+      const box=document.createElement('details'); box.className='evs';
+      try{ box.open=localStorage.getItem('wa_ideas_open')==='1'; }catch(_){ }
+      box.ontoggle=()=>{ try{ localStorage.setItem('wa_ideas_open',box.open?'1':'0'); }catch(_){ } };
+      const n=k=>list.filter(i=>i.source===k).length;
+      box.innerHTML='<summary>💡 רעיונות לפוסטים ('+list.length+(list.length?' · 🔗 '+n('worked')+' · 💭 '+n('bank')+' · 📘 '+n('playbook'):'')+')</summary>'+
+        '<p class="evnote">🔗 מה שעבד: ההודעות של ארבעת השבועות האחרונים שהכי הרבה לחצו, ענו או סימנו עליהן, להמשך. 💭 בנק הרעיונות: מה ששלחת מהטלפון ו-🎙 מ-Live-work (🎬). 📘 Playbook: רעיונות לתוכן מהסדנאות, מהסרטונים ומהשיחות שסימנת. „✍️ לכתוב” פותח את העורך עם נוסח מוכן; גרירה ליום בלוח כותבת לשם טיוטה. שום דבר לא יוצא בלי אישור.</p>';
+      if(!list.length){ box.insertAdjacentHTML('beforeend','<p class="evnote">אין רעיונות כרגע.</p>'); el.appendChild(box); return; }
+      const grid=document.createElement('div'); grid.className='events';
+      for(const i of list){
+        const c=document.createElement('div'); c.className='ev idea';
+        c.innerHTML='<div class="when">'+i.icon+' '+esc(IDEA_FROM[i.source]||'')+' · '+esc(i.kind)+'</div>'+
+          '<div class="name" dir="auto">'+esc(i.title)+'</div>'+
+          (i.why?'<div class="post" dir="auto">'+esc(i.why)+'</div>':'')+
+          (i.outline&&i.outline.length?'<ul class="outline" dir="auto">'+i.outline.slice(0,4).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'');
+        const btns=document.createElement('div'); btns.className='postbtns';
+        const w=document.createElement('button'); w.type='button'; w.className='add'; w.textContent='✍️ לכתוב'; w.onclick=()=>writeIdea(i);
+        const x=document.createElement('button'); x.type='button'; x.className='add later'; x.textContent='לא עכשיו';
+        x.onclick=async()=>{ c.remove(); await ideaDone(i.id,false); renderBoard(); toast('הרעיון הוסתר'); };
+        btns.append(w,x); c.appendChild(btns);
+        c.title='גרירה ליום בלוח כותבת לשם טיוטה';
+        draggable(c,{idea:i});
+        grid.appendChild(c);
+      }
+      box.appendChild(grid); el.appendChild(box);
     }
     function renderMedia(el){
       const m=state.media||{}, vs=m.videos||[], ws=m.workshops||[];
@@ -1120,7 +1176,7 @@
     function renderBoard(){
       const s=state; let el=$('board'); el.innerHTML='';
       renderApprovals(el);
-      if(view!=='list'){ renderEvents(el); renderMedia(el); renderCalendar(el); return; }
+      if(view!=='list'){ renderEvents(el); renderMedia(el); renderIdeas(el); renderCalendar(el); return; }
       el.appendChild(calBar()); keepCalInSight();
       // the list: today first; the days still ahead after it, week by week; the days gone by in the archive
       const ahead=s.weeks.map(w=>w.days.filter(d=>!d.past)).filter(ds=>ds.length);
@@ -1133,7 +1189,8 @@
       renderReady(el,first);
       renderEvents(el);
       renderMedia(el);
-      el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, או הצעה לאירוע, ליום אחר.</p>');
+      renderIdeas(el);
+      el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, הצעה לאירוע או רעיון 💡, ליום אחר.</p>');
       for(const ds of ahead){
         if(!ds.length) continue;
         const h=document.createElement('h2'); h.textContent=ds.length>1?ds[0].label+' – '+ds[ds.length-1].label:'יום '+ds[0].day+' '+ds[0].label; el.appendChild(h);
@@ -1494,7 +1551,7 @@
       // the phone's back button closes the editor (as "סגירה": what changed becomes a draft), not the app
       if(!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof();
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; ideaInEditor=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof();
       if(edHist){ edHist=false; try{ history.back(); }catch(_){ } } }
     let edHist=false;
     window.addEventListener('popstate',async()=>{
@@ -1755,11 +1812,12 @@
       const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       if(auto) body.draft=true;
-      const wasQueued=!!(editing&&!editing.draft&&!editing.skipped);
+      const wasQueued=!!(editing&&!editing.draft&&!editing.skipped), fromIdea=ideaInEditor;
       setBusy(true); say(auto?'שומר כטיוטה…':'שומר…');
       try{
         if(editing) await apiJson('/posts/'+editing.row,{method:'PUT',json:Object.assign({key:editing.key},body)});
         else await apiJson('/posts',{method:'POST',json:body});
+        if(fromIdea) await ideaDone(fromIdea,true);   // written: it leaves the ideas
         if(auto) toast(wasQueued?'📝 השינויים נשמרו כטיוטה: ההודעה לא תצא עד שתאשרו אותה':'📝 נשמר כטיוטה');
         // copies to the other suggested groups: a draft stays a draft there too
         const asDraft=!!(auto||(editing&&editing.draft&&approve!==true));
@@ -1811,8 +1869,10 @@
       if(!await sheet({title:'📤 לשלוח עכשיו?',body:[to,sheetPreview(text,group,group?groupName(group):'בינה בהוראה 🧠')],
         note:'יוצאת מיד, כמו שהיא כאן, ואי אפשר להחזיר אותה.',go:'📤 לשלוח עכשיו'+(total?' ל-'+total+' חברים':'')})) return;
       setBusy(true); say('שולח…');
+      const fromIdea=ideaInEditor;
       try{
         await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
+        if(fromIdea) await ideaDone(fromIdea,true);
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
         offerVersions(text,image);

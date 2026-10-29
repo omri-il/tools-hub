@@ -95,6 +95,9 @@ The approvals list at the top stays the coming three weeks however far the calen
 `#ffc250` buttons / active tab (`--accent`; as TEXT `--accent-text` `#8a5a00`, ochre itself is unreadable on white). Sent /
 ok = `--ok` green, waiting = `--warn` on `--warn-bg`, drafts `--draft` purple. The WhatsApp previews use WhatsApp's own
 light look (white bubble on `#efeae2`). theme-color and the manifest follow.
+**💡 Ideas for posts (2026-10-29):** a folded panel on the board from `/state` → `ideas` (🔗 what worked, 💭 the idea
+bank incl. Live-work, 📘 the Playbook); "✍️ לכתוב" = `GET /idea-text` into the editor (a save marks it used), a drag
+onto a day = a draft there, "לא עכשיו" = `POST /ideas/hide`. See content-machine CLAUDE.md → "Ideas for posts".
 
 **When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
 - **Public** → normal `<a class="tool-card">` in `index.html`.
