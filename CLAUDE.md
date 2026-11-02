@@ -83,6 +83,7 @@ Chrome on the phone; under 760px the page has a phone layout. Notifications come
 (`PUT /channels`); after "✅ לאשר" or "📤 לשלוח עכשיו" of a post with a link (and on every such post's
 "📣 גרסאות לערוצים") a window shows the post per channel with its own tracked short link (`POST /versions`), with
 copy / copy-and-open buttons. Nothing is posted from here; see content-machine CLAUDE.md → "Versions for other channels".
+Closed for now (2026-11-02: a post that goes out in a few days)? The same button is on the post in the week, day and list views and in the editor's ⋯ menu.
 **📅 The calendar (2026-10-29, Omri: "a calendar … easy to go in and out of month, week, day"):** the board has
 חודש · שבוע · יום · רשימה (the choice kept in `localStorage.wa_view`, default שבוע; רשימה = the older list with the
 archive). Arrows / "היום", the keyboard's ← →, a swipe on the phone. Month: a cell per day, a line per post (✓ ⏳ 📝 ✗ ⏭),

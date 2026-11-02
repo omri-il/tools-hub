@@ -169,6 +169,7 @@
     .wpost.draft{border:1.5px dashed var(--draft)} .wpost.skipped{opacity:.55}
     .wpost .wt a{pointer-events:none;color:var(--wa-link)}
     .wpost .wt{font-size:.82rem;color:var(--wa-ink);white-space:pre-line;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+    .wpost .fixsent{align-self:flex-start}
     .wpost .meta .chip{max-width:100%;overflow:hidden;text-overflow:ellipsis}
     .wcol .sugpost{max-width:100%;font-size:.8rem}
     .wcol .none{font-size:.8rem;padding:8px}
@@ -626,6 +627,7 @@
           <button class="btn ghost" id="ed-more" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="עוד פעולות" title="עוד פעולות">⋯</button>
           <div class="menu" id="ed-menu" role="menu" hidden>
             <button type="button" role="menuitem" id="ed-test">🧪 לשלוח לי לבדיקה<small>לצ'אט שלך עם עצמך. לא נשמרת ולא נספרת.</small></button>
+            <button type="button" role="menuitem" id="ed-versions" hidden>📣 גרסאות לערוצים<small>אותה הודעה, עם קישור משלה לכל ערוץ</small></button>
             <button type="button" role="menuitem" id="ed-send">📤 לשלוח עכשיו…<small>יוצאת מיד, בלי לחכות ליום ולשעה</small></button>
             <button type="button" role="menuitem" class="del" id="ed-delete" hidden>🗑 מחיקה</button>
           </div>
@@ -646,7 +648,7 @@
   <div class="overlay" id="vr-overlay">
     <div class="versions" role="dialog" aria-modal="true" aria-labelledby="vr-title">
       <h3 id="vr-title">📣 גרסאות לערוצים נוספים</h3>
-      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול.</p>
+      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
       <div id="vr-list"></div>
       <div class="actions" style="margin-top:14px"><button class="btn ghost" id="vr-close" type="button">סגירה</button><span class="msg" id="vr-msg"></span></div>
     </div>
@@ -1069,10 +1071,7 @@
           it.appendChild(fx);
         }
         // the same post for the other channels (Facebook groups…): sent, or approved and waiting
-        if((firstUrl(p.text)||sendable())&&!p.draft&&!p.skipped){
-          const vb=document.createElement('button'); vb.type='button'; vb.className='fixsent'; vb.textContent='📣 גרסאות לערוצים';
-          vb.onclick=()=>openVersions(p.text,p.image); it.appendChild(vb);
-        }
+        if(hasVersions(p)) it.appendChild(versionsBtn(p));
         if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
         chat.appendChild(it);
       }
@@ -1216,6 +1215,7 @@
           '<div class="wt" dir="auto">'+waHtml(p.text)+'</div>'+
           (ev?'<div class="evday" dir="auto">📅 '+esc(ev.name)+'</div>':md?'<div class="evday" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</div>':'')+
           (p.result?statsOf(p.result):'');
+        if(hasVersions(p)) it.appendChild(versionsBtn(p));
         it.title=p.sent?'לחיצה פותחת את היום':'לחיצה פותחת את ההודעה לעריכה';
         it.onclick=()=>{ if(p.sent) go('day',d.date); else openEditor(p,ev||(md&&md.ev)); };
         if(!p.sent&&!d.past) draggable(it,{post:p});
@@ -1601,6 +1601,13 @@
     }
     // after a send or an approve: pops up by itself for a post with a link once channels are listed, and for
     // every post once a channel sends from 052 (Omri, 2026-10-28)
+    // closed it for now (a post that goes out in a few days)? It comes back from the post itself: same text, same links
+    // (Omri, 2026-11-02: "if I close it, I cannot see it again")
+    function hasVersions(p){ return !!(firstUrl(p.text)||sendable())&&!p.draft&&!p.skipped; }
+    function versionsBtn(p){
+      const b=document.createElement('button'); b.type='button'; b.className='fixsent'; b.textContent='📣 גרסאות לערוצים';
+      b.onclick=e=>{ e.stopPropagation(); openVersions(p.text,p.image); }; return b;
+    }
     function offerVersions(text,image){ if((firstUrl(text)||sendable())&&channels().length) openVersions(text,image); }
 
     // ---- results ----
@@ -1756,7 +1763,7 @@
       // A sent post: only its text can change, and only the "fix in WhatsApp" button sends it.
       const fix=!!(editing&&editing.sent), draft=!!(editing&&editing.draft);
       $('ed-fix').hidden=!fix; $('ed-approve').hidden=fix||!draft; $('ed-save').hidden=fix||draft;
-      $('ed-more').closest('.more-wrap').hidden=fix; $('ed-delete').hidden=!editing||fix; toggleMenu(false);
+      $('ed-more').closest('.more-wrap').hidden=fix; $('ed-delete').hidden=!editing||fix; $('ed-versions').hidden=!editing||fix||!hasVersions(editing); toggleMenu(false);
       edView('write');
       ['ed-date','ed-time','ed-group','ed-skip'].forEach(id=>$(id).disabled=fix);
       $('ed-image').closest('.field').hidden=fix; $('ed-skip').closest('.check').hidden=fix;
@@ -2062,6 +2069,7 @@
       finally{ setBusy(false); }
     }
     $('ed-save').onclick=()=>save(false);
+    $('ed-versions').onclick=()=>{ if(changed()) return toast('קודם שומרים את השינויים: הגרסאות נעשות מההודעה השמורה',true); openVersions(editing.text,editing.image); };
     $('ed-approve').onclick=()=>save(true);
     $('ed-cancel').onclick=leaveEditor;
     $('overlay').addEventListener('click',e=>{ if(e.target===$('overlay')) leaveEditor(); });
