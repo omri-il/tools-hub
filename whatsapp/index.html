@@ -264,6 +264,7 @@
     .count{font-size:.76rem;color:var(--faint);text-align:left;margin-top:3px}
     .drop{border:1.5px dashed var(--line);border-radius:10px;padding:12px;text-align:center;color:var(--muted);font-size:.86rem;cursor:pointer}
     .drop.over{border-color:var(--accent);color:var(--accent-text)}
+    .btn.img-paste{margin-top:6px;width:100%;padding:8px 12px;font-size:.86rem;font-weight:500}
     .thumb{display:flex;gap:10px;align-items:center}
     .drivelink{margin-top:6px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.86rem;padding:8px 12px}
     .thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px}
@@ -1865,9 +1866,11 @@
     }
     function renderImage(){
       const box=$('ed-image'); const id=driveId(image);
-      if(!id){ box.innerHTML='<div class="drop" id="drop">📷 גוררים תמונה לכאן, או לוחצים לבחירה</div>'+
+      if(!id){ box.innerHTML='<div class="drop" id="drop">📷 מדביקים תמונה (Ctrl+V), גוררים אותה לכאן, או לוחצים לבחירה</div>'+
+          '<button type="button" class="btn ghost img-paste" id="img-paste">📋 להדביק תמונה שהעתקתי</button>'+
           '<input class="drivelink" id="drivelink" dir="auto" placeholder="או מדביקים כאן קישור לתמונה ב-Drive">';
         const dl=$('drivelink'); dl.oninput=()=>{ if(driveId(dl.value.trim())){ image=dl.value.trim(); renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } };
+        $('img-paste').onclick=pasteImage;
         const d=$('drop'); d.onclick=()=>$('ed-file').click();
         d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
         d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) upload(f);};
@@ -1884,6 +1887,17 @@
       const t=((e.clipboardData&&e.clipboardData.getData('text'))||'').trim();
       if(e.target!==$('ed-text')&&e.target.id!=='drivelink'&&/drive\.google\.com\/(file\/d\/|open\?id=)/.test(t)&&driveId(t)){
         e.preventDefault(); image=t; renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } });
+    // the button's way to the clipboard (Ctrl+V is the listener above); the browser may ask permission once
+    async function pasteImage(){
+      if(!(navigator.clipboard&&navigator.clipboard.read)){ say('הדפדפן הזה לא קורא תמונה מהלוח בכפתור: לוחצים Ctrl+V',true); return; }
+      try{
+        for(const item of await navigator.clipboard.read()){
+          const type=item.types.find(t=>t.startsWith('image/'));
+          if(type){ const blob=await item.getType(type); upload(new File([blob],'clipboard.'+type.split('/')[1],{type})); return; }
+        }
+        say('אין תמונה בלוח: מעתיקים תמונה ולוחצים שוב',true);
+      }catch(e){ say('הדפדפן לא נתן לקרוא את הלוח: לוחצים Ctrl+V, או מאשרים לאתר גישה ללוח',true); }
+    }
     async function upload(f){
       if(!f.type.startsWith('image/')){ say('רק תמונות',true); return; }
       say('מעלה את התמונה ל-Drive…');
