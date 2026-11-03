@@ -419,6 +419,9 @@
     .versions{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(760px,100%);padding:20px}
     .versions h3{font-size:1.15rem;margin-bottom:4px}
     .vr-pic{margin-top:12px}
+    .vr-edit{margin-top:10px}
+    .vr-edit textarea{min-height:190px;margin-bottom:8px}
+    .vr-edit .vbtns{margin-top:8px}
     .vr-pic .thumb img{width:110px;height:110px}
     .vcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--panel)}
     .vcard.done{border-color:#9fd3ae}
@@ -652,6 +655,7 @@
       <h3 id="vr-title">📣 גרסאות לערוצים נוספים</h3>
       <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק ובסקול בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. התמונה כאן היא של הגרסאות בלבד: מה שכבר נשלח לא משתנה. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
       <div class="vr-pic" id="vr-pic"></div>
+      <div class="vr-edit" id="vr-edit"></div>
       <input type="file" id="vr-file" accept="image/*" hidden>
       <div id="vr-list"></div>
       <div class="actions" style="margin-top:14px"><button class="btn ghost" id="vr-close" type="button">סגירה</button><span class="msg" id="vr-msg"></span></div>
@@ -1572,6 +1576,41 @@
         if(await vrSetImage(data.link)) vrSay('התמונה עלתה ✓');
       }catch(e){ vr.busy=false; vrSay(e.message,true); }
     }
+    // the versions' own text (Omri, 2026-11-03: spaces and more, after WhatsApp's 15 minutes for the post are over):
+    // every version not sent yet is made again from it, each keeps its own links
+    function renderVrEdit(open){
+      const box=$('vr-edit'); box.innerHTML='';
+      const base=()=>vr.edited!=null?vr.edited:vr.text;
+      const mk=(t,cls,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=t; b.onclick=fn; return b; };
+      if(!open){
+        const row=document.createElement('div'); row.className='vbtns';
+        row.appendChild(mk(vr.edited!=null?'✏️ לערוך שוב את הנוסח (נערך)':'✏️ לערוך את הנוסח לגרסאות','ghost',()=>renderVrEdit(true)));
+        if(vr.edited!=null) row.appendChild(mk('↩️ לנוסח המקורי','ghost',()=>vrSaveText('')));
+        box.appendChild(row); return;
+      }
+      const ta=document.createElement('textarea'); ta.dir='auto'; ta.value=base();
+      const proof=document.createElement('div'); proof.className='proof'; proof.hidden=true;
+      const row=document.createElement('div'); row.className='vbtns';
+      const save=mk('שמירה','primary',async()=>{
+        const t=ta.value.trim();
+        if(!t){ vrSay('ההודעה ריקה',true); return; }
+        if(t===base().trim()){ renderVrEdit(false); return; }
+        save.disabled=true; vrSay('🔎 בודק טעויות…');
+        const r=await proofread(t,today());
+        if(r.ok&&!r.issues.length){ vrSaveText(t); return; }
+        vrSay(''); row.hidden=true;
+        showProof(r,'לשמור',v=>{ row.hidden=false; save.disabled=false; if(v) vrSaveText(ta.value.trim()); },ta,proof);
+      });
+      row.appendChild(save); row.appendChild(mk('ביטול','ghost',()=>renderVrEdit(false)));
+      box.appendChild(ta); box.appendChild(proof); box.appendChild(row); ta.focus();
+    }
+    async function vrSaveText(t){
+      try{
+        await apiJson('/versions/text',{method:'PUT',json:{text:vr.text,edited:t}});
+        await openVersions(vr.text,vr.postImage);
+        vrSay(t?'✓ הנוסח נשמר. גרסה שכבר נשלחה נשארת כמו שנשלחה':'↩️ חזרה לנוסח המקורי');
+      }catch(e){ vrSay(e.message,true); }
+    }
     function renderVrPic(){
       const box=$('vr-pic'), id=driveId(vr.image);
       document.querySelectorAll('#vr-list .vpic-btn').forEach(b=>{ b.hidden=!id; });
@@ -1616,7 +1655,7 @@
       }
     }
     async function openVersions(text,image){
-      vr={text,image:image||'',busy:false}; $('vr-pic').innerHTML='';
+      vr={text,image:image||'',postImage:image||'',edited:null,busy:false}; $('vr-pic').innerHTML=''; $('vr-edit').innerHTML='';
       const list=$('vr-list'); list.innerHTML=''; $('vr-msg').textContent=''; $('vr-msg').className='msg';
       $('vr-overlay').classList.add('open');
       if(!channels().length){
@@ -1629,6 +1668,7 @@
         const r=await apiJson('/versions',{method:'POST',json:{text}});
         $('vr-msg').textContent='';
         if(r.image!=null) vr.image=r.image;  // null = none chosen here: the post's own
+        vr.edited=r.edited; renderVrEdit(false);
         for(const v of r.versions){
           const c=v.channel, card=document.createElement('div'); card.className='vcard';
           const sentLine=s=>'<span class="sent2">✓ נשלח מ-052 ב-'+esc(s.at.slice(11,16))+(s.at.slice(0,10)!==today()?' ('+esc(s.at.slice(8,10)+'.'+s.at.slice(5,7))+')':'')+
@@ -1896,13 +1936,13 @@
       return new Promise(resolve=>showProof(r,go,v=>{ setBusy(false); resolve(v); }));
     }
     function hideProof(){ $('proof').hidden=true; $('proof').innerHTML=''; }
-    function applyFix(i){
-      if(i.done) return; const ta=$('ed-text'), v=ta.value, n=v.indexOf(i.wrong); if(n<0) return;
+    function applyFix(i,ta=$('ed-text')){
+      if(i.done) return; const v=ta.value, n=v.indexOf(i.wrong); if(n<0) return;
       ta.value=v.slice(0,n)+i.fix+v.slice(n+i.wrong.length); i.done=true; ta.dispatchEvent(new Event('input'));
     }
-    function showProof(r,go,resolve){
-      const box=$('proof'); box.hidden=false; box.innerHTML='';
-      const done=v=>{ hideProof(); if(v) proofed=$('ed-text').value; resolve(v); };
+    function showProof(r,go,resolve,ta=$('ed-text'),box=$('proof')){
+      box.hidden=false; box.innerHTML='';
+      const done=v=>{ box.hidden=true; box.innerHTML=''; if(v&&ta===$('ed-text')) proofed=ta.value; resolve(v); };
       if(!r.ok) box.innerHTML='<b>⚠️ הבדיקה לא רצה הפעם</b> <span class="why">'+esc(r.error||'')+'</span>';
       else{
         box.insertAdjacentHTML('beforeend','<b>🔎 '+(r.issues.length===1?'נמצאה טעות אפשרית אחת':'נמצאו '+r.issues.length+' טעויות אפשריות')+'</b>');
@@ -1911,16 +1951,16 @@
           const row=document.createElement('div'); row.className='pitem';
           row.innerHTML='<s dir="auto">'+esc(i.wrong)+'</s> ← <b dir="auto">'+esc(i.fix)+'</b>'+(i.why?' <span class="why">('+esc(i.why)+')</span>':'');
           const fx=document.createElement('button'); fx.type='button'; fx.className='sg'; fx.textContent='לתקן';
-          fx.onclick=()=>{ applyFix(i); row.classList.add('fixed'); fx.remove(); };
+          fx.onclick=()=>{ applyFix(i,ta); row.classList.add('fixed'); fx.remove(); };
           row.appendChild(fx); list.appendChild(row);
         }
         box.appendChild(list);
       }
       const btns=document.createElement('div'); btns.className='pbtns';
       const mk=(t,cls,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=t; b.onclick=fn; btns.appendChild(b); };
-      if(r.ok) mk('✅ לתקן הכול ו'+go,'primary',()=>{ r.issues.forEach(applyFix); done(true); });
+      if(r.ok) mk('✅ לתקן הכול ו'+go,'primary',()=>{ r.issues.forEach(i=>applyFix(i,ta)); done(true); });
       mk(r.ok?go+' כמו שזה עכשיו':'להמשיך בלי בדיקה','ghost',()=>done(true));
-      mk('חזרה לעריכה','ghost',()=>{ done(false); $('ed-text').focus(); });
+      mk('חזרה לעריכה','ghost',()=>{ done(false); ta.focus(); });
       box.appendChild(btns);
       box.scrollIntoView({block:'nearest'});
     }
