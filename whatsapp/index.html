@@ -418,6 +418,8 @@
     .chrow .x{background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--faint);cursor:pointer;font-size:1rem}
     .versions{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(760px,100%);padding:20px}
     .versions h3{font-size:1.15rem;margin-bottom:4px}
+    .vr-pic{margin-top:12px}
+    .vr-pic .thumb img{width:110px;height:110px}
     .vcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--panel)}
     .vcard.done{border-color:#9fd3ae}
     .vhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}
@@ -648,7 +650,9 @@
   <div class="overlay" id="vr-overlay">
     <div class="versions" role="dialog" aria-modal="true" aria-labelledby="vr-title">
       <h3 id="vr-title">📣 גרסאות לערוצים נוספים</h3>
-      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
+      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק ובסקול בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. התמונה כאן היא של הגרסאות בלבד: מה שכבר נשלח לא משתנה. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
+      <div class="vr-pic" id="vr-pic"></div>
+      <input type="file" id="vr-file" accept="image/*" hidden>
       <div id="vr-list"></div>
       <div class="actions" style="margin-top:14px"><button class="btn ghost" id="vr-close" type="button">סגירה</button><span class="msg" id="vr-msg"></span></div>
     </div>
@@ -1494,7 +1498,7 @@
     // ---- 📣 the other channels, and a post's version for each (Omri, 2026-10-22: "when I send, it pops up
     // more versions of the same message with the links of the different channels"). Facebook: copy only.
     // A WhatsApp channel tied to a group of Omri's second number (2026-10-28) also gets "📤 send from 052". ----
-    const CH_KINDS={facebook:'פייסבוק',whatsapp:'וואטסאפ',other:'אחר'};
+    const CH_KINDS={facebook:'פייסבוק',whatsapp:'וואטסאפ',skool:'Skool',other:'אחר'};
     let chDirty=false;
     function channels(){ return (state&&state.settings&&state.settings.channels)||[]; }
     function sendable(){ return channels().some(c=>c.jid); }
@@ -1548,7 +1552,71 @@
     $('vr-close').onclick=closeVersions;
     $('vr-overlay').addEventListener('click',e=>{ if(e.target===$('vr-overlay')) closeVersions(); });
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('vr-overlay').classList.contains('open')) closeVersions(); });
+    // the versions' own picture (Omri, 2026-11-03: a post already sent can't get one, but it still goes on to
+    // other places). Kept per post on the server; the post itself, and the board, stay as it went out.
+    let vr={text:'',image:'',busy:false};
+    function vrSay(t,err){ $('vr-msg').textContent=t; $('vr-msg').className='msg'+(err?' err':''); }
+    function vrSendLabel(){ return '📤 לשלוח מ-052'+(vr.image?' (עם התמונה)':''); }
+    async function vrSetImage(link){
+      vr.busy=true;
+      try{ const r=await apiJson('/versions/image',{method:'PUT',json:{text:vr.text,image:link}}); vr.image=r.image; renderVrPic(); return true; }
+      catch(e){ vrSay(e.message,true); return false; }
+      finally{ vr.busy=false; }
+    }
+    async function vrUpload(f){
+      if(!f.type.startsWith('image/')){ vrSay('רק תמונות',true); return; }
+      vrSay('מעלה את התמונה ל-Drive…'); vr.busy=true;
+      try{
+        const r=await api('/image',{method:'POST',body:f,headers:{'Content-Type':f.type,'X-Filename':encodeURIComponent(f.name||'image')}});
+        const data=await r.json(); if(!r.ok) throw new Error(data.error||'ההעלאה נכשלה');
+        if(await vrSetImage(data.link)) vrSay('התמונה עלתה ✓');
+      }catch(e){ vr.busy=false; vrSay(e.message,true); }
+    }
+    function renderVrPic(){
+      const box=$('vr-pic'), id=driveId(vr.image);
+      document.querySelectorAll('#vr-list .vpic-btn').forEach(b=>{ b.hidden=!id; });
+      document.querySelectorAll('#vr-list [data-send052]').forEach(b=>{ if(!b.disabled) b.textContent=vrSendLabel(); });
+      if(!id){
+        box.innerHTML='<div class="drop" id="vr-drop">📷 תמונה לגרסאות: מדביקים (Ctrl+V), גוררים לכאן, או לוחצים לבחירה</div>'+
+          '<button type="button" class="btn ghost img-paste" id="vr-paste">📋 להדביק תמונה שהעתקתי</button>'+
+          '<input class="drivelink" id="vr-link" dir="auto" placeholder="או מדביקים כאן קישור לתמונה ב-Drive">';
+        const l=$('vr-link'); l.oninput=()=>{ if(driveId(l.value.trim())) vrSetImage(l.value.trim()); };
+        $('vr-paste').onclick=()=>pasteImage(vrUpload,vrSay);
+        const d=$('vr-drop'); d.onclick=()=>$('vr-file').click();
+        d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
+        d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) vrUpload(f);};
+        return;
+      }
+      box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="vr-pic-x" type="button">הסרת התמונה</button></div>';
+      imageUrl(id).then(u=>{ if(u){ const i=box.querySelector('img'); if(i) i.src=u; return; }
+        delete imgCache[id]; if(driveId(vr.image)===id) vrSay('התמונה לא נפתחה מ-Drive: בודקים שזה קובץ תמונה ושהחשבון hello@ יכול לראות אותו',true); });
+      $('vr-pic-x').onclick=()=>vrSetImage('');
+    }
+    $('vr-file').onchange=e=>{ const f=e.target.files[0]; if(f) vrUpload(f); e.target.value=''; };
+    document.addEventListener('paste',e=>{ if(!$('vr-overlay').classList.contains('open')||!$('vr-pic').firstChild) return;
+      const f=[...(e.clipboardData||{}).files||[]].find(f=>f.type.startsWith('image/')); if(f){ e.preventDefault(); vrUpload(f); return; }
+      const t=((e.clipboardData&&e.clipboardData.getData('text'))||'').trim();
+      if(/drive\.google\.com\/(file\/d\/|open\?id=)/.test(t)&&driveId(t)){ e.preventDefault(); vrSetImage(t); } });
+    // for the places that are pasted into by hand. The clipboard holds one thing: the text, then the picture.
+    async function copyVrImage(c){
+      const url=await imageUrl(driveId(vr.image));
+      if(!url){ vrSay('התמונה לא נפתחה',true); return; }
+      const png=new Promise((ok,no)=>{ const i=new Image(); i.onerror=no;
+        i.onload=()=>{ const cv=document.createElement('canvas'); cv.width=i.naturalWidth; cv.height=i.naturalHeight;
+          cv.getContext('2d').drawImage(i,0,0); cv.toBlob(b=>b?ok(b):no(new Error('no blob')),'image/png'); };
+        i.src=url; });
+      try{
+        await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
+        vrSay('🖼️ התמונה הועתקה ל„'+c.name+'”. מדביקים אותה שם');
+      }catch(_){  // no way to the clipboard here: the file instead
+        try{
+          const a=document.createElement('a'); a.href=URL.createObjectURL(await png); a.download='picture.png'; a.click();
+          vrSay('הדפדפן לא העתיק תמונה, אז היא ירדה כקובץ: מצרפים אותו בקבוצה');
+        }catch(_e){ vrSay('התמונה לא הועתקה',true); }
+      }
+    }
     async function openVersions(text,image){
+      vr={text,image:image||'',busy:false}; $('vr-pic').innerHTML='';
       const list=$('vr-list'); list.innerHTML=''; $('vr-msg').textContent=''; $('vr-msg').className='msg';
       $('vr-overlay').classList.add('open');
       if(!channels().length){
@@ -1560,6 +1628,7 @@
       try{
         const r=await apiJson('/versions',{method:'POST',json:{text}});
         $('vr-msg').textContent='';
+        if(r.image!=null) vr.image=r.image;  // null = none chosen here: the post's own
         for(const v of r.versions){
           const c=v.channel, card=document.createElement('div'); card.className='vcard';
           const sentLine=s=>'<span class="sent2">✓ נשלח מ-052 ב-'+esc(s.at.slice(11,16))+(s.at.slice(0,10)!==today()?' ('+esc(s.at.slice(8,10)+'.'+s.at.slice(5,7))+')':'')+
@@ -1573,16 +1642,17 @@
           // straight to the group from Omri's second number, once
           if(c.jid&&!v.sent){
             const s=document.createElement('button'); s.type='button'; s.className='btn primary';
-            s.textContent='📤 לשלוח מ-052'+(image?' (עם התמונה)':'');
+            s.dataset.send052='1'; s.textContent=vrSendLabel();
             s.onclick=async()=>{
+              if(vr.busy){ vrSay('רגע, התמונה עוד עולה'); return; }
               if(!confirm('לשלוח את הגרסה הזאת מהמספר 052 לקבוצה „'+c.name+'”?\nהיא יוצאת מיד, ואי אפשר להחזיר אותה.')) return;
               s.disabled=true; s.textContent='שולח…'; $('vr-msg').className='msg'; $('vr-msg').textContent='';
               try{
-                const r=await apiJson('/versions/send',{method:'POST',json:{text,channel:c.id,image:image||''}});
+                const r=await apiJson('/versions/send',{method:'POST',json:{text,channel:c.id,image:vr.image||''}});
                 card.classList.add('done'); s.remove();
                 card.querySelector('.vhead .kind').insertAdjacentHTML('afterend',sentLine(r.sent));
                 $('vr-msg').textContent='📤 נשלח מ-052 ל„'+c.name+'”';
-              }catch(e){ s.disabled=false; s.textContent='📤 לשלוח מ-052'; $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
+              }catch(e){ s.disabled=false; s.textContent=vrSendLabel(); $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
             };
             btns.appendChild(s);
           }
@@ -1595,8 +1665,10 @@
           const lead=!c.jid;  // with "send from 052" the copy buttons are the second way
           if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn '+(lead?'primary':'ghost'); a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
           const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url||!lead?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
+          const pb=document.createElement('button'); pb.type='button'; pb.className='btn ghost vpic-btn'; pb.textContent='🖼️ להעתיק את התמונה'; pb.onclick=()=>copyVrImage(c); btns.appendChild(pb);
           list.appendChild(card);
         }
+        renderVrPic();
       }catch(e){ $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
     }
     // after a send or an approve: pops up by itself for a post with a link once channels are listed, and for
@@ -1877,7 +1949,7 @@
           '<button type="button" class="btn ghost img-paste" id="img-paste">📋 להדביק תמונה שהעתקתי</button>'+
           '<input class="drivelink" id="drivelink" dir="auto" placeholder="או מדביקים כאן קישור לתמונה ב-Drive">';
         const dl=$('drivelink'); dl.oninput=()=>{ if(driveId(dl.value.trim())){ image=dl.value.trim(); renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } };
-        $('img-paste').onclick=pasteImage;
+        $('img-paste').onclick=()=>pasteImage();
         const d=$('drop'); d.onclick=()=>$('ed-file').click();
         d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
         d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) upload(f);};
@@ -1888,22 +1960,22 @@
       $('img-x').onclick=()=>{ image=''; renderImage(); preview(); backup(); };
     }
     $('ed-file').onchange=e=>{ const f=e.target.files[0]; if(f) upload(f); e.target.value=''; };
-    document.addEventListener('paste',e=>{ if(!$('overlay').classList.contains('open')) return;
+    document.addEventListener('paste',e=>{ if(!$('overlay').classList.contains('open')||$('vr-overlay').classList.contains('open')) return;
       const f=[...(e.clipboardData||{}).files||[]].find(f=>f.type.startsWith('image/')); if(f){ e.preventDefault(); upload(f); return; }
       // a Drive link pasted anywhere in the editor except the text box = the picture
       const t=((e.clipboardData&&e.clipboardData.getData('text'))||'').trim();
       if(e.target!==$('ed-text')&&e.target.id!=='drivelink'&&/drive\.google\.com\/(file\/d\/|open\?id=)/.test(t)&&driveId(t)){
         e.preventDefault(); image=t; renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } });
     // the button's way to the clipboard (Ctrl+V is the listener above); the browser may ask permission once
-    async function pasteImage(){
-      if(!(navigator.clipboard&&navigator.clipboard.read)){ say('הדפדפן הזה לא קורא תמונה מהלוח בכפתור: לוחצים Ctrl+V',true); return; }
+    async function pasteImage(put=upload,tell=say){
+      if(!(navigator.clipboard&&navigator.clipboard.read)){ tell('הדפדפן הזה לא קורא תמונה מהלוח בכפתור: לוחצים Ctrl+V',true); return; }
       try{
         for(const item of await navigator.clipboard.read()){
           const type=item.types.find(t=>t.startsWith('image/'));
-          if(type){ const blob=await item.getType(type); upload(new File([blob],'clipboard.'+type.split('/')[1],{type})); return; }
+          if(type){ const blob=await item.getType(type); put(new File([blob],'clipboard.'+type.split('/')[1],{type})); return; }
         }
-        say('אין תמונה בלוח: מעתיקים תמונה ולוחצים שוב',true);
-      }catch(e){ say('הדפדפן לא נתן לקרוא את הלוח: לוחצים Ctrl+V, או מאשרים לאתר גישה ללוח',true); }
+        tell('אין תמונה בלוח: מעתיקים תמונה ולוחצים שוב',true);
+      }catch(e){ tell('הדפדפן לא נתן לקרוא את הלוח: לוחצים Ctrl+V, או מאשרים לאתר גישה ללוח',true); }
     }
     async function upload(f){
       if(!f.type.startsWith('image/')){ say('רק תמונות',true); return; }

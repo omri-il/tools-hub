@@ -84,6 +84,7 @@ Chrome on the phone; under 760px the page has a phone layout. Notifications come
 "📣 גרסאות לערוצים") a window shows the post per channel with its own tracked short link (`POST /versions`), with
 copy / copy-and-open buttons. Nothing is posted from here; see content-machine CLAUDE.md → "Versions for other channels".
 Closed for now (2026-11-02: a post that goes out in a few days)? The same button is on the post in the week, day and list views and in the editor's ⋯ menu.
+The window has its own picture box (2026-11-03: paste, drag, pick or a Drive link, `PUT /versions/image`), so a post already sent can go on to other places with a picture while the post itself stays as it went out; "📤 מ-052" sends it, "🖼️ להעתיק את התמונה" copies it (the file downloads where the browser won't). Kind "Skool" = copy only, without WhatsApp's markup.
 **📅 The calendar (2026-10-29, Omri: "a calendar … easy to go in and out of month, week, day"):** the board has
 חודש · שבוע · יום · רשימה (the choice kept in `localStorage.wa_view`, default שבוע; רשימה = the older list with the
 archive). Arrows / "היום", the keyboard's ← →, a swipe on the phone. Month: a cell per day, a line per post (✓ ⏳ 📝 ✗ ⏭),
