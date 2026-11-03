@@ -79,6 +79,10 @@ while scrolling down.
 the share POST to `/whatsapp/share` kept in the `wa-share` cache → `?share=1`, push notifications). Installed from
 Chrome on the phone; under 760px the page has a phone layout. Notifications come from content-machine's
 `bot/push.py`; see its CLAUDE.md → "The app on Omri's Android phone". A change to `sw.js` → bump `SHELL`.
+**⏰ A time for a channel version, and a filter (2026-11-03):** chips by kind at the top of the 📣 window (remembered in
+`wa_vr_filter`), "⏰ לתזמן" per card and for all those showing (`PUT /versions/schedule`), the editor's toolbar on the
+versions' text box (`textToolbar`), `?vr=<key>` opens the window from a reminder. A channel tied to 052 goes out by
+itself; the others ring. See content-machine's CLAUDE.md → "A time for a version".
 **📣 Versions for other channels (2026-10-22):** ⚙️ keeps a list of Facebook groups / other WhatsApp groups
 (`PUT /channels`); after "✅ לאשר" or "📤 לשלוח עכשיו" of a post with a link (and on every such post's
 "📣 גרסאות לערוצים") a window shows the post per channel with its own tracked short link (`POST /versions`), with

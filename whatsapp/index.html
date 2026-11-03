@@ -423,6 +423,20 @@
     .vr-edit textarea{min-height:190px;margin-bottom:8px}
     .vr-edit .vbtns{margin-top:8px}
     .vr-pic .thumb img{width:110px;height:110px}
+    .vr-filter{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:3;background:var(--card);padding:10px 0 6px}
+    .vf{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--ink);cursor:pointer;font-family:inherit;font-size:.86rem;min-height:36px;padding:4px 13px}
+    .vf small{color:var(--muted);font-size:.78rem}
+    .vf[aria-pressed=true]{background:rgba(232,160,20,.18);border-color:#e8a014;font-weight:700}
+    .vr-all{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:4px 0 2px}
+    .vr-filter[hidden],.vr-all[hidden]{display:none}
+    .vr-all .btn,.vsched .btn{padding:7px 12px;font-size:.86rem}
+    input.when-at{background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:16px;padding:6px 10px;max-width:100%}
+    .vr-note{color:var(--muted);font-size:.8rem;margin:0 0 8px}
+    .vsched{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:.84rem}
+    .vsched .when{color:var(--muted)}
+    .vsched .when.on{color:#a86f00;font-weight:600}
+    .vsched .when.bad{color:var(--fail,#c5221f)}
+    .vcard.timed{border-color:#e8a014}
     .vcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--panel)}
     .vcard.done{border-color:#9fd3ae}
     .vhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}
@@ -653,7 +667,9 @@
   <div class="overlay" id="vr-overlay">
     <div class="versions" role="dialog" aria-modal="true" aria-labelledby="vr-title">
       <h3 id="vr-title">📣 גרסאות לערוצים נוספים</h3>
-      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק ובסקול בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. התמונה כאן היא של הגרסאות בלבד: מה שכבר נשלח לא משתנה. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
+      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק ובסקול בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. התמונה כאן היא של הגרסאות בלבד: מה שכבר נשלח לא משתנה. „⏰ לתזמן”: קבוצה של 052 מקבלת את הגרסה מעצמה בזמן שנבחר, ובערוצים האחרים מקבלים תזכורת ומדביקים. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
+      <div class="vr-filter" id="vr-filter" role="group" aria-label="סינון לפי סוג ערוץ" hidden></div>
+      <div class="vr-all" id="vr-all" hidden></div>
       <div class="vr-pic" id="vr-pic"></div>
       <div class="vr-edit" id="vr-edit"></div>
       <input type="file" id="vr-file" accept="image/*" hidden>
@@ -1552,10 +1568,15 @@
       catch(_){ const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
         ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(_){ } ta.remove(); return ok; }
     }
-    function closeVersions(){ $('vr-overlay').classList.remove('open'); }
+    let vrTimedChanged=false;
+    function closeVersions(){ $('vr-overlay').classList.remove('open'); if(vrTimedChanged){ vrTimedChanged=false; load(); } }
     $('vr-close').onclick=closeVersions;
     $('vr-overlay').addEventListener('click',e=>{ if(e.target===$('vr-overlay')) closeVersions(); });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('vr-overlay').classList.contains('open')) closeVersions(); });
+    document.addEventListener('keydown',e=>{ if(e.key!=='Escape'||!$('vr-overlay').classList.contains('open')) return;
+      const em=$('vr-edit').querySelector('.emojis');
+      if(em&&!em.hidden) em.hidden=true; else closeVersions(); });
+    $('vr-overlay').addEventListener('click',e=>{ const em=$('vr-edit').querySelector('.emojis');
+      if(em&&!em.hidden&&!e.target.closest('#vr-edit .toolbar')) em.hidden=true; });
     // the versions' own picture (Omri, 2026-11-03: a post already sent can't get one, but it still goes on to
     // other places). Kept per post on the server; the post itself, and the board, stay as it went out.
     let vr={text:'',image:'',busy:false};
@@ -1589,6 +1610,8 @@
         box.appendChild(row); return;
       }
       const ta=document.createElement('textarea'); ta.dir='auto'; ta.value=base();
+      const note=document.createElement('p'); note.className='vr-note';
+      note.textContent="הדגשה ונטוי נראים רק בוואטסאפ: בפייסבוק ובסקול הסימנים יורדים והטקסט נשאר רגיל. אימוג'ים נשארים בכולם.";
       const proof=document.createElement('div'); proof.className='proof'; proof.hidden=true;
       const row=document.createElement('div'); row.className='vbtns';
       const save=mk('שמירה','primary',async()=>{
@@ -1602,7 +1625,7 @@
         showProof(r,'לשמור',v=>{ row.hidden=false; save.disabled=false; if(v) vrSaveText(ta.value.trim()); },ta,proof);
       });
       row.appendChild(save); row.appendChild(mk('ביטול','ghost',()=>renderVrEdit(false)));
-      box.appendChild(ta); box.appendChild(proof); box.appendChild(row); ta.focus();
+      box.append(textToolbar(ta),note,ta,proof,row); ta.focus();
     }
     async function vrSaveText(t){
       try{
@@ -1610,6 +1633,95 @@
         await openVersions(vr.text,vr.postImage);
         vrSay(t?'✓ הנוסח נשמר. גרסה שכבר נשלחה נשארת כמו שנשלחה':'↩️ חזרה לנוסח המקורי');
       }catch(e){ vrSay(e.message,true); }
+    }
+    // ---- a quick filter by kind, and ⏰ a time per version or for all those showing (Omri, 2026-11-03). A channel
+    // tied to a group of 052 goes out by itself; the others can't, so their time is a reminder ----
+    function vrCards(){ return [...$('vr-list').querySelectorAll('.vcard')]; }
+    function vrWhen(at){ return at.slice(11,16)+(at.slice(0,10)!==today()?' ('+at.slice(8,10)+'.'+at.slice(5,7)+')':''); }
+    function vrWaits(v){ return v.schedule&&!v.schedule.told&&!v.schedule.gave_up; }
+    function vrDefaultAt(){
+      const d=new Date(Date.now()+36e5); d.setMinutes(0,0,0);
+      if(d.getHours()<6) d.setHours(9);
+      const two=n=>String(n).padStart(2,'0');
+      return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate())+'T'+two(d.getHours())+':00';
+    }
+    function whenInput(value){
+      const i=document.createElement('input'); i.type='datetime-local'; i.className='when-at'; i.step='300'; i.value=value||vrDefaultAt();
+      i.setAttribute('aria-label','מתי'); return i;
+    }
+    function renderVrFilter(){
+      const box=$('vr-filter'), cards=vrCards(), count={};
+      cards.forEach(c=>{ count[c.dataset.kind]=(count[c.dataset.kind]||0)+1; });
+      const kinds=Object.keys(CH_KINDS).filter(k=>count[k]);
+      if(vr.filter!=='all'&&!count[vr.filter]) vr.filter='all';
+      box.innerHTML=''; box.hidden=kinds.length<2;
+      for(const [k,label,n] of [['all','הכול',cards.length]].concat(kinds.map(k=>[k,CH_KINDS[k],count[k]]))){
+        const b=document.createElement('button'); b.type='button'; b.className='vf'; b.setAttribute('aria-pressed',String(vr.filter===k));
+        b.textContent=label+' '; const m=document.createElement('small'); m.textContent='('+n+')'; b.appendChild(m);
+        b.onclick=()=>{ vr.filter=k; lsSet('wa_vr_filter',k); renderVrFilter(); };
+        box.appendChild(b);
+      }
+      cards.forEach(c=>{ c.hidden=vr.filter!=='all'&&c.dataset.kind!==vr.filter; });
+      renderVrAll();
+    }
+    function renderVrAll(){
+      const box=$('vr-all'), shown=vrCards().filter(c=>!c.hidden);
+      const open=shown.filter(c=>!c._v.sent), waits=shown.filter(c=>vrWaits(c._v));
+      const old=box.querySelector('input'); if(old) vr.allAt=old.value;
+      box.innerHTML=''; box.hidden=open.length<2;
+      if(box.hidden) return;
+      const at=whenInput(vr.allAt);
+      const go=document.createElement('button'); go.type='button'; go.className='btn ghost'; go.textContent='⏰ לתזמן את כל המוצגים ('+open.length+')';
+      go.onclick=async()=>{
+        if(!at.value){ vrSay('בוחרים מתי',true); return; }
+        const send=open.filter(c=>c._v.channel.jid).length;
+        if(send&&!confirm(send+' קבוצות של 052 יקבלו את הגרסה מעצמן ב-'+vrWhen(at.value.slice(0,16))+', זו אחרי זו.\nאפשר לבטל עד אז.')) return;
+        const r=await vrSchedule(open.map(c=>c.dataset.id),at.value);
+        if(r) vrSay('⏰ '+open.length+' גרסאות תוזמנו ל-'+vrWhen(at.value.slice(0,16)));
+      };
+      box.append(at,go);
+      if(waits.length){
+        const off=document.createElement('button'); off.type='button'; off.className='btn ghost'; off.textContent='✕ לבטל '+waits.length+' תזמונים';
+        off.onclick=async()=>{ if(await vrSchedule(waits.map(c=>c.dataset.id),'')) vrSay('התזמונים בוטלו'); };
+        box.appendChild(off);
+      }
+    }
+    async function vrSchedule(ids,at){
+      if(vr.busy){ vrSay('רגע, התמונה עוד עולה'); return null; }
+      try{
+        const r=await apiJson('/versions/schedule',{method:'PUT',json:{text:vr.text,channels:ids,at,image:vr.image||''}});
+        vrTimedChanged=true;
+        vrCards().forEach(c=>{ c._v.schedule=r.schedule[c.dataset.id]||null; paintSched(c); });
+        renderVrAll();
+        if(r.skipped.length) vrSay('כבר נשלחו, ולא תוזמנו: '+r.skipped.join(', '));
+        return r;
+      }catch(e){ vrSay(e.message,true); return null; }
+    }
+    function paintSched(card,editing){
+      const v=card._v, s=v.schedule, slot=card.querySelector('.vsched'), jid=v.channel.jid;
+      slot.innerHTML=''; card.classList.toggle('timed',vrWaits(v)&&!v.sent);
+      if(v.sent) return;
+      const btn=(t,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn ghost'; b.textContent=t; b.onclick=fn; return b; };
+      if(editing){
+        const at=whenInput(vrWaits(v)?s.at:'');
+        slot.append(at,btn('שמירה',async()=>{ if(!at.value){ vrSay('בוחרים מתי',true); return; }
+          if(await vrSchedule([card.dataset.id],at.value)) vrSay((jid?'⏰ תצא מ-052 ב-':'🔔 תזכורת ב-')+vrWhen(at.value.slice(0,16))); }),btn('ביטול',()=>paintSched(card)));
+        at.focus(); return;
+      }
+      if(s){
+        const w=document.createElement('span'); w.className='when';
+        if(s.gave_up){ w.classList.add('bad'); w.textContent='⚠️ לא נשלח: '+(s.failed||''); }
+        else if(s.told) w.textContent='🔔 הזכרתי ב-'+vrWhen(s.told);
+        else if(s.failed){ w.classList.add('bad'); w.textContent='⚠️ ב-'+vrWhen(s.at)+' עוד לא יצא, מנסה שוב: '+s.failed; }
+        else{ w.classList.add('on'); w.textContent=(jid?'⏰ תצא מ-052 ב-':'🔔 תזכורת ב-')+vrWhen(s.at); }
+        slot.appendChild(w);
+      }
+      slot.appendChild(btn(vrWaits(v)?'⏰ לשנות':'⏰ לתזמן',()=>paintSched(card,true)));
+      if(vrWaits(v)) slot.appendChild(btn('✕ בלי תזמון',()=>vrSchedule([card.dataset.id],'')));
+    }
+    async function openFromReminder(key){
+      try{ const r=await apiJson('/versions/post?key='+encodeURIComponent(key)); openVersions(r.text,r.image); }
+      catch(e){ toast(e.message,true); }
     }
     function renderVrPic(){
       const box=$('vr-pic'), id=driveId(vr.image);
@@ -1655,7 +1767,8 @@
       }
     }
     async function openVersions(text,image){
-      vr={text,image:image||'',postImage:image||'',edited:null,busy:false}; $('vr-pic').innerHTML=''; $('vr-edit').innerHTML='';
+      vr={text,image:image||'',postImage:image||'',edited:null,busy:false,filter:lsGet('wa_vr_filter')||'all',allAt:''}; $('vr-pic').innerHTML=''; $('vr-edit').innerHTML='';
+      $('vr-filter').hidden=true; $('vr-all').hidden=true;
       const list=$('vr-list'); list.innerHTML=''; $('vr-msg').textContent=''; $('vr-msg').className='msg';
       $('vr-overlay').classList.add('open');
       if(!channels().length){
@@ -1671,11 +1784,12 @@
         vr.edited=r.edited; renderVrEdit(false);
         for(const v of r.versions){
           const c=v.channel, card=document.createElement('div'); card.className='vcard';
+          card.dataset.id=c.id; card.dataset.kind=c.kind; card._v=v;
           const sentLine=s=>'<span class="sent2">✓ נשלח מ-052 ב-'+esc(s.at.slice(11,16))+(s.at.slice(0,10)!==today()?' ('+esc(s.at.slice(8,10)+'.'+s.at.slice(5,7))+')':'')+
             (v.reactions?' · ❤️ '+v.reactions:'')+(v.replies?' · 💬 '+v.replies:'')+'</span>';
           card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+(c.jid?' · 052':'')+'</span>'+
             (v.sent?sentLine(v.sent):'')+
-            (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vbtns"></div>';
+            (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vsched"></div><div class="vbtns"></div>';
           card.querySelector('.vtext').textContent=v.text;
           if(v.sent) card.classList.add('done');
           const btns=card.querySelector('.vbtns');
@@ -1691,6 +1805,7 @@
                 const r=await apiJson('/versions/send',{method:'POST',json:{text,channel:c.id,image:vr.image||''}});
                 card.classList.add('done'); s.remove(); [...btns.children].forEach(b=>{ if(b.textContent.startsWith('🧪')) b.remove(); });
                 card.querySelector('.vhead .kind').insertAdjacentHTML('afterend',sentLine(r.sent));
+                v.sent=r.sent; v.schedule=null; vrTimedChanged=true; paintSched(card); renderVrAll();
                 $('vr-msg').textContent='📤 נשלח מ-052 ל„'+c.name+'”';
               }catch(e){ s.disabled=false; s.textContent=vrSendLabel(); $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
             };
@@ -1720,8 +1835,10 @@
             btns.appendChild(t);
           }
           const pb=document.createElement('button'); pb.type='button'; pb.className='btn ghost vpic-btn'; pb.textContent='🖼️ להעתיק את התמונה'; pb.onclick=()=>copyVrImage(c); btns.appendChild(pb);
+          paintSched(card);
           list.appendChild(card);
         }
+        renderVrFilter();
         renderVrPic();
       }catch(e){ $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
     }
@@ -1731,7 +1848,7 @@
     // (Omri, 2026-11-02: "if I close it, I cannot see it again")
     function hasVersions(p){ return !!(firstUrl(p.text)||sendable())&&!p.draft&&!p.skipped; }
     function versionsBtn(p){
-      const b=document.createElement('button'); b.type='button'; b.className='fixsent'; b.textContent='📣 גרסאות לערוצים';
+      const b=document.createElement('button'); b.type='button'; b.className='fixsent'; b.textContent=p.vr_timed?'⏰ '+(p.vr_timed===1?'גרסה מתוזמנת':p.vr_timed+' גרסאות מתוזמנות'):'📣 גרסאות לערוצים';
       b.onclick=e=>{ e.stopPropagation(); openVersions(p.text,p.image); }; return b;
     }
     function offerVersions(text,image){ if((firstUrl(text)||sendable())&&channels().length) openVersions(text,image); }
@@ -2084,14 +2201,30 @@
     $('ed-text').addEventListener('input',()=>scheduleShorten(1500));
     $('ed-text').addEventListener('paste',()=>scheduleShorten(300));
     $('ed-text').addEventListener('blur',()=>scheduleShorten(0));
-    function wrapSel(mark){
-      const ta=$('ed-text'), a=ta.selectionStart, b=ta.selectionEnd, v=ta.value, sel=v.slice(a,b)||'טקסט';
-      ta.value=v.slice(0,a)+mark+sel+mark+v.slice(b); ta.focus(); ta.setSelectionRange(a+mark.length,a+mark.length+sel.length); preview();
+    function wrapSel(mark,ta){
+      ta=ta||$('ed-text'); const a=ta.selectionStart, b=ta.selectionEnd, v=ta.value, sel=v.slice(a,b)||'טקסט';
+      ta.value=v.slice(0,a)+mark+sel+mark+v.slice(b); ta.focus(); ta.setSelectionRange(a+mark.length,a+mark.length+sel.length); if(ta===$('ed-text')) preview();
     }
-    function prefixLines(p){
-      const ta=$('ed-text'), v=ta.value; let a=v.lastIndexOf('\n',ta.selectionStart-1)+1, b=ta.selectionEnd;
+    function prefixLines(p,ta){
+      ta=ta||$('ed-text'); const v=ta.value; let a=v.lastIndexOf('\n',ta.selectionStart-1)+1, b=ta.selectionEnd;
       const block=v.slice(a,b).split('\n').map(l=>l.startsWith(p)?l:p+l).join('\n');
-      ta.value=v.slice(0,a)+block+v.slice(b); ta.focus(); preview();
+      ta.value=v.slice(0,a)+block+v.slice(b); ta.focus(); if(ta===$('ed-text')) preview();
+    }
+    // the editor's buttons, for another text box (the versions' text)
+    function textToolbar(ta){
+      const bar=document.createElement('div'); bar.className='toolbar';
+      const add=(html,title,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='tb'; b.innerHTML=html; b.title=title; b.onclick=fn; bar.appendChild(b); return b; };
+      add('<b>B</b>','מודגש (Ctrl+B)',()=>wrapSel('*',ta));
+      add('<i>I</i>','נטוי (Ctrl+I)',()=>wrapSel('_',ta));
+      add('<s>S</s>','קו חוצה',()=>wrapSel('~',ta));
+      add('{ }','מונו',()=>wrapSel('```',ta));
+      add('• רשימה','רשימה',()=>prefixLines('- ',ta));
+      const box=document.createElement('div'); box.className='emojis'; box.hidden=true;
+      add('😊',"אימוג'י",()=>{ box.hidden=!box.hidden; if(!box.hidden) renderEmojis(box,ta); });
+      bar.appendChild(box);
+      ta.addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
+        if(k==='b'){ e.preventDefault(); wrapSel('*',ta); } else if(k==='i'){ e.preventDefault(); wrapSel('_',ta); } } });
+      return bar;
     }
     document.querySelectorAll('.tb[data-wrap],.tb[data-line]').forEach(b=>b.onclick=()=>b.dataset.wrap?wrapSel(b.dataset.wrap):prefixLines(b.dataset.line));
 
@@ -2104,19 +2237,19 @@
     ];
     const RECENT='wa_emoji_recent';
     function recentEmoji(){ try{ return JSON.parse(localStorage.getItem(RECENT)||'[]').slice(0,16); }catch(_){ return []; } }
-    function renderEmojis(){
-      const box=$('ed-emojis'); box.innerHTML='';
+    function renderEmojis(box,ta){
+      box=box||$('ed-emojis'); ta=ta||$('ed-text'); box.innerHTML='';
       const rec=recentEmoji();
       for(const [title,list] of (rec.length?[['אחרונים',rec.join(' ')]]:[]).concat(EMOJI)){
         const h=document.createElement('h4'); h.textContent=title; box.appendChild(h);
         const g=document.createElement('div'); g.className='grid';
-        for(const em of list.split(' ')){ const b=document.createElement('button'); b.type='button'; b.textContent=em; b.title=em; b.onclick=()=>insertEmoji(em); g.appendChild(b); }
+        for(const em of list.split(' ')){ const b=document.createElement('button'); b.type='button'; b.textContent=em; b.title=em; b.onclick=()=>insertEmoji(em,ta); g.appendChild(b); }
         box.appendChild(g);
       }
       box.insertAdjacentHTML('beforeend','<div class="tip">כל האימוג\'ים במחשב: ‎Win + .‎ (נקודה) בתוך תיבת הטקסט</div>');
     }
-    function insertEmoji(em){
-      const ta=$('ed-text'), a=ta.selectionStart, b=ta.selectionEnd;
+    function insertEmoji(em,ta){
+      const a=ta.selectionStart, b=ta.selectionEnd;
       ta.focus(); ta.setRangeText(em,a,b,'end');
       ta.dispatchEvent(new Event('input'));   // the preview, the browser backup, the link shortener
       try{ localStorage.setItem(RECENT,JSON.stringify([em,...recentEmoji().filter(x=>x!==em)].slice(0,16))); }catch(_){ }
@@ -2405,17 +2538,18 @@
       if(blob) upload(new File([blob],meta.name||'shared.jpg',{type:meta.type||blob.type||'image/jpeg'}));
     }
 
-    // what the app was opened for: ?share=1 (a share), ?new=1 (the icon's shortcut), ?view=approve (a notification)
+    // what the app was opened for: ?share=1 (a share), ?new=1 (the icon's shortcut), ?view=approve (a notification), ?vr=<key> (a timed version's reminder)
     const startParams=new URLSearchParams(location.search);
     const startView=startParams.get('view')||'';
     let started=false;
     function afterFirstLoad(){
       if(started) return; started=true;
-      if(startParams.has('share')||startParams.has('new')||startParams.has('view')){
+      if(startParams.has('share')||startParams.has('new')||startParams.has('view')||startParams.has('vr')){
         try{ history.replaceState(null,'',location.pathname); }catch(_){ }
       }
       if(startParams.has('share')) openShare();
       else if(startParams.has('new')) newPost();
+      else if(startParams.has('vr')) openFromReminder(startParams.get('vr'));
       else if(startView==='approve'){ const h=$('approve'); if(h) h.scrollIntoView({block:'start'}); }
       renderAppbar(); refreshPush();
     }
