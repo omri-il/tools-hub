@@ -1649,7 +1649,7 @@
               s.disabled=true; s.textContent='שולח…'; $('vr-msg').className='msg'; $('vr-msg').textContent='';
               try{
                 const r=await apiJson('/versions/send',{method:'POST',json:{text,channel:c.id,image:vr.image||''}});
-                card.classList.add('done'); s.remove();
+                card.classList.add('done'); s.remove(); [...btns.children].forEach(b=>{ if(b.textContent.startsWith('🧪')) b.remove(); });
                 card.querySelector('.vhead .kind').insertAdjacentHTML('afterend',sentLine(r.sent));
                 $('vr-msg').textContent='📤 נשלח מ-052 ל„'+c.name+'”';
               }catch(e){ s.disabled=false; s.textContent=vrSendLabel(); $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
@@ -1665,6 +1665,20 @@
           const lead=!c.jid;  // with "send from 052" the copy buttons are the second way
           if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn '+(lead?'primary':'ghost'); a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
           const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url||!lead?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
+          // the version as it would go out, picture included, to 052's own chat: nothing marked, the real send stays open
+          if(!v.sent){
+            const t=document.createElement('button'); t.type='button'; t.className='btn ghost'; t.textContent='🧪 לשלוח לי לבדיקה';
+            t.onclick=async()=>{
+              if(vr.busy){ vrSay('רגע, התמונה עוד עולה'); return; }
+              t.disabled=true; vrSay('שולח בדיקה…');
+              try{
+                const r=await apiJson('/versions/test',{method:'POST',json:{text,channel:c.id,image:vr.image||''}});
+                vrSay("🧪 נשלחה מ-052 לצ'אט של 052 עם עצמו"+(r.image?', עם התמונה':'')+'. הגרסה עוד לא נשלחה לקבוצה');
+              }catch(e){ vrSay(e.message,true); }
+              finally{ t.disabled=false; }
+            };
+            btns.appendChild(t);
+          }
           const pb=document.createElement('button'); pb.type='button'; pb.className='btn ghost vpic-btn'; pb.textContent='🖼️ להעתיק את התמונה'; pb.onclick=()=>copyVrImage(c); btns.appendChild(pb);
           list.appendChild(card);
         }
