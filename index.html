@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=2" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
   <style>
     /* Admin-only tools: hidden until admin mode is unlocked, then shown in a distinct purple identity */
     body:not(.admin) .admin-only { display: none !important; }
@@ -57,13 +57,19 @@
 <body>
   <div class="bg-glow" aria-hidden="true"></div>
 
-  <header class="site-header">
+  <header class="site-header has-scan">
+    <div>
     <div class="brand">
       <span class="brand-mark">OI</span>
       <span class="brand-name">עומרי אירם</span>
     </div>
     <h1>הכלים שבניתי</h1>
     <p class="tagline">אוסף כלים חינמיים שעוזרים לי בעבודה היומיומית — ומוצאים את הדרך לעוד אנשים. הכל רץ ישר בדפדפן או בחשבון שלכם, בלי להתקין כלום.</p>
+    </div>
+    <figure class="scan">
+      <img src="qr.svg" alt="קוד QR לכתובת הכלי" width="124" height="124">
+      <figcaption>סורקים ופותחים בטלפון</figcaption>
+    </figure>
   </header>
 
   <main aria-label="כלים">

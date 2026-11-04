@@ -196,3 +196,6 @@ DNS at Hostinger: CNAME `tools` → `omri-il.github.io`.
 seeds `hub_config` from `hub_seed.py` on first run (no new env). If GitHub Pages is live but
 go-shortener isn't updated, the hub renders from its localStorage cache or shows a reload
 message. Cache-buster bumped to `css/style.css?v=2`.
+
+## QR on the front page
+`qr.svg` is for someone watching on a projector or YouTube. It holds the fixed address `https://tools.omri-iram.co.il` only, made once with `segno` (error M, border 2). Nothing is generated at run time and no outside service is called.
