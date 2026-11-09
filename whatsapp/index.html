@@ -2118,14 +2118,17 @@
       const box=$('ed-image'); const id=driveId(image);
       if(!id){ box.innerHTML='<div class="drop" id="drop">📷 מדביקים תמונה (Ctrl+V), גוררים אותה לכאן, או לוחצים לבחירה</div>'+
           '<button type="button" class="btn ghost img-paste" id="img-paste">📋 להדביק תמונה שהעתקתי</button>'+
+          '<button type="button" class="btn ghost img-paste" id="img-yt">🖼️ להביא את התמונה מיוטיוב</button>'+
           '<input class="drivelink" id="drivelink" dir="auto" placeholder="או מדביקים כאן קישור לתמונה ב-Drive">';
+        $('img-yt').onclick=youtubeImage;
         const dl=$('drivelink'); dl.oninput=()=>{ if(driveId(dl.value.trim())){ image=dl.value.trim(); renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } };
         $('img-paste').onclick=()=>pasteImage();
         const d=$('drop'); d.onclick=()=>$('ed-file').click();
         d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
         d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) upload(f);};
         return; }
-      box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="img-x">הסרת התמונה</button></div>';
+      box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="img-x">הסרת התמונה</button><button class="btn ghost" id="img-yt" type="button">🖼️ לעדכן מיוטיוב</button></div>';
+      $('img-yt').onclick=youtubeImage;
       imageUrl(id).then(u=>{ if(u){ box.querySelector('img').src=u; return; }
         delete imgCache[id]; if(driveId(image)===id) say('התמונה לא נפתחה מ-Drive: בודקים שזה קובץ תמונה ושהחשבון hello@ יכול לראות אותו',true); });
       $('img-x').onclick=()=>{ image=''; renderImage(); preview(); backup(); };
@@ -2147,6 +2150,14 @@
         }
         tell('אין תמונה בלוח: מעתיקים תמונה ולוחצים שוב',true);
       }catch(e){ tell('הדפדפן לא נתן לקרוא את הלוח: לוחצים Ctrl+V, או מאשרים לאתר גישה ללוח',true); }
+    }
+    // the thumbnail of the YouTube video the post links to, as YouTube shows it now
+    async function youtubeImage(){
+      say('מביא את התמונה מיוטיוב…');
+      try{
+        const r=await apiJson('/youtube-image',{method:'POST',json:{text:$('ed-text').value}});
+        image=r.link; renderImage(); preview(); backup(); say('התמונה מיוטיוב נוספה ✓');
+      }catch(e){ say(e.message,true); }
     }
     async function upload(f){
       if(!f.type.startsWith('image/')){ say('רק תמונות',true); return; }
