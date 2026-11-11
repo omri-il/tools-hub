@@ -74,17 +74,17 @@
         <div class="field">
           <label for="source">מקור (source) <span class="req">*</span> <span class="hint">— מאיפה</span></label>
           <input type="text" id="source" list="sources" placeholder="facebook, newsletter, whatsapp" />
-          <datalist id="sources"><option value="facebook"><option value="instagram"><option value="whatsapp"><option value="newsletter"><option value="youtube"><option value="google"><option value="linkedin"></datalist>
+          <datalist id="sources"><option value="facebook"><option value="instagram"><option value="whatsapp"><option value="newsletter"><option value="youtube"><option value="google"><option value="skool"><option value="linkedin"></datalist>
         </div>
         <div class="field">
           <label for="medium">מדיום (medium) <span class="req">*</span> <span class="hint">— איך</span></label>
           <input type="text" id="medium" list="mediums" placeholder="social, email, cpc, post" />
-          <datalist id="mediums"><option value="social"><option value="email"><option value="cpc"><option value="post"><option value="story"><option value="bio"><option value="qr"></datalist>
+          <datalist id="mediums"><option value="social"><option value="community"><option value="video"><option value="email"><option value="cpc"><option value="post"><option value="story"><option value="bio"><option value="qr"></datalist>
         </div>
       </div>
       <div class="field">
-        <label for="campaign">קמפיין (campaign) <span class="req">*</span> <span class="hint">— שם המבצע/הפעילות</span></label>
-        <input type="text" id="campaign" placeholder="passover_2026, ai_workshop" />
+        <label for="campaign">קמפיין (campaign) <span class="req">*</span> <span class="hint">— למפגש: המספר שלו (B019); אחרת שם המבצע</span></label>
+        <input type="text" id="campaign" placeholder="B019, passover_2026" />
       </div>
       <div class="row">
         <div class="field">
@@ -150,8 +150,9 @@
       const base = $('base').value.trim();
       if(!base){ out.textContent='—'; return ''; }
       const params = [
-        ['utm_source', $('source').value.trim()],
-        ['utm_medium', $('medium').value.trim()],
+        // lower-case, so Facebook / facebook land in one bucket (convention: omri-iram.co.il docs/utm-convention.md)
+        ['utm_source', $('source').value.trim().toLowerCase()],
+        ['utm_medium', $('medium').value.trim().toLowerCase()],
         ['utm_campaign', $('campaign').value.trim()],
         ['utm_term', $('term').value.trim()],
         ['utm_content', $('content').value.trim()],
