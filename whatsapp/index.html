@@ -290,6 +290,11 @@
     .proof .pitem s{color:var(--danger)} .proof .pitem b{color:var(--ok)} .proof .why{color:var(--faint);font-size:.82rem}
     .proof .pitem.fixed{opacity:.55} .proof .pitem.fixed::after{content:'✓ תוקן';color:var(--ok);font-size:.8rem}
     .proof .pbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+    /* a late or borderline hour (content-machine hours.py): the same panel as the typo check, a warning, never a block */
+    .proof.hrs .hmsg{margin:6px 0 10px;line-height:1.5}
+    .proof.hrs.late{background:var(--danger-bg);border-color:#f3c5c2}
+    .proof.hrs .hfoot{color:var(--faint);font-size:.82rem;margin-top:8px}
+    .hrs-note{color:var(--warn);font-weight:600}
     .fixsent{background:transparent;border:1px dashed rgba(232,160,20,.55);color:var(--accent-text);border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
     .spacer{flex:1}
     /* the editor's ⋯: test, send now, delete, away from the main button */
@@ -603,7 +608,7 @@
       <div class="ed-main">
         <div class="row2">
           <div class="field"><label for="ed-date">תאריך</label><input type="date" id="ed-date"></div>
-          <div class="field"><label for="ed-time">מתי ביום</label><select id="ed-time"></select><div class="hint" id="ed-time-hint"></div></div>
+          <div class="field"><label for="ed-time">מתי ביום</label><select id="ed-time"></select><div class="hint" id="ed-time-hint"></div><div class="hint hrs-note" id="ed-hours-note" role="status" hidden></div></div>
         </div>
         <div class="field">
           <label for="ed-text">ההודעה</label>
@@ -634,6 +639,7 @@
         <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
         <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים; מכבים אותה כאן להודעה אחת, או ב„⚙️ הגדרות” לכולן). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
       </div>
+      <div class="proof hrs" id="hours" hidden></div>
       <div class="proof" id="proof" hidden></div>
       <div class="actions">
         <button class="btn primary" id="ed-fix" hidden>✏️ לתקן בוואטסאפ</button>
@@ -675,6 +681,7 @@
       <div class="vr-edit" id="vr-edit"></div>
       <input type="file" id="vr-file" accept="image/*" hidden>
       <div id="vr-list"></div>
+      <div class="proof hrs" id="vr-hours" style="margin-top:14px" hidden></div>
       <div class="actions" style="margin-top:14px"><button class="btn ghost" id="vr-close" type="button">סגירה</button><span class="msg" id="vr-msg"></span></div>
     </div>
   </div>
@@ -713,7 +720,7 @@
     async function apiJson(path,opts){
       const r=await api(path,opts); let data={};
       try{ data=await r.json(); }catch(_){ }
-      if(!r.ok) throw new Error(data.error||('שגיאה '+r.status));
+      if(!r.ok) throw Object.assign(new Error(data.error||('שגיאה '+r.status)),{status:r.status,data});
       return data;
     }
 
@@ -1118,6 +1125,7 @@
         }
         // the same post for the other channels (Facebook groups…): sent, or approved and waiting
         if(hasVersions(p)) it.appendChild(versionsBtn(p));
+        if(p.can_repeat) it.appendChild(repeatBtn(p));
         if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
         chat.appendChild(it);
       }
@@ -1263,6 +1271,7 @@
           (ev?'<div class="evday" dir="auto">📅 '+esc(ev.name)+'</div>':md?'<div class="evday" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</div>':'')+
           (p.result?statsOf(p.result):'');
         if(hasVersions(p)) it.appendChild(versionsBtn(p));
+        if(p.can_repeat) it.appendChild(repeatBtn(p));
         it.title=p.sent?'לחיצה פותחת את היום':'לחיצה פותחת את ההודעה לעריכה';
         it.onclick=()=>{ if(p.sent) go('day',d.date); else openEditor(p,ev||(md&&md.ev)); };
         if(!p.sent&&!d.past) draggable(it,{post:p});
@@ -1700,7 +1709,7 @@
         const send=open.filter(c=>c._v.channel.jid).length;
         if(send&&!confirm(send+' קבוצות של 052 יקבלו את הגרסה מעצמן ב-'+vrWhen(at.value.slice(0,16))+', זו אחרי זו.\nאפשר לבטל עד אז.')) return;
         const r=await vrSchedule(open.map(c=>c.dataset.id),at.value);
-        if(r) vrSay('⏰ '+open.length+' גרסאות תוזמנו ל-'+vrWhen(at.value.slice(0,16)));
+        if(r) vrSay('⏰ '+open.length+' גרסאות תוזמנו ל-'+vrWhen(r.at.slice(0,16)));
       };
       box.append(at,go);
       if(waits.length){
@@ -1711,8 +1720,18 @@
     }
     async function vrSchedule(ids,at){
       if(vr.busy){ vrSay('רגע, התמונה עוד עולה'); return null; }
+      let lateOk=false;
+      if(at){   // a late or borderline hour: asked first (a warning, the choice stays Omri's)
+        const h=await askHours(at.slice(0,10),at.slice(11,16));
+        if(h){
+          const g=await new Promise(res=>showHours(h,'לתזמן',res,$('vr-hours'),'חזרה'));
+          if(!g) return null;
+          if(g.later) at=g.later; else lateOk=true;
+        }
+      }
       try{
-        const r=await apiJson('/versions/schedule',{method:'PUT',json:{text:vr.text,channels:ids,at,image:vr.image||''}});
+        const r=await apiJson('/versions/schedule',{method:'PUT',json:{text:vr.text,channels:ids,at,image:vr.image||'',late_ok:lateOk}});
+        r.at=at;
         vrTimedChanged=true;
         vrCards().forEach(c=>{ c._v.schedule=r.schedule[c.dataset.id]||null; paintSched(c); });
         renderVrAll();
@@ -1728,7 +1747,7 @@
       if(editing){
         const at=whenInput(vrWaits(v)?s.at:'');
         slot.append(at,btn('שמירה',async()=>{ if(!at.value){ vrSay('בוחרים מתי',true); return; }
-          if(await vrSchedule([card.dataset.id],at.value)) vrSay((jid?'⏰ תצא מ-052 ב-':'🔔 תזכורת ב-')+vrWhen(at.value.slice(0,16))); }),btn('ביטול',()=>paintSched(card)));
+          const r=await vrSchedule([card.dataset.id],at.value); if(r) vrSay((jid?'⏰ תצא מ-052 ב-':'🔔 תזכורת ב-')+vrWhen(r.at.slice(0,16))); }),btn('ביטול',()=>paintSched(card)));
         at.focus(); return;
       }
       if(s){
@@ -1873,6 +1892,30 @@
     function versionsBtn(p){
       const b=document.createElement('button'); b.type='button'; b.className='fixsent'; b.textContent=p.vr_timed?'⏰ '+(p.vr_timed===1?'גרסה מתוזמנת':p.vr_timed+' גרסאות מתוזמנות'):'📣 גרסאות לערוצים';
       b.onclick=e=>{ e.stopPropagation(); openVersions(p.text,p.image); }; return b;
+    }
+    // "🔁 לשלוח שוב בנוסח אחר" (Omri, 2026-11-14): the same message once more, the next day, in the other half of
+    // the day, as a DRAFT in a shorter wording (content-machine bot/repeat.py). It goes out only once approved.
+    const REPEAT='🔁 לשלוח שוב בנוסח אחר';
+    function repeatBtn(p){
+      const b=document.createElement('button'); b.type='button'; b.className='fixsent';
+      if(p.repeated){
+        b.textContent='🔁 חוזרת ב-'+dm(p.repeated.date)+' · '+p.repeated.time;
+        b.title='לפתוח את הטיוטה של השליחה החוזרת';
+        b.onclick=e=>{ e.stopPropagation(); const d=findPost(p.repeated.row); d?openEditor(d):toast('הטיוטה של השליחה החוזרת לא בטווח שמוצג כאן',true); };
+        return b;
+      }
+      b.textContent=REPEAT;
+      b.title='נכתבת טיוטה של אותה הודעה בנוסח קצר ושונה, ליום הבא בחלק האחר של היום. היא יוצאת רק אחרי שמאשרים אותה.';
+      b.onclick=async e=>{
+        e.stopPropagation(); b.disabled=true; b.textContent='🔁 כותב נוסח חדש…';
+        try{
+          const r=await apiJson('/repeat',{method:'POST',json:{row:p.row,key:p.key}});
+          await load();
+          toast('🔁 טיוטה ל-'+dm(r.date)+' ב-'+r.time+(r.ai?'':' (בלי נוסח חדש: Gemini לא ענה)')+'. היא לא תצא עד שתאשרו אותה.');
+          const d=findPost(r.row); if(d) openEditor(d);
+        }catch(err){ toast(err.message,true); b.disabled=false; b.textContent=REPEAT; }
+      };
+      return b;
     }
     function offerVersions(text,image){ if((firstUrl(text)||sendable())&&channels().length) openVersions(text,image); }
 
@@ -2024,7 +2067,7 @@
       $('ed-nofooter').checked=p.footer===false;
       $('ed-time-hint').textContent='הרגיל יוצא ב-'+state.settings.time+' או עד רבע שעה אחרי. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
-      proofed=''; hideProof();
+      proofed=''; hideProof(); hoursOk=''; hideHours(); $('ed-hours-note').hidden=true;
       // one main button by the post's state: a draft → approve, a sent post → fix in WhatsApp, else save.
       // A sent post: only its text can change, and only the "fix in WhatsApp" button sends it.
       const fix=!!(editing&&editing.sent), draft=!!(editing&&editing.draft);
@@ -2039,12 +2082,12 @@
         say('אפשר לתקן את הטקסט עד '+new Date(editing.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})+'. בוואטסאפ יופיע ליד ההודעה „נערכה”.'); }
       if(p.skool) goLinks(p.text).forEach(u=>{ if(!shortMap[u]) shortMap[u]='skool.com'; });
       renderImage(); preview(); scheduleShorten(0);
-      opened=fields();
+      opened=fields(); hoursNote();
       $('overlay').classList.add('open'); setTimeout(()=>$('ed-text').focus(),30);
       // the phone's back button closes the editor (as "סגירה": what changed becomes a draft), not the app
       if(!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; ideaInEditor=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof();
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; ideaInEditor=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof(); hideHours();
       if(edHist){ edHist=false; try{ history.back(); }catch(_){ } } }
     let edHist=false;
     window.addEventListener('popstate',async()=>{
@@ -2104,6 +2147,58 @@
       box.appendChild(btns);
       box.scrollIntoView({block:'nearest'});
     }
+
+    // ---- a fair hour for the group? (Omri, 2026-11-14: "a warning when I am about to send at a borderline hour")
+    // The server knows the rules (GET /hours: 21:00 borderline, 22:00 late, before 7:00, Friday afternoon; Shabbat
+    // keeps its own block). A hit = a panel like the typo check's with three choices; a warning, never a block.
+    // It comes BEFORE the typo check, and a post kept as a draft is never asked.
+    let hoursOk='';
+    async function askHours(date,time){
+      try{ return (await apiJson('/hours'+(date?'?date='+encodeURIComponent(date)+'&time='+encodeURIComponent(time||''):''))).hours||null; }
+      catch(_){ return null; }   // the check could not run: the server still refuses a late "send now" without a yes
+    }
+    function hideHours(){ for(const id of ['hours','vr-hours']){ $(id).hidden=true; $(id).innerHTML=''; } }
+    // resolve: {later:'YYYY-MM-DDTHH:MM'} = move it to the offered time · {late_ok:true} = as it is · false = back
+    function showHours(h,verb,resolve,box=$('hours'),back='חזרה לעריכה'){
+      box.hidden=false; box.innerHTML=''; box.classList.toggle('late',h.level==='late');
+      const done=v=>{ box.hidden=true; box.innerHTML=''; resolve(v); };
+      box.insertAdjacentHTML('beforeend','<b>🕒 '+(h.level==='late'?'שעה לא טובה להודעה בקבוצה':'שעה גבולית להודעה בקבוצה')+'</b><div class="hmsg" dir="auto">'+esc(h.message)+'</div>');
+      const btns=document.createElement('div'); btns.className='pbtns';
+      const mk=(t,cls,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=t; b.onclick=fn; btns.appendChild(b); };
+      mk('⏰ לתזמן ל'+h.suggest_label,'primary',()=>done({later:h.suggest}));
+      mk(verb+' בכל זאת','ghost',()=>done({late_ok:true}));
+      mk(back,'ghost',()=>done(false));
+      box.appendChild(btns);
+      box.insertAdjacentHTML('beforeend','<div class="hfoot">זו רק אזהרה. ההחלטה שלך.</div>');
+      box.scrollIntoView({block:'center'});   // whole, clear of the phone's fixed button bar
+    }
+    // when: {date,time} of a post, or null = this minute ("send now"). → {} fair · {later} · {late_ok} · false
+    async function hoursGate(when,verb){
+      const key=when?when.date+'|'+when.time:'now';
+      if(hoursOk===key) return {late_ok:true};
+      setBusy(true); say('🕒 בודק את השעה…');
+      const h=await askHours(when&&when.date,when&&when.time);
+      say('');
+      if(!h){ setBusy(false); return {}; }
+      const g=await new Promise(res=>showHours(h,verb,res));
+      setBusy(false);
+      if(g&&g.later){ setWhen(g.later); hoursOk=g.later.slice(0,10)+'|'+g.later.slice(11,16); }
+      else if(g) hoursOk=key;
+      return g;
+    }
+    function setWhen(at){ $('ed-date').value=at.slice(0,10); fillTimes(at.slice(11,16)); hoursNote(); preview(); }
+    // the small note under the time, as the day or the time is picked
+    let hoursNoteTimer=null, hoursNoteSeq=0;
+    function hoursNote(){
+      clearTimeout(hoursNoteTimer);
+      hoursNoteTimer=setTimeout(async()=>{
+        const n=++hoursNoteSeq, el=$('ed-hours-note');
+        const h=(editing&&editing.sent)||!$('ed-date').value?null:await askHours($('ed-date').value,$('ed-time').value);
+        if(n!==hoursNoteSeq) return;
+        el.hidden=!h; el.textContent=h?'🕒 '+h.message:'';
+      },200);
+    }
+    $('ed-date').addEventListener('change',hoursNote); $('ed-time').addEventListener('change',hoursNote);
 
     // Nothing written is lost (Omri, 2026-10-19: "whatever I do, the tool auto-drafts it"):
     // closing the editor any way but "save" (outside it, Esc, "סגירה") saves what changed as a DRAFT
@@ -2341,6 +2436,8 @@
       if(busy||(editing&&editing.sent)) return;
       // a post that will go out is checked for typos first; a draft kept as a draft is not
       const goesOut=!auto&&!$('ed-skip').checked&&(approve===true||!(editing&&editing.draft));
+      // … and, before that, for a late or borderline hour ("⏰ לתזמן ל…" moves it and the save goes on)
+      if(goesOut&&$('ed-text').value.trim()&&!await hoursGate({date:$('ed-date').value,time:$('ed-time').value},approve===true?'לאשר':'לשמור')) return;
       if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור',pre)) return;
       const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
@@ -2393,6 +2490,10 @@
     $('ed-send').onclick=async()=>{
       if(busy) return;
       if(!$('ed-text').value.trim()){ say('ההודעה ריקה',true); return; }
+      const hg=await hoursGate(null,'לשלוח');
+      if(!hg) return;
+      // "⏰ לתזמן ל…": not sent now. It is saved for that time as a post that will go out (a draft is approved)
+      if(hg.later) return save(!!(editing&&editing.draft));
       if(!await proofGate(today(),'לשלוח')) return;
       const text=$('ed-text').value;
       const group=$('ed-group').value, where=[group,...also];
@@ -2405,7 +2506,7 @@
       setBusy(true); say('שולח…');
       const fromIdea=ideaInEditor;
       try{
-        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
+        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked,late_ok:!!hg.late_ok})});
         if(fromIdea) await ideaDone(fromIdea,true);
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
@@ -2523,6 +2624,12 @@
     // something (or can't run) does the editor open, with what it found
     async function quickApprove(p,ctx,btn){
       const it=btn.closest('.apv-item'); it.querySelectorAll('button').forEach(b=>b.disabled=true);
+      btn.textContent='🕒 בודק את השעה…';
+      if(await askHours(p.date,p.time||'')){   // late or borderline: the editor opens with the three choices
+        renderBoard(); openEditor(p,ctx); await save(true);
+        if(!$('overlay').classList.contains('open')) approvedToast(findPost(p.row)||p);
+        return;
+      }
       btn.textContent='🔎 בודק טעויות…';
       const r=await proofread(p.text,p.date);
       if(!r.ok||r.issues.length){
