@@ -74,6 +74,13 @@ ONE main button by state (draft → ✅ לאשר לשליחה, sent → ✏️ �
 / delete; send now, a fix and a delete ask in a sheet (`sheet()`, not `confirm()`) that shows the post, the group
 and its member count. On a phone the editor switches "✍️ כתיבה / 👁 איך זה ייראה", and the ✍️ button steps aside
 while scrolling down.
+**🕒 A late or borderline hour asks first (2026-11-14):** before "📤 לשלוח עכשיו", "✅ לאשר" (the list's too), "שמירה" of a
+post that will go out and "⏰ לתזמן" of versions the page asks `GET /hours`; a hit opens `#hours` (the typo panel's
+look, red when `late`) with [⏰ לתזמן ל…] / [… בכל זאת] / [חזרה לעריכה], BEFORE the typo check (`hoursGate`,
+`showHours`); a note under the time field (`hoursNote`). A warning, never a block; "בכל זאת" sends `late_ok`.
+**🔁 "לשלוח שוב בנוסח אחר"** under a post that went out or is waiting (`repeatBtn`, `POST /repeat`): a draft for the
+next day in the other half of the day opens in the editor; then the button reads "🔁 חוזרת ב-16.11 · 20:00" and opens
+it. See content-machine CLAUDE.md → "A fair hour for the group", "🔁 לשלוח שוב בנוסח אחר".
 **It is also an Android app (a PWA, 2026-10-22):** `whatsapp/manifest.webmanifest` (scope `/whatsapp/`, icons in
 `whatsapp/icons/`, a share target, shortcuts `?new=1` / `?view=approve`) and `whatsapp/sw.js` (the page network-first,
 the share POST to `/whatsapp/share` kept in the `wa-share` cache → `?share=1`, push notifications). Installed from
