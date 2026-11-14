@@ -626,6 +626,10 @@
         </div>
         <div class="field"><label for="ed-group">לאן נשלחת</label><select id="ed-group"></select>
           <div class="sugg" id="ed-sugg"></div></div>
+        <div class="field"><label for="ed-kind">סוג הפוסט</label><select id="ed-kind">
+            <option value="" id="ed-kind-day">תוכן רגיל</option>
+            <option value="קידום">📣 קידום: הזמנה לסדנה או תזכורת לאירוע</option></select>
+          <p class="hint" id="ed-kind-hint"></p></div>
         <label class="check" id="ed-nofooter-box"><input type="checkbox" id="ed-nofooter"> <span id="ed-nofooter-label">בלי השורה „כל הפוסטים הקודמים” בסוף ההודעה הזאת</span></label>
         <label class="check"><input type="checkbox" id="ed-skip"> לא לשלוח את ההודעה הזאת (נשמרת, אבל לא יוצאת)</label>
       </div>
@@ -1103,6 +1107,7 @@
         const it=document.createElement('div'); it.className='item';
         const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
         it.innerHTML='<div class="meta">'+(!p.sent&&!d.past?'<span class="grip" title="גוררים ליום אחר">⠿</span>':'')+'<span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
+          (p.kind==='קידום'?'<span class="chip bot" title="נספר בנפרד בלשונית „מה עבד”">📣 קידום</span>':'')+
           (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
           (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
         const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:boardFooter(p),clickable:!p.sent,skipped:p.skipped,draft:p.draft});
@@ -2022,6 +2027,7 @@
       $('ed-title').textContent=editing?(editing.draft?'📝 טיוטה: עורכים ומאשרים':'עריכת הודעה'):'הודעה חדשה';
       $('ed-date').value=p.date; fillTimes(p.time||''); $('ed-text').value=p.text||''; $('ed-skip').checked=!!p.skipped;
       $('ed-nofooter').checked=p.footer===false;
+      $('ed-kind').value=p.kind==='קידום'?'קידום':''; kindUi();
       $('ed-time-hint').textContent='הרגיל יוצא ב-'+state.settings.time+' או עד רבע שעה אחרי. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
       proofed=''; hideProof();
@@ -2031,7 +2037,7 @@
       $('ed-fix').hidden=!fix; $('ed-approve').hidden=fix||!draft; $('ed-save').hidden=fix||draft;
       $('ed-more').closest('.more-wrap').hidden=fix; $('ed-delete').hidden=!editing||fix; $('ed-versions').hidden=!editing||fix||!hasVersions(editing); toggleMenu(false);
       edView('write');
-      ['ed-date','ed-time','ed-group','ed-skip'].forEach(id=>$(id).disabled=fix);
+      ['ed-date','ed-time','ed-group','ed-skip','ed-kind'].forEach(id=>$(id).disabled=fix);
       $('ed-image').closest('.field').hidden=fix; $('ed-skip').closest('.check').hidden=fix;
       $('ed-nofooter-box').hidden=fix;   // a fix goes out with the footer as the post had it
       $('ed-cancel').textContent=fix?'ביטול':draft?'שמירה כטיוטה':'סגירה';
@@ -2110,7 +2116,7 @@
     // in the Sheet, which never goes out until it is approved. What is typed is also kept in this
     // browser, so a closed tab or a crash brings the editor back with it the next time.
     let opened='';
-    function fields(){ return JSON.stringify({date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value.trim(),image,skip:$('ed-skip').checked,group:$('ed-group').value,nofooter:$('ed-nofooter').checked}); }
+    function fields(){ return JSON.stringify({date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value.trim(),image,skip:$('ed-skip').checked,group:$('ed-group').value,nofooter:$('ed-nofooter').checked,kind:$('ed-kind').value}); }
     function changed(){ return fields()!==opened; }
     const BACKUP='wa_editor_backup';
     let backupTimer=null;
@@ -2133,7 +2139,7 @@
       if(Date.now()-b.at>14*86400e3){ dropBackup(); return; }
       const p=b.row?findPost(b.row):null;
       const base=(p&&p.key===b.key&&!p.sent)?p:{};
-      openEditor(Object.assign({},base,{date:b.f.date,time:b.f.time,text:b.f.text,image:b.f.image,skipped:b.f.skip,group:b.f.group,footer:!b.f.nofooter}));
+      openEditor(Object.assign({},base,{date:b.f.date,time:b.f.time,text:b.f.text,image:b.f.image,skipped:b.f.skip,group:b.f.group,footer:!b.f.nofooter,kind:b.f.kind||''}));
       opened='';   // what came back was never saved: closing saves it as a draft
       say('📝 חזרה הודעה שלא נשמרה. שמירה, או סגירה = טיוטה');
     }
@@ -2212,7 +2218,15 @@
     }
     ['ed-text','ed-time','ed-skip','ed-nofooter'].forEach(id=>$(id).addEventListener('input',preview));
     $('ed-nofooter').addEventListener('change',preview);
-    ['ed-text','ed-date','ed-time','ed-skip','ed-group','ed-nofooter'].forEach(id=>{ $(id).addEventListener('input',backup); $(id).addEventListener('change',backup); });
+    // "סוג הפוסט" (2026-11-14): a promotion post is scored apart in "🏆 מה עבד", not as the day's category
+    function kindUi(){
+      const d=[...state.weeks.flatMap(w=>w.days),...(state.archive||[])].find(x=>x.date===$('ed-date').value);
+      const cat=d&&d.category;
+      $('ed-kind-day').textContent=cat?'תוכן רגיל: נספר כ„'+cat+'”, הקטגוריה של היום':'תוכן רגיל: נספר לפי הקטגוריה של היום';
+      $('ed-kind-hint').textContent=$('ed-kind').value?'פוסט קידום נספר בנפרד בלשונית „מה עבד”, ולא כתוכן של היום.':'';
+    }
+    ['ed-date','ed-kind'].forEach(id=>$(id).addEventListener('change',kindUi));
+    ['ed-text','ed-date','ed-time','ed-skip','ed-group','ed-nofooter','ed-kind'].forEach(id=>{ $(id).addEventListener('input',backup); $(id).addEventListener('change',backup); });
     $('ed-time').addEventListener('change',preview);
     let shortTimer=null, shortening=false;
     function scheduleShorten(ms){ clearTimeout(shortTimer); shortTimer=setTimeout(shortenNow,ms); }
@@ -2342,7 +2356,7 @@
       // a post that will go out is checked for typos first; a draft kept as a draft is not
       const goesOut=!auto&&!$('ed-skip').checked&&(approve===true||!(editing&&editing.draft));
       if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור',pre)) return;
-      const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked};
+      const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked,kind:$('ed-kind').value};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       if(auto) body.draft=true;
       const wasQueued=!!(editing&&!editing.draft&&!editing.skipped), fromIdea=ideaInEditor;
@@ -2405,7 +2419,7 @@
       setBusy(true); say('שולח…');
       const fromIdea=ideaInEditor;
       try{
-        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked})});
+        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked,kind:$('ed-kind').value})});
         if(fromIdea) await ideaDone(fromIdea,true);
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
@@ -2485,6 +2499,7 @@
         if(ev) chips.push('<span class="chip ev" dir="auto">📅 '+esc(ev.name)+'</span>');
         else if(md) chips.push('<span class="chip md" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>');
         if(p.image) chips.push('<span class="chip bot">🖼 עם תמונה</span>');
+        if(p.kind==='קידום') chips.push('<span class="chip bot" title="נספר בנפרד בלשונית „מה עבד”">📣 קידום</span>');
         if(p.made_by) chips.push('<span class="chip bot" title="טיוטה שהמערכת כתבה">🤖 '+esc(p.made_by)+'</span>');
         it.innerHTML='<div class="apv-head"><span class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+'</span>'+chips.join('')+'</div>'+
           '<div class="apv-chat"></div><button class="apv-more" type="button" hidden>עוד ▾</button><div class="apv-btns"></div>';
