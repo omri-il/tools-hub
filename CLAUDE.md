@@ -86,7 +86,8 @@ The live list is the config in `/admin/`; this table is only a map of folders an
 
 **`whatsapp/` in short:** the API is content-machine's `bot/wa_web.py` (systemd `content-machine-wa-web`), which checks
 `X-Session` with go-shortener; posts live in the Google Sheet "פוסטים לוואטסאפ". Board views חודש · שבוע · יום · רשימה,
-approvals, typo check, ideas, 🎬 kanban, 📣 versions for other channels, late-hour warning. Feature-by-feature detail
+approvals, typo check, ideas, 🎬 kanban, 📣 versions for other channels (✓ פרסמתי כאן, 🚀 Claude posts to Facebook),
+late-hour warning, 📊 מי עוזר לי (2026-11-15: clicks a post and sign-ups per channel). Feature-by-feature detail
 lives in content-machine's CLAUDE.md and in `docs/HISTORY.md`. PWA files: `whatsapp/manifest.webmanifest`, `whatsapp/sw.js`, `whatsapp/icons/`.
 
 ## Usage analytics

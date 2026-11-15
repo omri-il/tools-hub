@@ -453,6 +453,44 @@
     .vbtns{display:flex;gap:8px;flex-wrap:wrap}
     .vbtns .btn{padding:8px 14px;font-size:.9rem}
     .postbtns{display:flex;gap:6px;flex-wrap:wrap}
+    .vnote{font-size:.86rem;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--ok-bg);color:var(--ok);display:none}
+    .vnote.on{display:block}
+    .vnote.err{background:var(--danger-bg);color:var(--danger)}
+    .vhead .posted{font-weight:600;font-size:.8rem;color:var(--ok)}
+    .vhead .claude{font-weight:600;font-size:.8rem;border-radius:999px;padding:0 8px;background:var(--warn-bg);color:var(--warn)}
+    .vhead .claude.ok{background:var(--ok-bg);color:var(--ok)}
+    .vhead .claude.skip{background:var(--danger-bg);color:var(--danger)}
+    .btn.marked{border-color:var(--ok);color:var(--ok)}
+    .vr-claude{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+    .vr-claude[hidden]{display:none}
+    .pick{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto;margin:6px 0}
+    .pick label{display:flex;gap:8px;align-items:center;font-size:.92rem}
+    .pick small{color:var(--muted)}
+    /* 📊 who helps */
+    .st-intro{color:var(--muted);font-size:.92rem;margin:0 2px 10px}
+    .st-top{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+    .st-top h3{font-size:1rem;margin-bottom:6px}
+    .st-top ol{margin:0;padding-inline-start:20px;font-size:.92rem}
+    .st-top li{margin:2px 0}
+    .st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+    .stc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;border-inline-start:5px solid var(--line)}
+    .stc.good{border-inline-start-color:var(--ok)} .stc.poor{border-inline-start-color:var(--danger)}
+    .stc h4{font-size:.98rem;margin:0 0 4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .stc h4 .kind{font-weight:400;font-size:.74rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 7px}
+    .stc .pill{display:inline-block;font-size:.8rem;font-weight:600;border-radius:999px;padding:1px 9px;margin-bottom:6px;background:var(--panel);color:var(--muted)}
+    .stc.good .pill{background:var(--ok-bg);color:var(--ok)} .stc.poor .pill{background:var(--danger-bg);color:var(--danger)}
+    .stc .big{font-size:1.5rem;font-weight:700;line-height:1.1}
+    .stc .big small{font-size:.8rem;font-weight:400;color:var(--muted)}
+    .stc .nums{display:flex;gap:10px;flex-wrap:wrap;font-size:.84rem;color:var(--muted);margin-top:4px}
+    .stc .nums b{color:var(--ink)}
+    .stc .meter{height:6px;background:var(--panel);border-radius:3px;margin-top:8px;overflow:hidden}
+    .stc .meter i{display:block;height:100%;background:var(--accent)}
+    .stc details{margin-top:8px;font-size:.84rem}
+    .stc summary{cursor:pointer;color:var(--accent-text)}
+    .stc ul{margin:6px 0 0;padding-inline-start:18px}
+    .stc li{margin:2px 0}
+    .stc li.no{color:var(--faint)}
+    .st-rules{color:var(--faint);font-size:.8rem;margin:12px 2px 0}
     /* the page never moves sideways on a phone, whatever is too wide inside it (clip keeps the sticky tabs) */
     html{overflow-x:clip}
     .day>*,.apv-item>*,.ev,.item{min-width:0}
@@ -564,6 +602,7 @@
       <button class="tab active" data-pane="board">📅 הלוח</button>
       <button class="tab" data-pane="content">🎬 תוכן</button>
       <button class="tab" data-pane="results">🏆 מה עבד</button>
+      <button class="tab" data-pane="stats">📊 מי עוזר לי</button>
       <button class="tab" data-pane="learn">🧠 מה למדתי</button>
       <button class="tab" data-pane="settings">⚙️ הגדרות</button>
     </nav>
@@ -572,6 +611,7 @@
     <section class="pane" id="results"><div class="loading">טוען…</div></section>
     <section class="pane" id="content"><div class="loading">טוען…</div></section>
     <section class="pane" id="learn"><div class="loading">טוען…</div></section>
+    <section class="pane" id="stats"><div class="loading">טוען…</div></section>
     <section class="pane" id="settings">
       <div class="setting">
         <label class="check"><input type="checkbox" id="set-footer"> להוסיף בסוף כל הודעה את השורה „כל הפוסטים הקודמים מחכים כאן” והקישור לסקול</label>
@@ -681,6 +721,7 @@
       <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק ובסקול בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. התמונה כאן היא של הגרסאות בלבד: מה שכבר נשלח לא משתנה. „⏰ לתזמן”: קבוצה של 052 מקבלת את הגרסה מעצמה בזמן שנבחר, ובערוצים האחרים מקבלים תזכורת ומדביקים. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
       <div class="vr-filter" id="vr-filter" role="group" aria-label="סינון לפי סוג ערוץ" hidden></div>
       <div class="vr-all" id="vr-all" hidden></div>
+      <div class="vr-claude" id="vr-claude" hidden></div>
       <div class="vr-pic" id="vr-pic"></div>
       <div class="vr-edit" id="vr-edit"></div>
       <input type="file" id="vr-file" accept="image/*" hidden>
@@ -1674,6 +1715,68 @@
     // ---- a quick filter by kind, and ⏰ a time per version or for all those showing (Omri, 2026-11-03). A channel
     // tied to a group of 052 goes out by itself; the others can't, so their time is a reminder ----
     function vrCards(){ return [...$('vr-list').querySelectorAll('.vcard')]; }
+    // ---- ✓ posted here, and 🚀 Claude posts it (Content Machine bot/posting.py, 2026-11-15) ----
+    const CLAUDE_STATE={queued:['🚀 בתור ל-Claude',''],posted:['🚀 Claude פרסם','ok'],pending:['⏳ פורסם, מחכה לאישור מנהל','ok'],
+                        skipped:['⏭ Claude דילג','skip'],failed:['✗ Claude לא הצליח','skip']};
+    function paintPosted(card){
+      const v=card._v, c=v.channel, p=v.posted, st=(vr.posting||{})[c.id];
+      const by=p&&p.by==='claude'?'Claude':'ידנית';
+      card.querySelector('.vhead .posted').textContent=p?'✓ פורסם '+vrWhen(p.at)+' · '+by:'';
+      if(p) card.classList.add('done');
+      const b=card.querySelector('.vposted');
+      if(b){ b.textContent=p?'✓ פורסם כאן (לבטל)':'✓ פרסמתי כאן'; b.classList.toggle('marked',!!p); }
+      const cl=card.querySelector('.vhead .claude');
+      const look=st&&!(p&&st.status==='posted')?CLAUDE_STATE[st.status]:null;
+      cl.hidden=!look;
+      if(look){ cl.textContent=look[0]+(st.note&&st.status!=='posted'?': '+st.note:''); cl.className='claude '+look[1]; }
+    }
+    function vrClaudeOpen(){
+      return vrCards().filter(card=>{ const v=card._v, c=v.channel, st=(vr.posting||{})[c.id];
+        return c.kind==='facebook'&&c.url&&!v.posted&&!(st&&['queued','posted','pending'].includes(st.status)); });
+    }
+    function renderVrClaude(){
+      const box=$('vr-claude'); box.innerHTML='';
+      const open=vrClaudeOpen(), runs=[...new Set(Object.values(vr.posting||{}).filter(s=>s.status==='queued').map(s=>s.run))];
+      box.hidden=!vr.postingOn||(!open.length&&!runs.length);
+      if(box.hidden) return;
+      if(open.length){
+        const b=document.createElement('button'); b.type='button'; b.className='btn primary';
+        b.textContent='🚀 Claude יפרסם בשבילי בפייסבוק ('+open.length+')';
+        b.onclick=()=>askClaude(open); box.appendChild(b);
+      }
+      for(const run of runs){
+        const n=Object.values(vr.posting).filter(s=>s.run===run&&s.status==='queued').length;
+        const x=document.createElement('button'); x.type='button'; x.className='btn ghost';
+        x.textContent='⏹ לעצור את Claude ('+n+' בתור)';
+        x.onclick=async()=>{ x.disabled=true;
+          try{ const r=await apiJson('/posting/stop',{method:'POST',json:{run}}); vr.posting=r.posting; vrRepaint(); vrSay('⏹ Claude לא ימשיך בבקשה הזאת'); }
+          catch(e){ vrSay(e.message,true); x.disabled=false; } };
+        box.appendChild(x);
+      }
+    }
+    function vrRepaint(){ vrCards().forEach(paintPosted); renderVrClaude(); }
+    const CLAUDE_DAY_MAX=8;
+    async function askClaude(cards){
+      const pick=document.createElement('div'); pick.className='pick';
+      cards.forEach((card,i)=>{ const c=card._v.channel, l=document.createElement('label');
+        const cb=document.createElement('input'); cb.type='checkbox'; cb.value=c.id; cb.checked=i<CLAUDE_DAY_MAX;
+        const t=document.createElement('span'); t.textContent=c.name; l.append(cb,t); pick.appendChild(l); });
+      const intro=document.createElement('p'); intro.className='hint';
+      intro.textContent='Claude מפרסם מהמחשב בבית, ב-Chrome שלך שמחובר לפייסבוק: קבוצה אחרי קבוצה, כמה דקות בין קבוצות, עם הקישור והתמונה של כל קבוצה. '+
+        'המחשב בבית צריך להיות דלוק. בסוף מגיעה הודעה בטלגרם, וכל קבוצה מסומנת כאן.';
+      const ok=await sheet({title:'🚀 Claude יפרסם בפייסבוק',body:[intro,pick],
+        note:'⚠️ לפני ששולחים: לפי הכללים של פייסבוק, פרסום אוטומטי אסור. כדי לא להיחסם: עד '+CLAUDE_DAY_MAX+' קבוצות ביום. קבוצה שהכללים שלה אוסרים פרסום עסקי, Claude מדלג עליה.',
+        go:'🚀 לשלוח ל-Claude'});
+      if(!ok) return;
+      const ids=[...pick.querySelectorAll('input:checked')].map(i=>i.value);
+      if(!ids.length){ vrSay('לא נבחרה אף קבוצה',true); return; }
+      try{
+        const r=await apiJson('/versions/queue',{method:'POST',json:{text:vr.text,channels:ids,image:vr.image||''}});
+        vr.posting=r.posting; vrRepaint();
+        vrSay('🚀 '+r.queued+' קבוצות בתור ל-Claude'+(r.skipped.length?' (דילגתי על: '+r.skipped.join(', ')+')':'')+'. הוא מתחיל תוך כמה דקות.');
+        toast('🚀 '+r.queued+' קבוצות בתור ל-Claude');
+      }catch(e){ vrSay(e.message,true); }
+    }
     function vrWhen(at){ return at.slice(11,16)+(at.slice(0,10)!==today()?' ('+at.slice(8,10)+'.'+at.slice(5,7)+')':''); }
     function vrWaits(v){ return v.schedule&&!v.schedule.told&&!v.schedule.gave_up; }
     function vrDefaultAt(){
@@ -1828,7 +1931,7 @@
         const r=await apiJson('/versions',{method:'POST',json:{text}});
         $('vr-msg').textContent='';
         if(r.image!=null) vr.image=r.image;  // null = none chosen here: the post's own
-        vr.edited=r.edited; renderVrEdit(false);
+        vr.edited=r.edited; vr.posting=r.posting||{}; vr.postingOn=!!r.posting_on; renderVrEdit(false);
         for(const v of r.versions){
           const c=v.channel, card=document.createElement('div'); card.className='vcard';
           card.dataset.id=c.id; card.dataset.kind=c.kind; card._v=v;
@@ -1836,7 +1939,9 @@
             (v.reactions?' · ❤️ '+v.reactions:'')+(v.replies?' · 💬 '+v.replies:'')+'</span>';
           card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+(c.jid?' · 052':'')+'</span>'+
             (v.sent?sentLine(v.sent):'')+
-            (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vsched"></div><div class="vbtns"></div>';
+            '<span class="posted"></span><span class="claude" hidden></span>'+
+            (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vsched"></div><div class="vbtns"></div>'+
+            '<div class="vnote" role="status" aria-live="polite"></div>';
           card.querySelector('.vtext').textContent=v.text;
           if(v.sent) card.classList.add('done');
           const btns=card.querySelector('.vbtns');
@@ -1858,10 +1963,16 @@
             };
             btns.appendChild(s);
           }
+          // the answer shows under the button pressed, not at the window's bottom (Omri, 2026-11-15: "nothing happens")
+          const note=(t,err)=>{ const n=card.querySelector('.vnote'); n.textContent=t; n.className='vnote on'+(err?' err':''); };
           const copied=async(open)=>{
-            if(!await copyText(v.text)){ $('vr-msg').textContent='ההעתקה לא הצליחה: סמנו את הטקסט והעתיקו ידנית'; $('vr-msg').className='msg err'; return; }
-            card.classList.add('done'); $('vr-msg').className='msg';
-            $('vr-msg').textContent='📋 הועתק ל„'+c.name+'”'+(open?'. עכשיו מדביקים בקבוצה שנפתחה':'');
+            if(!await copyText(v.text)){ note('ההעתקה לא הצליחה: מסמנים את הטקסט שלמעלה ומעתיקים ידנית (Ctrl+C)',true); return; }
+            const fb=c.kind==='facebook';
+            note('✓ הטקסט הועתק'+(open?' והקבוצה נפתחה בלשונית חדשה. שם':'. בקבוצה')+
+              (fb?': ללחוץ על „כתוב משהו” ואז Ctrl+V (בטלפון: לחיצה ארוכה ← הדבקה).':': להדביק עם Ctrl+V.')+
+              (vr.image?' התמונה לא עוברת עם הטקסט: „🖼️ להעתיק את התמונה” ומדביקים שוב.':'')+
+              (c.jid?'':' אחרי הפרסום: „✓ פרסמתי כאן”, כדי שהסטטיסטיקה תדע.'));
+            toast('📋 הועתק ל„'+c.name+'”');
             if(open) window.open(c.url,'_blank','noopener');
           };
           const lead=!c.jid;  // with "send from 052" the copy buttons are the second way
@@ -1882,10 +1993,26 @@
             btns.appendChild(t);
           }
           const pb=document.createElement('button'); pb.type='button'; pb.className='btn ghost vpic-btn'; pb.textContent='🖼️ להעתיק את התמונה'; pb.onclick=()=>copyVrImage(c); btns.appendChild(pb);
+          // "✓ posted here": a copy-only version Omri pasted himself, so 📊 knows where the post really went
+          if(!c.jid&&!v.sent){
+            const pm=document.createElement('button'); pm.type='button'; pm.className='btn ghost vposted';
+            pm.onclick=async()=>{
+              pm.disabled=true;
+              try{
+                const r=await apiJson('/versions/posted',{method:'POST',json:{text,channel:c.id,posted:!v.posted}});
+                v.posted=r.posted; paintPosted(card); renderVrClaude();
+                note(v.posted?'✓ סומן: פורסם ב„'+c.name+'”. הקליקים מכאן ייספרו ב„📊 מי עוזר לי”.':'הסימון הוסר.');
+              }catch(e){ note(e.message,true); }
+              finally{ pm.disabled=false; }
+            };
+            btns.appendChild(pm);
+          }
+          paintPosted(card);
           paintSched(card);
           list.appendChild(card);
         }
         renderVrFilter();
+        renderVrClaude();
         renderVrPic();
       }catch(e){ $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
     }
@@ -2007,8 +2134,67 @@
       document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id===t.dataset.pane));
       if(t.dataset.pane==='results') loadResults();
       if(t.dataset.pane==='learn') loadLearn();
+      if(t.dataset.pane==='stats') loadStats();
       if(t.dataset.pane==='content') loadContent();
     });
+
+    // ---- 📊 who helps (Content Machine bot/channel_stats.py, 2026-11-15) ----
+    const VERDICT={good:'🟢 כדאי להמשיך',mid:'בינוני',few:'עוד מעט נתונים',poor:'🔴 לא שווה את המאמץ',none:'עוד לא פרסמת כאן'};
+    const BY={'052':'מ-052',omri:'ידנית',claude:'Claude',clicks:'לפי הקליקים'};
+    function renderStats(S){
+      const el=$('stats'); el.innerHTML='';
+      const rows=S.rows, live=rows.filter(r=>r.posted);
+      el.insertAdjacentHTML('beforeend','<p class="st-intro">כל ערוץ מהרשימה ב„⚙️ הגדרות”: כמה פעמים פרסמת שם, כמה לחצו על הקישור בכל פוסט, וכמה נרשמו לסדנה דרכו. '+
+        'קליק הוא לא הרשמה: הוא אומר שמישהו ראה ורצה לדעת עוד.'+(S.clicks_read?'':' ⚠️ הקליקים לא נקראו עכשיו.')+
+        (S.signups_read?'':' ⚠️ ההרשמות לא נקראו עכשיו.')+'</p>');
+      if(live.length){
+        const best=live.filter(r=>r.verdict==='good').slice(0,4), poor=rows.filter(r=>r.verdict==='poor');
+        const wa=live.filter(r=>r.channel.kind==='whatsapp'), fb=live.filter(r=>r.channel.kind==='facebook');
+        const avg=a=>a.length?Math.round(a.reduce((s,r)=>s+(r.per_post||0),0)/a.length):0;
+        const lines=[];
+        const iso=t=>'⁨'+t+'⁩';  // a name in its own direction: "GEG 2" never swaps with the Hebrew around it
+        if(best.length) lines.push('להשקיע כאן: '+best.map(r=>iso(r.channel.name)).join(', ')+'. המספרים בכרטיסים למטה.');
+        if(wa.length&&fb.length) lines.push('קבוצת וואטסאפ מביאה בממוצע '+avg(wa)+' קליקים לפוסט, וקבוצת פייסבוק '+avg(fb)+'.');
+        if(poor.length) lines.push('אפשר לוותר: '+poor.map(r=>iso(r.channel.name)).join(', ')+'.');
+        if(S.average!=null) lines.push('הממוצע של כל הערוצים: '+S.average+' קליקים לפוסט. ירוק = לפחות הממוצע, אדום = פחות מחציו.');
+        if(S.announcements_signups!=null) lines.push('לשם השוואה: מערוץ העדכונים של הקהילה נרשמו '+S.announcements_signups+' לסדנאות.');
+        const top=document.createElement('div'); top.className='st-top';
+        top.innerHTML='<h3>איפה להשקיע</h3><ol></ol>';
+        lines.forEach(t=>{ const li=document.createElement('li'); li.textContent=t; top.querySelector('ol').appendChild(li); });
+        el.appendChild(top);
+      }
+      const max=Math.max(1,...rows.map(r=>r.per_post||0));
+      const grid=document.createElement('div'); grid.className='st-grid';
+      for(const r of rows){
+        const c=document.createElement('div'); c.className='stc '+r.verdict;
+        c.innerHTML='<h4><span dir="auto"></span><span class="kind"></span></h4><span class="pill"></span>'+
+          '<div class="big"></div><div class="nums"></div><div class="meter"><i></i></div>';
+        c.querySelector('h4 span').textContent=r.channel.name;
+        c.querySelector('h4 .kind').textContent=CH_KINDS[r.channel.kind]||r.channel.kind;
+        c.querySelector('.pill').textContent=VERDICT[r.verdict];
+        c.querySelector('.big').innerHTML=r.posted?esc(String(r.per_post))+' <small>קליקים לפוסט</small>':'<small>אין פוסטים שפורסמו</small>';
+        c.querySelector('.nums').innerHTML='<span>פורסם <b>'+(r.posted===1?'פעם אחת':r.posted===2?'פעמיים':r.posted+' פעמים')+'</b></span><span>קליקים <b>'+r.clicks+'</b></span>'+
+          '<span>נרשמו <b>'+(r.signups==null?'?':r.signups)+'</b></span>'+(r.last?'<span>לאחרונה '+esc(dm(r.last.slice(0,10)))+'</span>':'');
+        c.querySelector('.meter i').style.width=Math.round(100*(r.per_post||0)/max)+'%';
+        if(r.posts.length){
+          const d=document.createElement('details'); d.innerHTML='<summary>הפוסטים ('+r.posts.length+')</summary><ul></ul>';
+          for(const p of r.posts){ const li=document.createElement('li'); li.className=p.posted?'':'no';
+            li.textContent=dm(p.at.slice(0,10))+' · '+p.title+' · 👆 '+p.clicks+(p.posted?' · '+(BY[p.by]||p.by):' · לא פורסם');
+            d.querySelector('ul').appendChild(li); }
+          c.appendChild(d);
+        }
+        grid.appendChild(c);
+      }
+      if(rows.length) el.appendChild(grid);
+      else el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין ערוצים ברשימה. מוסיפים אותם ב„⚙️ הגדרות”.</p>');
+      const rules=document.createElement('p'); rules.className='st-rules';
+      rules.textContent='איך נקבע הצבע: '+S.rules+' מ-15.11 לא נספרת הפתיחה של וואטסאפ ופייסבוק לתצוגה המקדימה; לפני כן יש בכל פוסט 1 עד 2 פתיחות כאלה.';
+      el.appendChild(rules);
+    }
+    async function loadStats(){
+      try{ renderStats(await apiJson('/channels/stats')); }
+      catch(e){ $('stats').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
+    }
 
     // ---- the editor ----
     let editing=null, image='', busy=false;
