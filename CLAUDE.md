@@ -5,6 +5,12 @@ Static landing page that lists all public-facing tools Omri has built. Hebrew RT
 - **Live:** https://tools.omri-iram.co.il (GitHub Pages, `master` root)
 - **Stack:** vanilla HTML + CSS. No JS, no build step.
 - **Audience:** anyone who lands here from a video, post, or business card — needs to find a tool in one click.
+- **Look (2026-11-15):** the hub (`index.html` + `css/style.css`) follows the business design language
+  (claude-config `design/business-brand.json`): light page, navy `#002045` text and titles, white cards,
+  ochre `#FFC250` only as a small "this one" mark (card hover line, favourites line), Rubik titles +
+  Assistant text. A category's `accent` colour from the admin no longer paints anything on the hub.
+  The private `admin/` and `shortener/` pages keep the old dark look from the frozen `css/style-dark.css`.
+  The other tool pages (randomizer, qr, tinyurl, ...) still have their own looks.
 
 ## Editable Tools Hub (admin CMS) — the cards are NO LONGER hand-written HTML
 

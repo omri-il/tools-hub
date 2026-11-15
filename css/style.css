@@ -1,17 +1,23 @@
 :root {
-  --bg: #0f0f1a;
-  --bg-soft: #1a1a2e;
-  --card: rgba(255, 255, 255, 0.04);
-  --card-hover: rgba(255, 255, 255, 0.07);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.18);
-  --text: #f4f4f8;
-  --text-dim: #a8a8c0;
-  --text-soft: #6d6d8a;
-  --accent: #a78bfa;
-  --accent-2: #f472b6;
-  --tag-bg: rgba(167, 139, 250, 0.12);
-  --tag-text: #c4b5fd;
+  /* The business's one design language (claude-config design/business-brand.json,
+     approved 2026-11-15): light page, navy text and lines, ochre for one small
+     "this one" mark, white cards. Rubik headings + Assistant text. */
+  --navy: #002045;
+  --navy-light: #1A365D;
+  --ochre: #FFC250;
+  --bg: #F9F9FF;
+  --bg-soft: #F0F3FF;
+  --card: #FFFFFF;
+  --card-hover: #FFFFFF;
+  --border: #E3E6EF;
+  --border-hover: #C4C6CF;
+  --text: #121C2C;
+  --text-dim: #43474E;
+  --text-soft: #5B6170;
+  --accent: #002045;
+  --accent-2: #002045;
+  --tag-bg: #F0F3FF;
+  --tag-text: #1A365D;
 }
 
 * { box-sizing: border-box; }
@@ -19,7 +25,8 @@
 html, body {
   margin: 0;
   padding: 0;
-  font-family: 'Heebo', 'Arial', sans-serif;
+  font-family: 'Assistant', 'Arial', sans-serif;
+  font-size: 17px;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -32,10 +39,8 @@ html, body {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(circle at 15% 10%, rgba(167, 139, 250, 0.18), transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(244, 114, 182, 0.14), transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(96, 165, 250, 0.06), transparent 60%);
+  /* No glow on the light page (2026-11-15): the brand keeps the ground quiet. */
+  background: none;
   pointer-events: none;
 }
 
@@ -67,29 +72,27 @@ html, body {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: white;
-  font-weight: 900;
+  background: var(--navy);
+  color: #fff;
+  font-family: 'Rubik', 'Arial', sans-serif;
+  font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.5px;
 }
 
-.brand-name { font-weight: 500; }
+.brand-name { font-weight: 600; color: var(--navy); }
 
 .site-header h1 {
   font-size: clamp(36px, 6vw, 56px);
-  font-weight: 900;
+  font-family: 'Rubik', 'Arial', sans-serif;
+  font-weight: 800;
   margin: 0 0 16px;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--navy);
   line-height: 1.15;
 }
 
 .tagline {
-  font-size: 17px;
+  font-size: 18px;
   color: var(--text-dim);
   max-width: 620px;
   margin: 0 auto;
@@ -112,10 +115,10 @@ html, body {
   padding: 32px 28px 28px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 24px;
   color: var(--text);
   text-decoration: none;
-  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -126,17 +129,17 @@ html, body {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  height: 3px;
+  background: var(--ochre);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
 .tool-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   background: var(--card-hover);
   border-color: var(--border-hover);
-  box-shadow: 0 20px 40px -20px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 12px 28px -16px rgba(0, 32, 69, 0.28);
 }
 
 .tool-card:hover::before { opacity: 1; }
@@ -148,20 +151,21 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(244, 114, 182, 0.15));
+  background: var(--bg-soft);
   border-radius: 16px;
   border: 1px solid var(--border);
 }
 
 .tool-title {
+  font-family: 'Rubik', 'Arial', sans-serif;
   font-size: 22px;
   font-weight: 700;
   margin: 0;
-  letter-spacing: -0.01em;
+  color: var(--navy);
 }
 
 .tool-desc {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-dim);
   margin: 0;
   flex: 1;
@@ -184,15 +188,17 @@ html, body {
 }
 
 .tool-cta {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--accent);
+  font-family: 'Rubik', 'Arial', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--navy);
   margin-top: 4px;
   transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .tool-card:hover .tool-cta {
-  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* ============ Layout controls (from the editable hub config) ============ */
@@ -223,8 +229,8 @@ html, body {
 }
 
 .site-footer a:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--navy);
+  border-color: var(--navy);
 }
 
 .version-tag {
@@ -300,7 +306,7 @@ html, body {
 
 /* QR for someone watching on a projector or YouTube: holds the fixed public address only. */
 .scan { flex: none; margin: 0; display: grid; justify-items: center; gap: 6px; }
-.scan img { display: block; width: 124px; height: 124px; border-radius: 8px; }
+.scan img { display: block; width: 124px; height: 124px; border-radius: 12px; border: 1px solid var(--border); }
 .scan figcaption { font-size: 13px; color: var(--text-dim); }
 /* Already on a phone: nothing to scan. */
 @media (max-width: 560px) { .scan { display: none; } }

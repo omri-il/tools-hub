@@ -11,24 +11,24 @@
   <meta property="og:locale" content="he_IL" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=3" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=4" />
   <style>
     /* Admin-only tools: hidden until admin mode is unlocked, then shown in a distinct purple identity */
     body:not(.admin) .admin-only { display: none !important; }
-    /* admin / private tools get a distinct light-orange identity */
+    /* admin / private tools get a distinct warm identity (only Omri sees them) */
     .tool-card.admin-only {
-      border-color: rgba(251,146,60,0.55);
-      background: linear-gradient(180deg, rgba(251,146,60,0.13), rgba(251,146,60,0.02));
+      border: 1px dashed #D69E2E;
+      background: #FFF8EA;
     }
-    .tool-card.admin-only:hover { border-color: #fb923c; }
-    .tool-card.admin-only .tag { border-color: rgba(251,146,60,0.55); color: #fdba74; }
+    .tool-card.admin-only:hover { border-color: #7D5700; }
+    .tool-card.admin-only .tag { background: #FFEFC8; color: #7D5700; }
     #adminChip {
       position: fixed; inset-block-end: 16px; inset-inline-start: 16px; z-index: 60;
       display: none; align-items: center; gap: 10px;
-      background: rgba(251,146,60,0.18); border: 1px solid rgba(251,146,60,0.6);
-      color: #fdba74; padding: 8px 14px; border-radius: 999px;
-      font-family: 'Heebo', sans-serif; font-size: 0.82rem; font-weight: 600;
+      background: #002045; border: 1px solid #002045;
+      color: #FFC250; padding: 8px 14px; border-radius: 999px;
+      font-family: 'Rubik', sans-serif; font-size: 0.82rem; font-weight: 600;
     }
     body.admin #adminChip { display: flex; }
     #adminChip a, #adminChip button {
@@ -38,20 +38,23 @@
     #adminChip a:hover, #adminChip button:hover { opacity: .85; }
     /* tool categories */
     .cat-section { margin: 0 auto 30px; max-width: 1100px; }
-    .cat { font-size: 1.12rem; font-weight: 700; margin: 0 0 16px; padding-bottom: 9px; opacity: .92;
-           border-bottom: 1px solid rgba(255,255,255,0.10); }
-    .favorites-section .cat { color: #fcd34d; border-bottom-color: rgba(251,191,36,0.35); }
+    .cat { font-family: 'Rubik', sans-serif; font-size: 1.2rem; font-weight: 700; margin: 0 0 16px;
+           padding-bottom: 9px; color: #002045; border-bottom: 1px solid #C4C6CF; }
+    .favorites-section .cat { border-bottom: 3px solid #FFC250; }
+    /* the title and its line sit on the cards' edges, not the screen's */
+    .cat-section > .cat { margin-inline: 32px; }
+    @media (max-width: 600px) { .cat-section > .cat { margin-inline: 16px; } }
     body:not(.admin) .cat-section.admin-only { display: none !important; }
-    #hubMsg { text-align: center; color: var(--text-dim); font-family: 'Heebo', sans-serif;
+    #hubMsg { text-align: center; color: var(--text-dim); font-family: 'Assistant', sans-serif;
               padding: 40px 20px; }
-    #statsPanel .stats-msg { opacity: .7; font-family: 'Heebo', sans-serif; }
-    .stats-table { width: 100%; border-collapse: collapse; font-family: 'Heebo', sans-serif; }
+    #statsPanel .stats-msg { opacity: .7; font-family: 'Assistant', sans-serif; }
+    .stats-table { width: 100%; border-collapse: collapse; font-family: 'Assistant', sans-serif; }
     .stats-table th, .stats-table td { text-align: right; padding: 9px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08); font-size: .92rem; white-space: nowrap; }
+      border-bottom: 1px solid #E3E6EF; font-size: .92rem; white-space: nowrap; }
     .stats-table th { opacity: .7; font-weight: 600; font-size: .82rem; }
     .stats-table td.num { font-variant-numeric: tabular-nums; }
-    .stats-table .spark { stroke: #a78bfa; fill: none; stroke-width: 1.5; }
-    .stats-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .stats-table .spark { stroke: #002045; fill: none; stroke-width: 1.5; }
+    .stats-table tbody tr:hover { background: #F0F3FF; }
   </style>
 </head>
 <body>
