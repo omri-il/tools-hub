@@ -9,61 +9,92 @@
   <meta property="og:title" content="מחולל קודי QR" />
   <meta property="og:locale" content="he_IL" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;900&family=Rubik:wght@400;500;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet" />
+  <!-- Rubik + Assistant = the page. Heebo stays only because the caption-font picker
+       (part of the QR image the user makes) offers it. -->
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;500;600;700&family=Heebo:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
   <style>
+    /* Business design language (approved 2026-11-15): light page, navy ink, white cards,
+       ochre only on the one main button. The QR image's own colours are the user's and stay. */
     :root{
-      --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
-      --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#38bdf8; --accent2:#0ea5e9;
-      font-family:'Heebo',system-ui,sans-serif;
+      --navy:#002045; --navy-hover:#1A365D; --ochre:#FFC250; --ochre-hover:#D69E2E;
+      --bg:#F9F9FF; --card:#FFFFFF; --panel:#FFFFFF; --soft:#F0F3FF;
+      --ink:#121C2C; --muted:#43474E; --faint:#5B6170;
+      --line:#E3E6EF; --line-strong:#C4C6CF; --accent:#002045; --accent2:#1A365D;
+      --bad:#BA1A1A; --ease:cubic-bezier(0.2,0,0,1);
+      font-family:'Assistant',system-ui,sans-serif;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{background:radial-gradient(90% 60% at 50% -10%,rgba(56,189,248,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.5}
+    body{background:var(--bg);color:var(--ink);min-height:100vh;padding:34px 16px 70px;line-height:1.55;font-size:17px;-webkit-font-smoothing:antialiased}
     .wrap{max-width:1000px;margin:0 auto}
+    .back{display:inline-block;color:var(--navy);text-decoration:none;font-family:'Rubik',sans-serif;font-weight:500;font-size:.85rem;margin-bottom:18px}
+    .back:hover{color:var(--navy-hover);text-decoration:underline;text-underline-offset:3px}
     .masthead{text-align:center;margin-bottom:32px}
-    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent)}
-    h1{font-weight:900;font-size:clamp(2rem,5vw,3rem);margin-top:10px}
-    h1 .em{color:var(--accent)}
-    .lede{color:var(--muted);font-weight:300;margin:14px auto 0;max-width:560px}
+    .kicker{font-family:'Rubik',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.04em;color:var(--faint)}
+    h1{font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(2rem,5vw,3rem);margin-top:10px;color:var(--navy);line-height:1.15}
+    h1 .em{color:var(--navy);text-decoration:underline;text-decoration-color:var(--ochre);text-decoration-thickness:3px;text-underline-offset:.2em}
+    .lede{color:var(--muted);font-weight:400;margin:14px auto 0;max-width:560px}
     .layout{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start}
     @media(max-width:840px){.layout{grid-template-columns:1fr}}
-    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+    .layout>*{min-width:0}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px}
+    @media(max-width:480px){.sheet{padding:18px}}
     .sheet+.sheet{margin-top:20px}
-    .sec-title{font-weight:700;font-size:.95rem;color:var(--muted);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-    label{display:block;font-weight:600;font-size:.88rem;margin-bottom:7px}
-    .hint{color:var(--faint);font-weight:400;font-size:.78rem}
-    textarea,input[type=text],select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:11px 13px}
+    .sec-title{font-family:'Rubik',sans-serif;font-weight:700;font-size:1rem;color:var(--navy);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+    label{display:block;font-family:'Rubik',sans-serif;font-weight:600;font-size:.88rem;color:var(--navy);margin-bottom:7px}
+    .hint{font-family:'Assistant',sans-serif;color:var(--faint);font-weight:400;font-size:.82rem}
+    textarea,input[type=text],select{width:100%;background:var(--panel);border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);font-family:'Assistant',sans-serif;font-size:.98rem;padding:11px 13px;transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+    textarea::placeholder,input[type=text]::placeholder{color:var(--faint);opacity:1}
     textarea{min-height:74px;resize:vertical;direction:ltr;text-align:left}
     input[type=text].rtl{direction:rtl;text-align:right}
-    input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,0.16)}
+    input:focus,textarea:focus,select:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,32,69,0.14)}
     .field{margin-bottom:16px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+    .row>*{min-width:0}
+    @media(max-width:480px){.row{grid-template-columns:1fr}}
     .colorrow{display:flex;align-items:center;gap:9px}
-    input[type=color]{width:44px;height:36px;border:1px solid var(--line);border-radius:9px;background:var(--panel);cursor:pointer;padding:3px}
-    input[type=range]{width:100%;accent-color:var(--accent)}
-    input[type=file]{font-size:.84rem;color:var(--muted)}
-    input[type=file]::file-selector-button{background:var(--panel);color:var(--accent);border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin-inline-end:10px;cursor:pointer;font-family:inherit}
+    .colorrow .hint{direction:ltr;unicode-bidi:isolate}
+    input[type=color]{width:44px;height:36px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel);cursor:pointer;padding:3px}
+    input[type=color]:disabled{opacity:.45;cursor:not-allowed}
+    input[type=range]{width:100%;accent-color:var(--navy)}
+    input[type=file]{font-family:'Assistant',sans-serif;font-size:.86rem;color:var(--muted);max-width:100%}
+    input[type=file]::file-selector-button{background:#fff;color:var(--navy);border:1.5px solid var(--navy);border-radius:12px;padding:7px 12px;margin-inline-end:10px;cursor:pointer;font-family:'Rubik',sans-serif;font-weight:600;transition:background-color .2s var(--ease)}
+    input[type=file]::file-selector-button:hover{background:var(--soft)}
     .check{display:flex;align-items:center;gap:9px}
-    .check input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
-    .check label{margin:0;font-weight:500;color:var(--muted)}
-    .preview{position:sticky;top:18px}
+    .check input{width:16px;height:16px;accent-color:var(--navy);cursor:pointer}
+    .check label{margin:0;font-family:'Assistant',sans-serif;font-weight:500;font-size:.95rem;color:var(--ink)}
+    .preview{position:sticky;top:18px;box-shadow:0 12px 28px -16px rgba(0,32,69,.28)}
     .pv-inner{display:flex;flex-direction:column;align-items:center;gap:16px}
-    .qbox{border-radius:14px;padding:16px;max-width:100%;background-image:linear-gradient(45deg,#e9edf2 25%,transparent 25%),linear-gradient(-45deg,#e9edf2 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e9edf2 75%),linear-gradient(-45deg,transparent 75%,#e9edf2 75%);background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0;background-color:#fff}
+    /* Checkerboard behind the code: shows where the image is see-through. Kept as it was. */
+    .qbox{border-radius:14px;padding:16px;max-width:100%;border:1px solid var(--line);background-image:linear-gradient(45deg,#e9edf2 25%,transparent 25%),linear-gradient(-45deg,#e9edf2 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e9edf2 75%),linear-gradient(-45deg,transparent 75%,#e9edf2 75%);background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0;background-color:#fff}
     #qcanvas{display:block;max-width:100%;height:auto;border-radius:4px}
     .dl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-    .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:11px 18px;font-size:.9rem}
-    .btn-primary{background:var(--accent);color:#04222e}
-    .btn-primary:hover{background:var(--accent2)}
-    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
-    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-    .err{color:#ff6b6b;font-size:.85rem;text-align:center;min-height:1em}
-    footer{margin-top:42px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
-    footer a{color:var(--muted)}
-    .note{margin-top:18px;background:rgba(56,189,248,0.07);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:var(--muted);font-size:.85rem;line-height:1.7}
+    .btn{font-family:'Rubik',sans-serif;font-weight:600;border:1.5px solid transparent;border-radius:12px;cursor:pointer;padding:11px 18px;font-size:.9rem;transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease)}
+    .btn:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+    .btn-primary{background:var(--ochre);color:var(--navy)}
+    .btn-primary:hover{background:var(--ochre-hover)}
+    .btn-ghost{background:#fff;color:var(--navy);border-color:var(--navy)}
+    .btn-ghost:hover{background:var(--soft);color:var(--navy-hover);border-color:var(--navy-hover)}
+    .err{color:var(--bad);font-size:.88rem;text-align:center;min-height:1em}
+    footer{margin-top:42px;color:var(--faint);font-size:.88rem;text-align:center;line-height:1.9}
+    footer a{color:var(--navy)}
+    footer a:hover{color:var(--navy-hover)}
+    .note{margin-top:18px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:var(--muted);font-size:.88rem;line-height:1.7}
+    /* Admin: dynamic QR. Same look; ochre stays on the page's one main button
+       (download PNG), so the admin buttons are navy-outlined. */
+    #dynSection{border-color:var(--line-strong)}
+    #dynSection .sec-title{background:var(--soft);margin:-24px -24px 16px;padding:14px 24px;border-radius:20px 20px 0 0}
+    @media(max-width:480px){#dynSection .sec-title{margin:-18px -18px 16px;padding:12px 18px}}
+    #dynSection .btn-primary{background:#fff;color:var(--navy);border-color:var(--navy)}
+    #dynSection .btn-primary:hover{background:var(--soft);color:var(--navy-hover);border-color:var(--navy-hover)}
+    #dynCreate{font-weight:700}
+    #dynList>div{background:#fff}
+    #dynList input[type=text]{border-color:var(--line-strong)!important;border-radius:12px!important;font-family:'Assistant',sans-serif}
+    #dynList input[type=text]:focus{border-color:var(--navy)!important}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <a href="../" style="display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:18px">→ חזרה לכל הכלים</a>
+    <a class="back" href="../">→ חזרה לכל הכלים</a>
     <div class="masthead">
       <div class="kicker">הכלים של עומרי אירם</div>
       <h1>מחולל קודי <span class="em">QR</span></h1>
@@ -145,8 +176,8 @@
       </div>
     </div>
 
-    <div class="sheet" id="dynSection" style="display:none;border-color:rgba(251,146,60,0.45);margin-top:20px">
-      <div class="sec-title" style="color:#fdba74;border-color:rgba(251,146,60,0.35)">🔓 QR דינמי (אדמין) — קישור שאפשר לשנות ולעקוב</div>
+    <div class="sheet" id="dynSection" style="display:none;margin-top:20px">
+      <div class="sec-title">🔓 QR דינמי (אדמין) — קישור שאפשר לשנות ולעקוב</div>
       <p class="hint" style="margin-bottom:16px">יוצרים QR שמצביע על קישור קצר משלכם (<span dir="ltr">go.omri-iram.co.il</span>). ה-QR המודפס לעולם לא משתנה — אבל אפשר לשנות בכל רגע לאן הוא מוביל, ולראות כמה סרקו אותו. מושלם לשלטים ומדבקות.</p>
       <div class="field row">
         <div><label for="dynUrl">יעד — לאן ה-QR יוביל</label><input type="text" id="dynUrl" dir="ltr" placeholder="https://..." /></div>
