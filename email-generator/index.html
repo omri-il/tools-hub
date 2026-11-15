@@ -11,7 +11,7 @@
   <meta property="og:locale" content="he_IL" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script>
     // apply the saved (or system) theme before first paint, to avoid a flash
     (function(){
@@ -23,70 +23,50 @@
     })();
   </script>
   <style>
-    :root {
-      color-scheme: dark;
-      --paper:     #0c0d10;
-      --paper-2:   #1b1f26;
-      --card:      #14161b;
-      --ink:       #ecedf0;
-      --ink-soft:  #aab0b9;
-      --ink-faint: #6c727c;
-      --line:      rgba(255,255,255,0.09);
-      --line-soft: rgba(255,255,255,0.055);
-      --accent:      #f4b53f;   /* warm amber */
-      --accent-deep: #e0a02a;
-      --gold:      #f4b53f;
-      --on-accent: #16130a;     /* ink on amber (buttons, pills, toast) */
-      --ok:        #3ecf8e;
-      --danger:    #ff6b6b;
-      --field-bg:   #0f1115;
-      --field-bg-2: #14171d;
-      --select-bg:  #14161b;
-      --placeholder:#5c636d;
-      --code-bg:    #08090b;
-      --code-ink:   #cdd4df;
-      --desk-bg:    #08090b;
-      --fill-1:     rgba(255,255,255,0.025);
-      --fill-2:     rgba(255,255,255,0.03);
-      --fill-head:  rgba(255,255,255,0.02);
-      --fill-faint: rgba(255,255,255,0.015);
-      --swatch-ring: rgba(255,255,255,0.14);
-      --swatch-sel:  #ffffff;
-      --glow-a: 0.07;  /* body ambient glow strength */
-      --glow-b: 0.04;
-      --serif: 'Heebo', system-ui, sans-serif;
-      --sans: 'Heebo', system-ui, sans-serif;
-      --shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 50px -28px rgba(0,0,0,0.85);
-    }
-    :root[data-theme="light"] {
+    /* Business design language (approved 2026-11-15): one light look, navy ink,
+       white cards, ochre only on the one main button ("העתק קוד").
+       The page used to have a dark/light switch; both themes now map to the same
+       light brand values and the switch button is hidden (no dark page). */
+    :root, :root[data-theme="light"], :root[data-theme="dark"] {
       color-scheme: light;
-      --paper:     #f4f5f8;
-      --paper-2:   #e8ebf0;
-      --card:      #ffffff;
-      --ink:       #191c22;
-      --ink-soft:  #4c535e;
-      --ink-faint: #868d99;
-      --line:      rgba(22,28,40,0.13);
-      --line-soft: rgba(22,28,40,0.07);
-      --accent:      #b0700f;   /* deeper amber for contrast on white */
-      --accent-deep: #915b09;
-      --gold:      #b0700f;
-      --ok:        #129d67;
-      --danger:    #d64545;
-      --field-bg:   #fbfcfd;
-      --field-bg-2: #eef1f5;
-      --select-bg:  #ffffff;
-      --placeholder:#9aa1ac;
-      --desk-bg:    #e7e9ef;
-      --fill-1:     rgba(22,28,40,0.030);
-      --fill-2:     rgba(22,28,40,0.038);
-      --fill-head:  rgba(22,28,40,0.028);
-      --fill-faint: rgba(22,28,40,0.020);
-      --swatch-ring: rgba(22,28,40,0.18);
-      --swatch-sel:  #191c22;
-      --glow-a: 0.10;
-      --glow-b: 0.05;
-      --shadow: 0 22px 46px -30px rgba(20,30,60,0.30), 0 2px 10px -5px rgba(20,30,60,0.12);
+      --navy:      #002045;
+      --navy-light:#1A365D;
+      --ochre:     #FFC250;
+      --ochre-hover:#D69E2E;
+      --paper:     #F9F9FF;
+      --paper-2:   #F0F3FF;
+      --card:      #FFFFFF;
+      --ink:       #121C2C;
+      --ink-soft:  #43474E;
+      --ink-faint: #5B6170;
+      --line:      #E3E6EF;
+      --line-soft: #E3E6EF;
+      --line-strong:#C4C6CF;
+      --accent:      #002045;
+      --accent-deep: #1A365D;
+      --gold:      #002045;
+      --on-accent: #FFFFFF;
+      --ok:        #1A7A3A;
+      --danger:    #BA1A1A;
+      --field-bg:   #FFFFFF;
+      --field-bg-2: #F0F3FF;
+      --select-bg:  #FFFFFF;
+      --placeholder:#5B6170;
+      --code-bg:    #F0F3FF;
+      --code-ink:   #121C2C;
+      --desk-bg:    #F0F3FF;
+      --fill-1:     #F9F9FF;
+      --fill-2:     #F9F9FF;
+      --fill-head:  #F0F3FF;
+      --fill-faint: #FFFFFF;
+      --swatch-ring: #C4C6CF;
+      --swatch-sel:  #FFFFFF;
+      --glow-a: 0;
+      --glow-b: 0;
+      --serif: 'Rubik', 'Arial', sans-serif;
+      --sans: 'Assistant', 'Arial', sans-serif;
+      --ease: cubic-bezier(0.2, 0, 0, 1);
+      --shadow: 0 12px 28px -16px rgba(0,32,69,0.28);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -127,7 +107,7 @@
       transition: border-color .18s, color .18s, background .18s, box-shadow .18s;
     }
     .theme-toggle:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 4px 14px -8px var(--accent); }
-    .theme-toggle:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(244,181,63,0.18); }
+    .theme-toggle:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,32,69,0.18); }
     .theme-toggle .tt-ico { font-size: 1.02rem; line-height: 1; }
     .theme-toggle .tt-txt { white-space: nowrap; }
     @media (max-width: 480px) { .theme-toggle .tt-txt { display: none; } .theme-toggle { padding: 9px 11px; } }
@@ -154,7 +134,7 @@
     }
     .rule {
       width: 54px; height: 3px; background: var(--accent); border-radius: 3px;
-      margin: 26px auto 0; box-shadow: 0 0 20px rgba(244,181,63,0.5);
+      margin: 26px auto 0; box-shadow: 0 0 20px rgba(0,32,69,0.5);
     }
 
     /* ---------- layout ---------- */
@@ -182,7 +162,7 @@
       border-radius: 10px; padding: 10px 16px; cursor: pointer; font-family: var(--sans);
       font-weight: 600; font-size: 0.88rem; transition: border-color .18s, background .18s;
     }
-    .logo-upload-btn:hover { border-color: var(--accent); background: rgba(244,181,63,0.07); }
+    .logo-upload-btn:hover { border-color: var(--accent); background: rgba(0,32,69,0.07); }
     .logo-upload-row .hint { color: var(--ink-faint); font-size: 0.8rem; }
     .logo-preview {
       display: flex; align-items: center; gap: 14px; margin-top: 12px;
@@ -197,7 +177,7 @@
       border-radius: 8px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; font-family: var(--sans);
       transition: border-color .18s, background .18s;
     }
-    .logo-remove:hover { border-color: var(--danger); background: rgba(255,107,107,0.12); }
+    .logo-remove:hover { border-color: var(--danger); background: rgba(186,26,26,0.06); }
     .logo-warn { display: none; color: var(--danger); font-size: 0.8rem; margin-top: 8px; line-height: 1.6; }
 
     /* column auto-detect */
@@ -214,7 +194,7 @@
     select option { background: var(--select-bg); color: var(--ink); }
     input:focus, textarea:focus, select:focus {
       outline: none; border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(244,181,63,0.16);
+      box-shadow: 0 0 0 3px rgba(0,32,69,0.16);
     }
     textarea { min-height: 150px; resize: vertical; line-height: 1.75; }
     ::placeholder { color: var(--placeholder); }
@@ -236,7 +216,7 @@
     /* preview tabs */
     .pv-tabs { display: none; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
     .pv-tab { padding: 7px 15px; font-size: 0.82rem; }
-    .pv-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(244,181,63,0.07); }
+    .pv-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(0,32,69,0.07); }
 
     /* buttons editor */
     .btn-rows { display: flex; flex-direction: column; gap: 10px; }
@@ -258,7 +238,7 @@
     }
     .icon-trigger:hover { border-color: var(--accent); background: var(--field-bg-2); }
     .icon-trigger.empty { color: var(--ink-faint); font-size: 0.95rem; }
-    .icon-trigger:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(244,181,63,0.16); }
+    .icon-trigger:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,32,69,0.16); }
 
     .emoji-pop {
       position: fixed; z-index: 200; width: 290px; max-width: calc(100vw - 24px);
@@ -280,7 +260,7 @@
       background: transparent; border: none; border-radius: 8px; cursor: pointer;
       font-size: 1.25rem; line-height: 1; padding: 6px 0; transition: background .12s;
     }
-    .emoji-grid button:hover { background: rgba(244,181,63,0.16); }
+    .emoji-grid button:hover { background: rgba(0,32,69,0.16); }
     .btn-item .b-url  { flex: 1 1 150px; }
     .btn-item .b-color, .btn-item .b-style { flex: 0 0 auto; }
     .btn-remove {
@@ -288,14 +268,14 @@
       border-radius: 9px; width: 36px; height: 36px; font-size: 0.95rem; cursor: pointer; font-weight: 700;
       transition: background .18s, border-color .18s;
     }
-    .btn-remove:hover { background: rgba(255,107,107,0.12); border-color: var(--danger); }
+    .btn-remove:hover { background: rgba(186,26,26,0.06); border-color: var(--danger); }
     .add-btn {
       margin-top: 11px; background: transparent; color: var(--accent);
       border: 1px dashed var(--line); border-radius: 11px; padding: 11px;
       width: 100%; cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 0.9rem;
       transition: border-color .18s, background .18s;
     }
-    .add-btn:hover { border-color: var(--accent); background: rgba(244,181,63,0.07); }
+    .add-btn:hover { border-color: var(--accent); background: rgba(0,32,69,0.07); }
 
     /* ---------- block editor ---------- */
     .blocks { display: flex; flex-direction: column; gap: 12px; }
@@ -304,7 +284,7 @@
       border-radius: 13px; overflow: hidden; transition: border-color .18s, box-shadow .18s;
     }
     .block-card.dragging { opacity: 0.45; }
-    .block-card.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(244,181,63,0.25); }
+    .block-card.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,32,69,0.25); }
     .block-head {
       display: flex; align-items: center; gap: 8px; padding: 9px 11px;
       background: var(--fill-head); border-bottom: 1px solid var(--line-soft);
@@ -326,7 +306,7 @@
     }
     .block-ctrl:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
     .block-ctrl:disabled { opacity: 0.32; cursor: default; }
-    .block-ctrl.del:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,107,107,0.1); }
+    .block-ctrl.del:hover { border-color: var(--danger); color: var(--danger); background: rgba(186,26,26,0.06); }
     .block-body { padding: 13px; }
     .block-card.collapsed .block-body { display: none; }
     .block-body textarea { min-height: 110px; }
@@ -343,7 +323,7 @@
       border-radius: 9px; padding: 10px; cursor: pointer; font-family: var(--sans); font-weight: 600;
       font-size: 0.86rem; transition: border-color .16s, color .16s, background .16s;
     }
-    .divider-toggle button.on { border-color: var(--accent); color: var(--accent); background: rgba(244,181,63,0.08); }
+    .divider-toggle button.on { border-color: var(--accent); color: var(--accent); background: rgba(0,32,69,0.08); }
 
     /* image block */
     .img-block-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -360,7 +340,7 @@
       cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 0.86rem;
       transition: border-color .18s, background .18s; white-space: nowrap;
     }
-    .add-block-bar button:hover { border-color: var(--accent); background: rgba(244,181,63,0.07); }
+    .add-block-bar button:hover { border-color: var(--accent); background: rgba(0,32,69,0.07); }
 
     /* color picker (swatch grid + custom) */
     .color-pick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -393,7 +373,7 @@
 
     /* shareable draft-link panel */
     .save-link-panel {
-      background: rgba(244,181,63,0.08); border: 1px solid var(--line);
+      background: rgba(0,32,69,0.08); border: 1px solid var(--line);
       border-radius: 14px; padding: 16px 18px; margin-bottom: 22px;
     }
     .slp-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -496,7 +476,7 @@
       position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: var(--accent); color: var(--on-accent); font-weight: 700; padding: 13px 24px; border-radius: 10px;
       opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 100; font-size: 0.92rem;
-      box-shadow: 0 10px 30px -8px rgba(244,181,63,0.4);
+      box-shadow: 0 10px 30px -8px rgba(0,32,69,0.4);
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -505,6 +485,59 @@
     .d1 { animation-delay: .05s; } .d2 { animation-delay: .15s; } .d3 { animation-delay: .25s; }
     @keyframes rise { to { opacity: 1; transform: none; } }
     @media (prefers-reduced-motion: reduce) { .reveal-in { animation: none; opacity: 1; transform: none; } }
+    /* ---------- business brand overrides (2026-11-15) ---------- */
+    body { background-color: var(--paper); background-image: none; font-size: 17px; }
+    .theme-toggle { display: none; }
+    .back-link { color: var(--navy); font-family: var(--serif); font-weight: 500; }
+    .back-link:hover { color: var(--navy-light); border-color: var(--navy-light); }
+    .kicker { color: var(--ink-soft); font-family: var(--serif); font-weight: 600; font-size: 0.85rem; letter-spacing: 0; }
+    .kicker::before, .kicker::after { content: none; }
+    h1.title { color: var(--navy); font-weight: 800; letter-spacing: 0; line-height: 1.15; }
+    h1.title .em { color: var(--navy); }
+    .lede { font-weight: 400; }
+    .rule { background: var(--ochre); box-shadow: none; }   /* the page's one small ochre mark */
+    .sheet { border-radius: 20px; }
+    .sheet-num, .sheet-head h2 { color: var(--navy); }
+    .field > label, .fu-lbl, .block-type, .slp-title, .be-label,
+    details.fold > summary, details.guide summary, .emoji-pop .ep-title { font-family: var(--serif); font-weight: 600; }
+    .field > label, .fu-lbl, .block-type, .slp-title, details.fold > summary, details.guide summary { color: var(--navy); }
+    .field .hint code, details.guide code { background: var(--paper-2); color: var(--navy); }
+    input[type=text], input[type=date], input[type=url], textarea, select, .icon-trigger, .slp-row input {
+      border-color: var(--line-strong); border-radius: 12px;
+    }
+    input:focus, textarea:focus, select:focus, .icon-trigger:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(0,32,69,0.12); }
+    .act, .logo-upload-btn, .add-btn, .add-block-bar button, .mini-bar button, .divider-toggle button,
+    .logo-remove, .ep-clear, .summary-on, .toast { font-family: var(--serif); }
+    .act { border-radius: 12px; font-weight: 600; transition: transform .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease); }
+    .act-ghost { background: var(--card); color: var(--navy); border: 1.5px solid var(--navy); }
+    .act-ghost:hover { background: var(--paper-2); border-color: var(--navy); color: var(--navy); }
+    .pv-tab.active { background: var(--navy); color: #FFFFFF; border-color: var(--navy); }
+    /* the ONE ochre button: copy the finished code */
+    #copyBtn { background: var(--ochre); color: var(--navy); font-weight: 700; }
+    #copyBtn:hover { background: var(--ochre-hover); }
+    /* save-link is a secondary action: white, navy border */
+    #saveLinkBtn { background: var(--card); color: var(--navy); border: 1.5px solid var(--navy); }
+    #saveLinkBtn:hover { background: var(--paper-2); }
+    .save-link-panel { background: var(--paper-2); }
+    /* phone: the panel stacks in a column, where the 220px flex-basis became a 220px empty gap */
+    @media (max-width: 560px) { .slp-top .slp-text { flex-basis: auto; } }
+    .color-hex { direction: ltr; unicode-bidi: isolate; }   /* "#ea4335", never "ea4335#" */
+    #fullPreview { white-space: nowrap; }
+    .logo-upload-btn, .add-btn, .add-block-bar button { color: var(--navy); border-color: var(--line-strong); }
+    .logo-upload-btn, .add-btn, .add-block-bar button, .block-card, .btn-item, .fu-block, .btn-editor, .logo-preview { border-radius: 12px; }
+    .block-card, details.fold, details.guide { border-radius: 16px; }
+    .block-ctrl, .mini-bar button, .divider-toggle button, .btn-remove { border-color: var(--line-strong); }
+    .divider-toggle button.on { color: var(--navy); border-color: var(--navy); background: var(--paper-2); }
+    .emoji-pop { box-shadow: var(--shadow); border-radius: 16px; }
+    .preview-desk { box-shadow: none; border-radius: 16px; }
+    #emailPreview > div { box-shadow: 0 12px 28px -16px rgba(0,32,69,0.28) !important; }
+    pre.code { border-color: var(--line); }
+    .toast { background: var(--navy); color: #FFFFFF; border-radius: 12px; box-shadow: var(--shadow);
+      transition: opacity .2s var(--ease), transform .2s var(--ease); }
+    .reveal-in { animation: rise .3s var(--ease) forwards; }
+    footer { color: var(--ink-faint); font-size: 0.9rem; }
+    footer a { color: var(--navy); border-color: var(--line-strong); }
+    footer a:hover { color: var(--navy-light); border-color: var(--navy-light); }
   </style>
 </head>
 <body>
@@ -879,7 +912,7 @@
         <p style="color:var(--ink-soft);padding-bottom:16px;">זהו. מעכשיו כל מי שימלא את הטופס יקבל את המכתב אוטומטית.</p>
       </details>
 
-      <div id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
+      <div id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:#F0F3FF;border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
         <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר מוסיפה עבורכם <strong>עמודות מעקב לצד תשובות הטופס</strong> — עמודת <code>לחצו?</code> לסימון כללי, ו<strong>עמודה נפרדת לכל כפתור</strong> (כך שלחיצות על כפתורים שונים לא דורסות זו את זו). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
         <ol style="margin:0;padding-inline-start:22px;line-height:2;">
           <li>למעלה מימין לחצו על הכפתור <code>Deploy</code>.</li>
@@ -899,7 +932,7 @@
         ℹ️ מייל הבדיקה שנשלח אליכם עשוי להוסיף בגיליון שורה אחת בתחתית עם האימייל שלכם — זה תקין.</p>
       </div>
 
-      <p id="followUpNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:rgba(244,181,63,0.08);border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
+      <p id="followUpNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:#F0F3FF;border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
         <strong style="color:var(--accent);">📨 אימייל מעקב מופעל.</strong> אין מה להגדיר — הרצת <code>setup</code> כבר מקימה את הבדיקה היומית ויוצרת בסיס (מי שכבר מילא לא יקבל מעקב למפרע; רק מילויים חדשים מכאן ואילך).<br>
         💡 רוצים לראות איך המעקב ייראה? הריצו <code>sendFollowUpTest</code> — יישלח אליכם עותק בדיקה של כל מייל מעקב.
       </p>

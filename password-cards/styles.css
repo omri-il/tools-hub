@@ -9,177 +9,213 @@
 @font-face{font-family:'Suez One';font-weight:400;font-display:swap;src:url('fonts/suez-one-400.woff2') format('woff2');}
 
 /* ============================================================
-   THEME — "כרטיס-מדבקה" (sticker badge). מוצר שמנפיק תגי-כניסה
-   אישיים לילדים, אז הממשק עצמו מתנהג כמו לוח מדבקות: מסגרות
-   עבות, צללים קשיחים (offset, בלי blur), צבעים רוויים וחמים,
-   טיפוגרפיה שמנה. הכרטיסים המודפסים בהמשך הקובץ הם שפה נפרדת
-   לגמרי — שחור-לבן, כי מדפסת בית-ספר לרוב לא צבעונית.
+   שני עולמות בקובץ אחד:
+   1. מעטפת הדף (רקע, כותרת, פרטיות, מתג, אזור ההעלאה, מסגרות,
+      כפתורים, פוטר) — בשפת העיצוב של העסק (2026-11-15): דף בהיר,
+      כחול-נייבי, כרטיסים לבנים, אוקר רק לכפתור הראשי. משתני --b-*.
+   2. מעצב הכרטיס, התצוגה החיה והכרטיסים המודפסים — צבעוניים לילדים,
+      בכוונה (עומרי, "הגרסה האפורה משעממת"). הם ממשיכים להשתמש
+      במשתני "המדבקה" הישנים (--ink, --sun, --bubble...) — אל תשנו אותם.
    ============================================================ */
 :root{
-  --ink:#17213B;         /* טקסט ראשי + מסגרות */
-  --ink-soft:#4b5677;    /* טקסט משני */
-  --paper:#FFF7E8;       /* רקע העמוד — קרם חם, לא לבן סטרילי */
-  --card:#FFFDF8;        /* רקע כרטיסי הממשק */
+  /* --- עולם הכרטיסים (מעצב + תצוגה חיה): לא לגעת --- */
+  --ink:#17213B;
+  --ink-soft:#4b5677;
+  --paper:#FFF7E8;
+  --card:#FFFDF8;
   --line:rgba(23,33,59,0.14);
-
-  --sun:#FFC94A;         /* צהוב */
-  --bubble:#FF6B8B;      /* ורוד-אדום — CTA ראשי */
+  --sun:#FFC94A;
+  --bubble:#FF6B8B;
   --bubble-dark:#F0466C;
-  --sky:#3FA9F5;         /* כחול */
-  --mint:#17C3A2;        /* ירוק */
-  --grape:#8B5CF6;       /* סגול */
-
+  --sky:#3FA9F5;
+  --mint:#17C3A2;
+  --grape:#8B5CF6;
   --ok:#0E9F72; --err:#E0335B; --work:#3FA9F5;
 
+  /* --- מעטפת הדף: שפת העסק --- */
+  --b-navy:#002045;
+  --b-navy-hover:#1A365D;
+  --b-ochre:#FFC250;
+  --b-ochre-hover:#D69E2E;
+  --b-bg:#F9F9FF;
+  --b-card:#FFFFFF;
+  --b-soft:#F0F3FF;
+  --b-line:#E3E6EF;
+  --b-line-strong:#C4C6CF;
+  --b-ink:#121C2C;
+  --b-ink-2:#43474E;
+  --b-quiet:#5B6170;
+  --b-ok:#1A7A3A;
+  --b-err:#BA1A1A;
+  --b-shadow:0 12px 28px -16px rgba(0,32,69,.28);
+  --b-ease:cubic-bezier(0.2,0,0,1);
+
+  /* Rubik מקומי בלבד: הכלי מבטיח אפס בקשות רשת, אז אין כאן Google Fonts. */
   font-family:'Rubik',system-ui,sans-serif;
   font-size:18px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
-  background:
-    radial-gradient(46px 46px at 92% 6%, rgba(255,201,74,.55) 0 40%, transparent 42%),
-    radial-gradient(30px 30px at 6% 14%, rgba(63,169,245,.35) 0 40%, transparent 42%),
-    radial-gradient(34px 34px at 85% 92%, rgba(139,92,246,.3) 0 40%, transparent 42%),
-    var(--paper);
-  color:var(--ink);min-height:100vh;padding:38px 20px 80px;line-height:1.55;
+  background:var(--b-bg);
+  color:var(--b-ink);min-height:100vh;padding:38px 20px 80px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
 }
 .wrap{max-width:800px;margin:0 auto}
 
-.back{display:inline-flex;align-items:center;gap:4px;color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:.92rem;margin-bottom:22px}
-.back:hover{color:var(--bubble-dark)}
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--b-navy);text-decoration:none;font-weight:600;font-size:.92rem;margin-bottom:22px;transition:color .2s var(--b-ease)}
+.back:hover{color:var(--b-navy-hover);text-decoration:underline}
 
 /* ---------- masthead ---------- */
 .masthead{text-align:center;margin-bottom:30px}
-.badge-mark{width:62px;height:62px;margin:0 auto 14px}
+.badge-mark{width:62px;height:62px;margin:0 auto 14px;display:block}
 .eyebrow{
-  display:inline-flex;align-items:center;gap:7px;background:var(--sun);color:var(--ink);
-  font-weight:800;font-size:.78rem;letter-spacing:.02em;padding:7px 16px;border-radius:999px;
-  border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  display:inline-flex;align-items:center;gap:7px;background:var(--b-soft);color:var(--b-navy);
+  font-weight:600;font-size:.8rem;padding:6px 14px;border-radius:12px;
 }
-h1{font-weight:900;font-size:clamp(2.3rem,7vw,3.4rem);margin-top:16px;letter-spacing:-.01em}
-h1 .em{color:var(--bubble-dark);position:relative;display:inline-block}
-.lede{color:var(--ink-soft);font-weight:500;font-size:1.15rem;margin:16px auto 0;max-width:560px}
+h1{font-weight:800;font-size:clamp(2.2rem,7vw,3.2rem);margin-top:16px;color:var(--b-navy);line-height:1.15}
+h1 .em{color:inherit}
+.lede{color:var(--b-ink-2);font-weight:400;font-size:1.1rem;margin:16px auto 0;max-width:560px}
 
-/* ---------- sticker card ---------- */
+/* ---------- panel frame ---------- */
 .sheet{
-  background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:28px;
-  margin-bottom:22px;box-shadow:6px 6px 0 var(--ink);
+  background:var(--b-card);border:1px solid var(--b-line);border-radius:20px;padding:28px;
+  margin-bottom:20px;
 }
-.sheet h3{font-size:1.2rem;font-weight:800;margin-bottom:14px}
+.sheet h3{font-size:1.15rem;font-weight:700;margin-bottom:14px;color:var(--b-navy)}
+/* מעצב הכרטיס נשאר בעולם הצבעוני: הטקסט שבתוכו יורש את הדיו הישן */
+#designCard{color:var(--ink)}
 
 /* אזור הבטחת הפרטיות */
 .privacy{
-  display:flex;gap:12px;align-items:flex-start;background:#EAFBF4;border:3px solid var(--ok);
-  border-radius:18px;padding:16px 18px;margin-bottom:22px;font-size:1rem;font-weight:500;color:#0B6B4F;
-  box-shadow:5px 5px 0 rgba(14,159,114,.35);
+  display:flex;gap:12px;align-items:flex-start;background:var(--b-soft);border:1px solid var(--b-line);
+  border-radius:16px;padding:16px 18px;margin-bottom:20px;font-size:1rem;font-weight:400;color:var(--b-ink-2);
 }
-.privacy .pico{flex:0 0 auto;font-size:1.6rem;line-height:1}
-.privacy b{color:var(--ok)}
+.privacy .pico{flex:0 0 auto;font-size:1.5rem;line-height:1}
+.privacy b{color:var(--b-navy);font-weight:600}
 
 /* ---------- Dropzone ---------- */
 .drop{
-  border:3px dashed var(--ink);border-radius:20px;padding:46px 20px;text-align:center;cursor:pointer;
-  transition:transform .15s, box-shadow .15s, background .15s;background:repeating-linear-gradient(135deg,#FFF3D6 0 14px,#FFFBEF 14px 28px);
+  border:2px dashed var(--b-line-strong);border-radius:16px;padding:46px 20px;text-align:center;cursor:pointer;
+  background:var(--b-soft);
+  transition:border-color .2s var(--b-ease), background .2s var(--b-ease), box-shadow .2s var(--b-ease);
 }
-.drop:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--sky)}
-.drop.drag{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--mint);background:#EAFBF4;border-color:var(--mint)}
-.drop .ico{font-size:3rem;display:block;filter:drop-shadow(2px 2px 0 rgba(23,33,59,.15))}
-.drop .big{font-weight:800;font-size:1.25rem;margin-top:10px}
-.drop .sub{color:var(--ink-soft);font-weight:500;font-size:.95rem;margin-top:6px}
+.drop:hover{border-color:var(--b-navy)}
+.drop.drag{border-style:solid;border-color:var(--b-navy);background:var(--b-card);box-shadow:var(--b-shadow)}
+.drop .ico{font-size:2.8rem;display:block}
+.drop .big{font-weight:700;font-size:1.2rem;margin-top:10px;color:var(--b-navy)}
+.drop .sub{color:var(--b-quiet);font-weight:400;font-size:.95rem;margin-top:6px}
 .drop input{display:none}
 
-.status{margin-top:18px;font-size:1.05rem;font-weight:700;min-height:1.3em}
-.status.ok{color:var(--ok)}
-.status.err{color:var(--err)}
-.status.work{color:var(--work)}
+.status{margin-top:18px;font-size:1.02rem;font-weight:600;min-height:1.3em}
+.status.ok{color:var(--b-ok)}
+.status.err{color:var(--b-err)}
+.status.work{color:var(--b-navy)}
 
 /* ---------- בחירת כיתות ---------- */
-.summary{background:#FFF3D6;border:3px solid var(--ink);border-radius:18px;padding:18px;margin-top:4px}
-.summary h3{font-size:1.1rem}
+.summary{background:var(--b-soft);border:1px solid var(--b-line);border-radius:16px;padding:18px;margin-top:4px}
+.summary h3{font-size:1.08rem}
 .cls-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
 .cls-chip{
   --chip:var(--sky);
   display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;
-  background:var(--card);border:2.5px solid var(--ink);border-radius:14px;padding:10px 14px;
-  box-shadow:3px 3px 0 var(--ink);transition:transform .12s, box-shadow .12s, opacity .12s;
+  background:var(--b-card);border:1px solid var(--b-line-strong);border-radius:12px;padding:10px 14px;
+  transition:border-color .2s var(--b-ease), opacity .2s var(--b-ease);
 }
-.cls-chip:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
-.cls-chip.off{opacity:.4;box-shadow:none;transform:none}
+.cls-chip:hover{border-color:var(--b-navy)}
+.cls-chip.off{opacity:.45}
+/* הצבע של כל כיתה הוא צבע הכרטיסים שלה, אז הוא נשאר */
 .cls-chip input{width:20px;height:20px;accent-color:var(--chip);flex:0 0 auto}
-.cls-dot{width:12px;height:12px;border-radius:50%;background:var(--chip);flex:0 0 auto;border:1.5px solid var(--ink)}
-.cls-name{font-weight:800;font-size:1.02rem}
-.cls-count{color:var(--ink-soft);font-weight:600;font-size:.86rem}
+.cls-dot{width:12px;height:12px;border-radius:50%;background:var(--chip);flex:0 0 auto}
+.cls-name{font-weight:700;font-size:1rem;color:var(--b-ink)}
+.cls-count{color:var(--b-quiet);font-weight:400;font-size:.86rem}
 
 /* ---------- תצוגה מקדימה — "רשימת כיתה" ---------- */
 .preview-wrap{overflow-x:auto;margin-top:6px}
 table{width:100%;border-collapse:collapse;font-size:.92rem}
-th,td{padding:11px 12px;text-align:right;border-bottom:2px solid var(--line);white-space:nowrap}
-th{color:var(--ink-soft);font-weight:800;font-size:.82rem;letter-spacing:.02em;position:sticky;top:0;background:var(--card)}
-tr:nth-child(even) td{background:#FFF7E8}
-td.mono{direction:ltr;text-align:left;font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.03em}
-.edit-hint{color:var(--ink-soft);font-weight:600;font-size:.86rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+th,td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--b-line);white-space:nowrap}
+th{color:var(--b-quiet);font-weight:600;font-size:.82rem;position:sticky;top:0;background:var(--b-card)}
+tr:nth-child(even) td{background:var(--b-bg)}
+td.mono{direction:ltr;text-align:left;font-variant-numeric:tabular-nums;font-weight:600;letter-spacing:.03em}
+.edit-hint{color:var(--b-quiet);font-weight:400;font-size:.88rem;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .edit-cell{
   font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit;letter-spacing:inherit;
-  background:transparent;border:none;border-bottom:2px dashed rgba(23,33,59,.28);
+  background:transparent;border:none;border-bottom:1.5px dashed var(--b-line-strong);
   padding:2px 2px;width:100%;min-width:6ch;border-radius:2px;
 }
-.edit-cell:hover{border-bottom-color:var(--sky)}
-.edit-cell:focus{outline:none;border-bottom:2px solid var(--bubble-dark);background:#FFF3D6}
+.edit-cell:hover{border-bottom-color:var(--b-navy)}
+.edit-cell:focus{outline:none;border-bottom:2px solid var(--b-navy);background:var(--b-soft)}
 td.mono .edit-cell{direction:ltr;text-align:left}
+/* צבע העיגול = צבע הכרטיסים של הכיתה: נשאר */
 .avatar{
   display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
-  background:var(--chip,var(--sky));color:#fff;font-weight:800;font-size:.85rem;border:2px solid var(--ink);
+  background:var(--chip,var(--sky));color:#fff;font-weight:700;font-size:.85rem;
   margin-inline-end:8px;vertical-align:middle;
 }
-.tbl-scroll{max-height:380px;overflow-y:auto;border:3px solid var(--ink);border-radius:16px}
+.tbl-scroll{max-height:380px;overflow-y:auto;border:1px solid var(--b-line);border-radius:16px}
 .tbl-scroll table{font-size:.92rem}
 
-.btn{font-family:inherit;font-weight:800;border:3px solid var(--ink);border-radius:16px;cursor:pointer;padding:17px 26px;font-size:1.15rem;transition:transform .12s, box-shadow .12s}
-.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none!important;transform:none!important}
-.btn-primary{background:var(--bubble);color:#fff;width:100%;margin-top:18px;box-shadow:5px 5px 0 var(--ink)}
-.btn-primary:hover:not(:disabled){background:var(--bubble-dark);transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
-.btn-primary:active:not(:disabled){transform:translate(0,0);box-shadow:2px 2px 0 var(--ink)}
+/* ---------- buttons ---------- */
+.btn{font-family:inherit;font-weight:700;border:none;border-radius:12px;cursor:pointer;padding:16px 24px;font-size:1.1rem;
+  transition:background .2s var(--b-ease), color .2s var(--b-ease), border-color .2s var(--b-ease)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--b-ochre);color:var(--b-navy);width:100%;margin-top:18px}
+.btn-primary:hover:not(:disabled){background:var(--b-ochre-hover)}
+/* אוקר רק לפעולה הראשית אחת: אחרי שהכרטיסים נוצרו, "צור כרטיסים" הופך למשני
+   ו"הפק PDF" הוא הכפתור הראשי של הדף. */
+body:has(#result:not(.hidden)) #mBuild{background:var(--b-card);color:var(--b-navy);box-shadow:inset 0 0 0 1.5px var(--b-navy)}
+body:has(#result:not(.hidden)) #mBuild:hover:not(:disabled){background:var(--b-soft)}
+.btn-ghost{background:var(--b-card);color:var(--b-navy);border:1.5px solid var(--b-navy);border-radius:12px;padding:11px 20px;font-size:1rem;margin-top:6px}
+.btn-ghost:hover{background:var(--b-soft)}
+.btn:focus-visible,.mode-btn:focus-visible,.back:focus-visible,.m-del:focus-visible,footer a:focus-visible{outline:2px solid var(--b-navy);outline-offset:2px}
 .hidden{display:none!important}
 
-.progress{margin-top:14px;font-size:1rem;font-weight:700;color:var(--sky);text-align:center}
+.progress{margin-top:14px;font-size:1rem;font-weight:600;color:var(--b-navy);text-align:center}
 
-footer{margin-top:44px;color:var(--ink-soft);font-weight:500;font-size:.88rem;text-align:center;line-height:1.9}
-footer a{color:var(--ink);font-weight:700;text-decoration:underline}
+footer{margin-top:44px;color:var(--b-quiet);font-weight:400;font-size:.88rem;text-align:center;line-height:1.9}
+footer a{color:var(--b-navy);font-weight:600;text-decoration:underline}
+footer a:hover{color:var(--b-navy-hover)}
 
 @media (max-width:520px){
   :root{font-size:16px}
-  .sheet{padding:20px;border-radius:18px}
+  .sheet{padding:20px;border-radius:16px}
   .drop{padding:34px 14px}
 }
 
 /* תג גרסה — פינה קטנה ולא פולשנית, כמו בשאר הכלים */
 .version-tag{
   position:fixed;bottom:8px;inset-inline-start:10px;z-index:40;
-  font-size:.68rem;color:rgba(23,33,59,.4);font-weight:600;
+  font-size:.68rem;color:var(--b-quiet);opacity:.75;font-weight:500;
   pointer-events:none;user-select:none;font-variant-numeric:tabular-nums;
+}
+/* On a phone the fixed tag sat over the upload box: let it end the page instead. */
+@media (max-width:700px){
+  .version-tag{position:static;display:block;text-align:center;padding:8px 0 16px;}
 }
 
 /* ---------- מתג מצב + הזנה ידנית ---------- */
-.mode-toggle{display:flex;gap:10px;margin-bottom:18px}
-.mode-btn{flex:1;font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer;
-  background:var(--card);color:var(--ink-soft);border:2.5px solid var(--ink);border-radius:14px;padding:12px;
-  box-shadow:3px 3px 0 var(--ink);transition:transform .12s, box-shadow .12s, background .12s}
-.mode-btn:hover{transform:translate(-1px,-1px)}
-.mode-btn.active{background:var(--sun);color:var(--ink)}
+.mode-toggle{display:flex;gap:4px;margin-bottom:18px;padding:4px;background:var(--b-card);border:1px solid var(--b-line);border-radius:14px}
+.mode-btn{flex:1;font-family:inherit;font-weight:600;font-size:1rem;cursor:pointer;
+  background:transparent;color:var(--b-ink-2);border:none;border-radius:10px;padding:11px;
+  transition:background .2s var(--b-ease), color .2s var(--b-ease)}
+.mode-btn:hover{background:var(--b-soft);color:var(--b-navy)}
+.mode-btn.active{background:var(--b-navy);color:#fff}
+/* ‎.opt-note‎ משותף למעצב הכרטיס (נשאר) ולטופס הידני (מעטפת) */
 .opt-note{font-weight:500;font-size:.78rem;color:var(--ink-soft)}
+.manual-head .opt-note{font-weight:400;color:var(--b-quiet)}
 
 .manual-head{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .manual-head>div{flex:1;min-width:150px}
-.manual-head label{display:block;font-weight:800;font-size:.86rem;margin-bottom:5px}
-.manual-head input,.m-row input{width:100%;font-family:inherit;font-size:.98rem;background:var(--paper);
-  border:2.5px solid var(--ink);border-radius:11px;padding:10px 12px;color:var(--ink)}
-.m-rows-head{display:grid;grid-template-columns:2fr 1.3fr 1.3fr 34px;gap:8px;font-weight:800;font-size:.78rem;color:var(--ink-soft);margin-bottom:6px;padding:0 2px}
+.manual-head label{display:block;font-weight:600;font-size:.86rem;margin-bottom:5px;color:var(--b-navy)}
+.manual-head input,.m-row input{width:100%;font-family:inherit;font-size:.98rem;background:var(--b-card);
+  border:1px solid var(--b-line-strong);border-radius:12px;padding:10px 12px;color:var(--b-ink);
+  transition:border-color .2s var(--b-ease)}
+.manual-head input:focus,.m-row input:focus{outline:2px solid var(--b-navy);outline-offset:1px;border-color:var(--b-navy)}
+.m-rows-head{display:grid;grid-template-columns:2fr 1.3fr 1.3fr 34px;gap:8px;font-weight:600;font-size:.78rem;color:var(--b-quiet);margin-bottom:6px;padding:0 2px}
 .m-row{display:grid;grid-template-columns:2fr 1.3fr 1.3fr 34px;gap:8px;margin-bottom:8px;align-items:center}
 .m-row input{direction:rtl}
 .m-row input.mono{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
-.m-del{cursor:pointer;border:2.5px solid var(--err);background:#fff;color:var(--err);border-radius:10px;font-weight:800;height:42px;font-size:1.1rem;line-height:1}
-.btn-ghost{background:var(--card);color:var(--ink);border:2.5px dashed var(--ink);box-shadow:none;border-radius:14px;padding:12px 20px;font-size:1rem;margin-top:6px}
-.btn-ghost:hover{background:var(--sun)}
+.m-del{cursor:pointer;border:1.5px solid var(--b-err);background:#fff;color:var(--b-err);border-radius:10px;font-weight:700;height:42px;font-size:1.1rem;line-height:1}
+
 
 /* ---------- פאנל עיצוב הכרטיס (בחירת סגנון/גודל + תצוגה חיה) ---------- */
 .opt-group{margin-bottom:16px}
