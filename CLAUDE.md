@@ -1,214 +1,165 @@
 # tools-hub
 
-Static landing page that lists all public-facing tools Omri has built. Hebrew RTL.
+Static landing page that lists the tools Omri has built, plus several in-repo tool pages. Hebrew RTL.
+Old detail and the full feature logs: `docs/HISTORY.md`.
 
-- **Live:** https://tools.omri-iram.co.il (GitHub Pages, `master` root)
-- **Stack:** vanilla HTML + CSS. No JS, no build step.
-- **Audience:** anyone who lands here from a video, post, or business card — needs to find a tool in one click.
+- **Live:** https://tools.omri-iram.co.il (GitHub Pages, `master` root, `CNAME` file; DNS at Hostinger: CNAME `tools` → `omri-il.github.io`).
+- **Stack:** vanilla HTML + CSS + small inline/`js/` scripts. No build step.
+- **Audience:** anyone who lands here from a video, post or business card: find a tool in one click.
+- **The cards are NOT in `index.html`.** They live in a JSON config in the `go-shortener` backend and are drawn in the browser.
 - **Look (2026-11-15):** the hub (`index.html` + `css/style.css`) follows the business design language
   (claude-config `design/business-brand.json`): light page, navy `#002045` text and titles, white cards,
-  ochre `#FFC250` only as a small "this one" mark (card hover line, favourites line), Rubik titles +
-  Assistant text. A category's `accent` colour from the admin no longer paints anything on the hub.
-  The private `admin/` and `shortener/` pages keep the old dark look from the frozen `css/style-dark.css`.
-  The other tool pages (randomizer, qr, tinyurl, ...) still have their own looks.
+  ochre `#FFC250` only as a small "this one" mark (card hover line, favourites line), Rubik titles + Assistant text.
+  A category's `accent` colour from the admin no longer paints anything on the hub.
+  `admin/` and `shortener/` keep the old dark look from the frozen `css/style-dark.css`.
+  The other tool pages (randomizer, qr, tinyurl, ...) keep their own looks.
 
-## Editable Tools Hub (admin CMS) — the cards are NO LONGER hand-written HTML
+## How the hub works
 
-Categories and cards used to be static markup in `index.html`. **They now live in a JSON
-config owned by the `go-shortener` backend** and are rendered client-side. Edit them from a
-GUI, not by editing HTML.
+- **Edit cards at** `tools.omri-iram.co.il/admin/` (`admin/index.html`, `noindex`, Google sign-in).
+  Drag-and-drop reorder of cards and categories, card CRUD (title/desc/icon/href/newTab/tags),
+  per-card visibility (🌐 public / 🔒 admin / 👁️‍🗨️ hidden draft), per-category accent + icon + adminOnly,
+  global layout (density / card size / show tags), live preview. **Save** POSTs the whole config;
+  **בטל שינוי אחרון** restores the previous version. Nothing publishes until Save.
+  Drag lib = `admin/vendor/Sortable.min.js` (vendored, no CDN).
+- **Data + endpoints** in `go-shortener` (`hub_config` table, seeded from `hub_seed.py`):
+  `GET/POST /api/hub-config` + `POST /api/hub-config/undo` (see go-shortener/CLAUDE.md).
+  Anonymous `GET` is filtered server-side (admin/hidden cards and adminOnly categories stripped).
+  `init_db()` seeds `hub_config` from `hub_seed.py` only on first run (no env needed).
+- **Rendering:** `js/hub-render.js` (`HubRender.renderHub` / `applyLayout`) builds the `.cat-section` / `.tool-card` DOM
+  into `#hubRoot`. The page paints at once from `localStorage['hub_config_cache']`, then re-fetches `/api/hub-config`
+  (with `X-Session` if present) and updates the cache; on total failure it shows a Hebrew "reload" message, never blank.
+  `localStorage['hub_api_base']` overrides the API base for testing.
+- **Live config ≠ seed.** The live config was reorganised through the API (2026-07-19, 8 thematic categories:
+  וידאו ויוטיוב · אירועים והרשמות · אימייל ודיוור · קישורים וקודים · לכיתה ולמורים · AI ועוזרים · TAU · 🧰 אישי adminOnly).
+  `hub_seed.py` still reproduces the original 6 categories and lacks later cards (e.g. `davinci-control-laptop`).
+- **To add a tool:** `/admin/` → ➕ כרטיס → fill in, set visibility → Save. No repo edit, no deploy.
+  The card `id` is also its analytics `data-tool` id and is auto-registered for click tracking.
 
-- **Edit at** `tools.omri-iram.co.il/admin/` (`admin/index.html`, `noindex`). Google
-  sign-in gated (same shared `omri_session` token as the other admin tools). Drag-and-drop
-  reorder (cards within/across categories, and categories), full card CRUD (title/desc/
-  icon/href/newTab/tags), create/rename/delete categories, per-card **visibility**
-  (🌐 public / 🔒 admin / 👁️‍🗨️ hidden-draft), per-category **accent color + icon + adminOnly**,
-  and global **layout** (density / card size / show-tags). A live preview mirrors the real
-  hub. **Save** POSTs the whole config; **בטל שינוי אחרון** restores the previous version.
-  Nothing publishes until Save. Drag lib = `admin/vendor/Sortable.min.js` (vendored, no CDN).
-- **Data + endpoints** live in `go-shortener` (`hub_config` table, seeded from `hub_seed.py`):
-  `GET/POST /api/hub-config` + `POST /api/hub-config/undo` — see go-shortener/CLAUDE.md.
-  Anonymous `GET` is filtered server-side (admin/hidden cards + adminOnly categories stripped),
-  so drafts and admin tools never ship to visitors (unlike the old CSS-hidden markup).
-- **How index.html renders:** `js/hub-render.js` (`HubRender.renderHub` / `applyLayout`)
-  turns the config into the same `.cat-section` / `.tool-card` DOM the CSS expects. On load
-  the hub paints instantly from `localStorage['hub_config_cache']`, then re-fetches
-  `/api/hub-config` (with `X-Session` if present) and updates the cache; on total failure it
-  shows a Hebrew "reload" message (never blank). Analytics uses event delegation so it works
-  on rendered cards. The API base can be overridden for testing via `localStorage['hub_api_base']`.
-- **Admin cards on the hub now require Google sign-in** (a valid `omri_session`), not just the
-  PIN unlock — the PIN only flips the CSS visibility (`body.admin`), but admin/hidden cards
-  only *arrive* from the backend when authed. Omri is signed in via any admin tool (shared
-  localStorage on the tools origin), so in practice they appear; if the token expired the hub
-  simply shows fewer cards (re-sign-in via any admin tool).
+## Public vs private: ONE link + hidden admin mode
 
-**To add a tool now:** open `/admin/`, ➕ כרטיס, fill it in, set visibility, Save. No repo
-edit, no deploy. Card `id` doubles as the analytics `data-tool` id and is auto-registered for
-click tracking (the go-shortener `TRACK_TOOLS` two-places sync is retired).
+- One link only: `tools.omri-iram.co.il`. Private tools sit on the same page, hidden until admin mode.
+- **Admin mode (visibility only):** triple-click the "OI" logo (hub) or the "הכלים של עומרי אירם" kicker (tool page)
+  within ~1.2 s → PIN `9464` → `localStorage['omri_admin']='1'` → `body.admin`. A "🔓 מצב אדמין · יציאה" chip exits.
+  This is obscurity, not security.
+- **Admin cards need Google sign-in too:** admin/hidden cards only arrive from the backend with a valid `omri_session`.
+  An expired token = fewer cards; sign in again through any admin tool.
+- **Google sign-in** (shortener, qr, utm, extra, video-search, whatsapp; only hello@omri-iram.co.il):
+  the page redirects to `go.omri-iram.co.il/api/auth/google/start?return=<page>` → go-shortener checks hello@
+  (`email_verified`) and mints a 30-day HMAC-signed token → back to `<page>#omri_session=<token>` → an inline IIFE moves it
+  into `localStorage['omri_session']` and strips the URL. Sent as the `X-Session` header. On `401` the page bounces through Google again.
+- go-shortener and extra-bridge sign with the same `TOTP_SECRET`, so one token works on both.
+  Setup + env (`GOOGLE_OAUTH_CLIENT_ID/SECRET`, `ADMIN_EMAIL`, `FLASK_SECRET`, redirect URI
+  `https://go.omri-iram.co.il/api/auth/google/callback`): go-shortener/CLAUDE.md → "Google sign-in setup".
+  It is a Web OAuth client shared with Thank-you-letter / forms-to-mailerlite.
+- **Break-glass:** `POST /api/auth` (go-shortener) / `/api/extra/auth` (extra-bridge) with a TOTP `{code}`
+  (Google Authenticator "Omri Admin Tools") mints the same token from any HTTP client; no UI shows it.
+  Static passwords (`ADMIN_PASSWORD`, `EXTRA_BRIDGE_PASSWORD` via `X-Admin-Password`) are a deeper fallback.
 
-## Public vs private — ONE link + hidden admin unlock
+## The tools
 
-There is **one link only**: `tools.omri-iram.co.il`. No separate private URL. Private tools live on the *same* page but are hidden until **admin mode** is unlocked.
+| Tool | Where | Notes |
+|---|---|---|
+| סרגל פרקים ליוטיוב | `chapter-bar-web` (GitHub Pages) | public |
+| מערכת מענה המוני ב-Gmail | Google Apps Script web app | admin |
+| תמלול אוטומטי | whisper-agent dashboard, VPS :8080 (Tailscale + localhost per PROJECTS.md) | admin |
+| הגרלת זוכה | `randomizer/` | public, client-side |
+| מחולל אימייל לטופס | `email-generator/` | public; generates an Apps Script for the user's own Form. Admin mode adds MailerLite + Omri's details |
+| מקצר קישורים ממותג | `shortener/` → go-shortener `/api/*` | admin, Google sign-in |
+| מקצר מהיר (TinyURL) | `tinyurl/` → go-shortener `/api/tinyurl` | public, CORS-locked to the tools origin |
+| מחולל קודי QR | `qr/` (node-qrcode via jsDelivr CDN) | public; admin adds "QR דינמי" (go-shortener links + scan counts) |
+| QR דינמי (גוגל שיטס) | `qr-dynamic/` | public; generates an Apps Script whose cell B1 holds the target |
+| בונה קישורי UTM | `utm/` | admin card; admin adds shorten + click comparison |
+| הקלטות שיחות (Extra) | `extra/` → `go.omri-iram.co.il/extra/api/*` | admin; extra-bridge (VPS :8092) |
+| מחפש סרטונים | `video-search/` → scraper-bridge (VPS :8094, repo Social-Media-Scraper) | YouTube public; TikTok/IG/FB admin (Apify) |
+| כרטיסי סיסמה לתלמידים | `password-cards/` | public, 100% client-side, v1.4.0 |
+| פוסטים לוואטסאפ | `whatsapp/` → `go.omri-iram.co.il/wa/api` | admin; Content Machine's posts, also an Android PWA |
+| DaVinci control | `http://100.111.186.101:5007/` (home PC) and `http://127.0.0.1:5007/` (this machine) | admin, Tailscale, no password; repo davinci-automation `control/` |
+| מוריד וידאו | `http://100.111.186.101:5112/` (ytdlp-bridge, home PC) | admin, Tailscale, no password |
+| סטודיו ה-Gems | `http://100.111.186.101:5012/` (home PC) | admin, Tailscale; repo Gems-in-STEM is archived (→ gemstem `studio`) |
+| ייבוא טופס ל-MailerLite | `https://forms.omri-iram.co.il/admin/import` | admin; repo forms-to-mailerlite, VPS unit `forms-import` :5021 |
+| TAU stations | biomimicry / micropod / energy `.omri-iram.co.il` | public |
 
-**Admin unlock (client-side, same-origin, shared across all tool pages):**
-- Trigger: **triple-click the "OI" brand logo** (on the hub) or the **"הכלים של עומרי אירם" kicker** (on a tool page) within ~1.2s → PIN prompt → code **`9464`** → sets `localStorage['omri_admin']='1'` → `document.body.classList.add('admin')`. A "🔓 מצב אדמין · יציאה" chip lets you exit.
-- This is **obscurity, not security** (the flag is client-side). It only controls *visibility*. Truly sensitive tools are protected at their own endpoints — by **Google sign-in** (shortener, qr, utm, extra, video-search — see below) or by **Tailscale-only** network gating (DaVinci control, video downloader).
+The live list is the config in `/admin/`; this table is only a map of folders and backends.
+`teacher-club/favicon.png` is not a card: it is the Teacher-Club-TLV Apps Script app's favicon
+(art from claude-config `scripts/favicon/make_favicons.py`, row `teacherclub`). Do not delete it, the live app links to it.
 
-### Admin auth — Google sign-in (shortener · qr · utm · extra · video-search · whatsapp)
+**`whatsapp/` in short:** the API is content-machine's `bot/wa_web.py` (systemd `content-machine-wa-web`), which checks
+`X-Session` with go-shortener; posts live in the Google Sheet "פוסטים לוואטסאפ". Board views חודש · שבוע · יום · רשימה,
+approvals, typo check, ideas, 🎬 kanban, 📣 versions for other channels, late-hour warning. Feature-by-feature detail
+lives in content-machine's CLAUDE.md and in `docs/HISTORY.md`. PWA files: `whatsapp/manifest.webmanifest`, `whatsapp/sw.js`, `whatsapp/icons/`.
 
-The private tools log in with **"התחבר עם Google"** (only **hello@omri-iram.co.il**). One login is shared across all of them via a single `localStorage['omri_session']` token:
-- The page sends you (a top-level redirect) to `go.omri-iram.co.il/api/auth/google/start?return=<this-page>` → Google consent → the **go-shortener** backend verifies you're hello@ (`email_verified`) and mints a **30-day, HMAC-signed session token**, then redirects back to `<page>#omri_session=<token>`. A tiny inline IIFE reads the token out of the URL fragment into `localStorage['omri_session']` and strips the URL. On a missing/expired token (`401`), the page just bounces you through Google again (no prompt).
-- The token is sent as the **`X-Session`** header on every API call. Because **go-shortener** and **extra-bridge** sign/verify with the **same** `TOTP_SECRET`, one token is **cross-valid** on both — log in once, authed on all five pages for 30 days. **The Google OAuth flow lives only in go-shortener; extra-bridge is unchanged** (it just keeps verifying `X-Session`).
-- **TOTP is now break-glass only:** `POST /api/auth` (go-shortener) / `/api/extra/auth` (extra-bridge) `{code}` (Google Authenticator entry "Omri Admin Tools") still mints the same token from any HTTP client if Google is ever unavailable — **no UI exposes it**. The old static passwords (`ADMIN_PASSWORD`, `EXTRA_BRIDGE_PASSWORD` via `X-Admin-Password`) remain a deeper fallback.
-- **Setup + env** (`GOOGLE_OAUTH_CLIENT_ID/SECRET`, `ADMIN_EMAIL`, `FLASK_SECRET`, and the GCP redirect URI `https://go.omri-iram.co.il/api/auth/google/callback`) live in **go-shortener/CLAUDE.md → "Google sign-in setup"**. This is a **Web** OAuth client shared with Thank-you-letter / forms-to-mailerlite.
-- Note the `omri_admin` visibility flag (triple-click + PIN `9464`, below) is **separate** — it only reveals the admin *cards/features*; the Google `omri_session` token is what actually authorizes the API calls.
+## Usage analytics
 
-**`whatsapp/` — פוסטים לוואטסאפ** (2026-10-17, admin card `whatsapp-posts` in "אימייל ודיוור"): Content Machine's
-daily posts to the "בינה בהוראה" WhatsApp community. API `https://go.omri-iram.co.il/wa/api` = content-machine's
-`bot/wa_web.py` (systemd `content-machine-wa-web`), which checks `X-Session` by asking go-shortener. The posts
-live in the Google Sheet "פוסטים לוואטסאפ"; see content-machine CLAUDE.md → "WhatsApp post". For a local test,
-`localStorage.wa_api_base` overrides the API base.
-Drafts on "מחכות לאישור" (2026-10-28): each as the WhatsApp bubble it will be (footer, picture or link card), folded
-at 7 lines with "עוד ▾"; [✅ לאשר] runs the typo check in place (`/proofread`) and approves with a PUT, opening the
-editor only when the check finds something or can't run (the result is passed on, not run twice); "↩️ ביטול" in the
-toast puts it back to a draft. [✏️ לעריכה], [🗑 לא לשלוח] (a reason in one tap; the DELETE waits 5 s for "↩️ ביטול",
-flushed on `pagehide`); each says which kind of system draft it is (`made_by`). Tab "🧠 מה למדתי" = `GET/PUT /learn`
-(content-machine `bot/learn.py`).
-The board opens on "today" (UX round, 2026-10-28): the drafts, today's card, then "✓ הכול מוכן" or "⏳ עוד לא הכול
-מוכן" (drafts waiting, a failed post, today or the next posting day with no post); the rest below. The editor has
-ONE main button by state (draft → ✅ לאשר לשליחה, sent → ✏️ לתקן בוואטסאפ, else שמירה) and "⋯" for test / send now
-/ delete; send now, a fix and a delete ask in a sheet (`sheet()`, not `confirm()`) that shows the post, the group
-and its member count. On a phone the editor switches "✍️ כתיבה / 👁 איך זה ייראה", and the ✍️ button steps aside
-while scrolling down.
-**🕒 A late or borderline hour asks first (2026-11-14):** before "📤 לשלוח עכשיו", "✅ לאשר" (the list's too), "שמירה" of a
-post that will go out and "⏰ לתזמן" of versions the page asks `GET /hours`; a hit opens `#hours` (the typo panel's
-look, red when `late`) with [⏰ לתזמן ל…] / [… בכל זאת] / [חזרה לעריכה], BEFORE the typo check (`hoursGate`,
-`showHours`); a note under the time field (`hoursNote`). A warning, never a block; "בכל זאת" sends `late_ok`.
-**🔁 "לשלוח שוב בנוסח אחר"** under a post that went out or is waiting (`repeatBtn`, `POST /repeat`): a draft for the
-next day in the other half of the day opens in the editor; then the button reads "🔁 חוזרת ב-16.11 · 20:00" and opens
-it. See content-machine CLAUDE.md → "A fair hour for the group", "🔁 לשלוח שוב בנוסח אחר".
-**It is also an Android app (a PWA, 2026-10-22):** `whatsapp/manifest.webmanifest` (scope `/whatsapp/`, icons in
-`whatsapp/icons/`, a share target, shortcuts `?new=1` / `?view=approve`) and `whatsapp/sw.js` (the page network-first,
-the share POST to `/whatsapp/share` kept in the `wa-share` cache → `?share=1`, push notifications). Installed from
-Chrome on the phone; under 760px the page has a phone layout. Notifications come from content-machine's
-`bot/push.py`; see its CLAUDE.md → "The app on Omri's Android phone". A change to `sw.js` → bump `SHELL`.
-**⏰ A time for a channel version, and a filter (2026-11-03):** chips by kind at the top of the 📣 window (remembered in
-`wa_vr_filter`), "⏰ לתזמן" per card and for all those showing (`PUT /versions/schedule`), the editor's toolbar on the
-versions' text box (`textToolbar`), `?vr=<key>` opens the window from a reminder. A channel tied to 052 goes out by
-itself; the others ring. See content-machine's CLAUDE.md → "A time for a version".
-**📣 Versions for other channels (2026-10-22):** ⚙️ keeps a list of Facebook groups / other WhatsApp groups
-(`PUT /channels`); after "✅ לאשר" or "📤 לשלוח עכשיו" of a post with a link (and on every such post's
-"📣 גרסאות לערוצים") a window shows the post per channel with its own tracked short link (`POST /versions`), with
-copy / copy-and-open buttons. Nothing is posted from here; see content-machine CLAUDE.md → "Versions for other channels".
-Closed for now (2026-11-02: a post that goes out in a few days)? The same button is on the post in the week, day and list views and in the editor's ⋯ menu.
-The window has its own picture box (2026-11-03: paste, drag, pick or a Drive link, `PUT /versions/image`), so a post already sent can go on to other places with a picture while the post itself stays as it went out; "📤 מ-052" sends it, "🖼️ להעתיק את התמונה" copies it (the file downloads where the browser won't). Kind "Skool" = copy only, without WhatsApp's markup. "🧪 לשלוח לי לבדיקה" on a version (`POST /versions/test`) = that version from 052 to its own chat, nothing marked. "✏️ לערוך את הנוסח לגרסאות" (`PUT /versions/text`, the typo check first) = their own text; each keeps its links, one already sent stays.
-**📅 The calendar (2026-10-29, Omri: "a calendar … easy to go in and out of month, week, day"):** the board has
-חודש · שבוע · יום · רשימה (the choice kept in `localStorage.wa_view`, default שבוע; רשימה = the older list with the
-archive). Arrows / "היום", the keyboard's ← →, a swipe on the phone. Month: a cell per day, a line per post (✓ ⏳ 📝 ✗ ⏭),
-💡 an event's suggestion not written yet, 📅 an event; a click opens that day; on the phone icons only. Week: Sun–Thu
-columns (Fri/Sat only when they hold a post). Day: the usual day card. Dragging works in month and week. The page
-asks `/state` for the weeks the view needs (`fitRange`, the API's limit is 12 weeks each way); no API change.
-The approvals list at the top stays the coming three weeks however far the calendar loaded.
-**Light, like Event Engine (2026-10-29, Omri: "like my other tools, like events"):** Event Engine's admin palette
-(`#f6f7f9` page, white cards, `#dadce0` lines, its soft shadow, Rubik) with the business navy `#002045` title and ochre
-`#ffc250` buttons / active tab (`--accent`; as TEXT `--accent-text` `#8a5a00`, ochre itself is unreadable on white). Sent /
-ok = `--ok` green, waiting = `--warn` on `--warn-bg`, drafts `--draft` purple. The WhatsApp previews use WhatsApp's own
-light look (white bubble on `#efeae2`). theme-color and the manifest follow.
-**💡 Ideas for posts (2026-10-29):** a folded panel on the board from `/state` → `ideas` (🔗 what worked, 💭 the idea
-bank incl. Live-work, 📘 the Playbook); "✍️ לכתוב" = `GET /idea-text` into the editor (a save marks it used), a drag
-onto a day = a draft there, "לא עכשיו" = `POST /ideas/hide`. See content-machine CLAUDE.md → "Ideas for posts".
-**Drag, green, sent (2026-10-29):** a long press lifts a post on the phone (`touchDrag`, the finger carries a
-`.drag-ghost`, every `[data-drop]` day lights up); on the computer a ⠿ handle and the same lights. Approved and waiting
-= `.chip.ok` green ("✅ אושרה · יוצאת HH:MM"), sent = solid green. View "📜 נשלחו" = `GET /history` (90 days, +60 a click).
-**🎬 תוכן (2026-10-29):** Content Machine's kanban as a tab (`GET /content`): drag a card between columns (a long press
-on the phone; the same `draggable` / `dropTarget`, `moveTo` → `kanbanMove`), a click opens it (title, hook, visual,
-category, day; "💬 לפוסט בוואטסאפ" opens the editor). A move that needs title / hook / category / a day opens the card
-first. Every change = `POST /content/event`; see content-machine CLAUDE.md → "The WhatsApp app's 🎬 kanban".
+Each `.tool-card` has `data-tool="<id>"`; a hub click sends a `keepalive` ping to go-shortener `POST /api/track {tool}`
+(event delegation, so rendered cards work). Omri vs visitor is decided server-side by a valid `omri_session`.
+go-shortener keeps lifetime totals + 90-day daily buckets (`tool_stats` / `tool_stats_daily`), served at authed `GET /api/stats`.
+Counts only: no PII, no cookies, no third party. Only clicks on the hub page count.
+The allow-list comes from the hub config (every card `id`); `TRACK_TOOLS` in go-shortener `app.py` is only a boot fallback.
+The admin `#statsPanel` is **hidden since 2026-07-19** (Omri's request): `hidden` attribute in `index.html`,
+`maybeRenderStats()` returns early. Remove `hidden` to bring it back.
 
-**When building a new tool, ask Omri: ציבורי / פרטי / שניהם**, then:
-- **Public** → normal `<a class="tool-card">` in `index.html`.
-- **Private** → `<a class="tool-card admin-only">` in `index.html` — hidden by `body:not(.admin) .admin-only{display:none}`, shown in a **distinct purple identity** when admin. Add the `אדמין` tag.
-- **Both** → just public (everyone sees it).
-- A tool that touches Omri's machine/data also gets its **own** password at its endpoint.
+## Run, test, deploy
 
-Per-tool admin behaviour inside a tool (not just the card): read the same flag — `const ADMIN = localStorage.getItem('omri_admin')==='1'` (wrap in try/catch) — and reveal admin-only features. Example: the email-generator hides the MailerLite section and leaves sender/contact blank for the public, but in admin shows MailerLite + prefills Omri's details.
+- **Run locally:** `python -m http.server 8099` in the repo root, open `http://127.0.0.1:8099/`.
+- **Test:** with that server running, `npm install` and `npx playwright install chromium` once, then
+  `npx playwright test tests/analytics.spec.mjs` (expects `http://127.0.0.1:8099`; stubs `go.omri-iram.co.il/api/track`).
+  The second test checks the stats panel, which is hidden since 2026-07-19; it may need updating.
+- **Deploy:** push / merge to `master`; GitHub Pages serves the root. No workflow, no server here.
+- The hub also needs the go-shortener backend (`/api/hub-config`). Its deploy is on the VPS
+  (`ssh root@147.79.114.195`, `cd /root/Projects/go-shortener`, `git pull`, `systemctl restart go-shortener`); only with Omri's word.
+  If Pages is live but go-shortener is not updated, the hub renders from cache or shows the reload message.
 
-(Superseded: an earlier separate `go.omri-iram.co.il/my/` private hub. The VPS page/route may still exist but is **not** the model — the single link + admin unlock is. Tool pages also no longer show a "חזרה לכל הכלים" back-link, so sharing a tool URL doesn't expose the hub.)
+## Rules and known gotchas
 
-## Current tools
+**Whole repo**
+- **Everything in this repo is public.** GitHub Pages (with `.nojekyll`) serves every file, including this CLAUDE.md and `docs/`
+  (checked 2026-11-15: `/CLAUDE.md` returns 200). Never put a secret, key or private note in any file.
+- A change to `css/style.css` → bump the `?v=` cache-buster in `index.html` (it is `v=4` now).
+- New tool: ask Omri **ציבורי / פרטי / שניהם**. Public → card visibility 🌐; private → 🔒 admin; both → public.
+  A tool that touches Omri's machine or data also gets its **own** auth at its endpoint (Google sign-in or Tailscale-only).
+- Admin features inside a tool page read the same flag: `const ADMIN = localStorage.getItem('omri_admin')==='1'` (wrap in try/catch).
+- Tool pages have no "חזרה לכל הכלים" back-link, so sharing a tool URL does not expose the hub.
+- The old separate private hub `go.omri-iram.co.il/my/` is superseded; do not build on it.
+- The Google OAuth flow lives only in go-shortener; extra-bridge only verifies `X-Session`.
+- `qr.svg` holds the fixed address `https://tools.omri-iram.co.il` only (made once with `segno`, error M, border 2). Nothing generated at run time.
+- extra-bridge on the VPS is **not a git repo**: it deploys by scp.
+- ytdlp-bridge also serves the machine API `POST /download` (X-API-KEY) that the VPS whisper-agent depends on: do not break it.
+- video-search paid search has server-side caps: `max` ≤ 25 and 50 paid searches/day (429 over cap); `/analyze` 10/min per IP + 200/day.
 
-1. **סרגל פרקים ליוטיוב** → `chapter-bar-web` (GitHub Pages)
-2. **מערכת מענה המוני ב-Gmail** *(admin-only card)* → Google Apps Script web app
-3. **תמלול אוטומטי לסרטונים** *(admin-only card)* → whisper-agent dashboard (VPS, http://147.79.114.195:8080)
-4. **הגרלת זוכה** → `randomizer/` (in-repo static page, client-side raffle/randomizer)
-5. **מחולל אימייל אוטומטי לטופס** → `email-generator/` (in-repo static page). Generates a Google Apps Script for "auto-email on Google Form submit" from a friendly Hebrew form + live preview. Mirrors Omri's real bound-script template (MailApp send + signature + button palette). **Tool page** uses the "correspondence desk" editorial theme (cream paper, Frank Ruhl Libre serif, ink-blue accent). **The email itself** is customizable: sender name (sets Gmail display name + sign-off, saved in localStorage), email font (web-safe stacks + optional Google webfonts Heebo/Rubik/Assistant/Frank Ruhl Libre loaded via `@import` with graceful fallback), and accent color (heading + links). Body is the full message (no auto greeting); `{שם}` token → participant name at runtime. Optional MailerLite webhook is stored in **localStorage only** (never committed) so the public page never exposes the n8n endpoint; when present, the generated code includes the `addAttendeeToMailerLite_` integration, otherwise it generates email-only code. **Click tracking** (optional, reworked 2026-07-12): a "מעקב קליקים" toggle makes the generated script wrap each button link through *its own* Web App `/exec` URL + `doGet`. **Clicks are written beside each person's response row** (not a separate `Clicks` tab): `_recordClick_` matches the clicker by email and fills tracking columns appended right of the form answers. **One column per button** (2026-07-12 rework — a single "last button" cell was overwritten when a person clicked a 2nd button): a `לחצו?` (✓) summary column + **a dedicated column per button** whose header is the button label (`icon + " " + text`, collected at generation time into a `BUTTON_LABELS` literal and pre-created by `setup`); each button cell holds `count · dd/MM HH:mm`, incremented per button so different buttons never overwrite each other. Columns are found/created by header via `_findOrAddCol_(sheet, name, fromIdx)` — button lookups start at the `לחצו?` column so a button label can't collide with a form-question header to its left; a `LockService` guard serializes concurrent clicks; unmatched emails get a new bottom row. The follow-up "noclick" reader keys off the `לחצו?` summary column. Fully serverless, per-user, no central backend. **Reliability fix:** the tracked-link base comes from a pasted `var WEBAPP_URL = ""` constant (must end in `/exec`) with `ScriptApp.getService().getUrl()` as fallback — only ever an `/exec` URL, else the raw destination (working, untracked) so recipients never hit Google's "unable to open the file" `/dev`-URL wall. **`_webAppBase_` also strips any `/macros/u/N/s/` → `/macros/s/`** (2026-07-12) — an account-slot-pinned URL (what you get copying from the browser address bar while multi-logged-in) throws the *same* "unable to open the file" for logged-out recipients; normalizing to the account-agnostic form is the actual cause of the first round's dead-end button. `doGet`'s redirect page (2026-07-12, iterated): Apps Script serves `doGet` output inside a **sandboxed iframe** that (a) makes a `<meta http-equiv=refresh>` / in-frame `location.replace` load the destination *inside* the frame — which X-Frame-blocked sites (ynet, most news/social) reject with "refused to connect" — and (b) blocks *automatic* top-navigation (`allow-top-navigation-by-user-activation`). Final design (matches the proven `qr-dynamic` redirect): **no meta-refresh** (it loaded the target in-frame → the "refused to connect" the user hit), `window.top.location.href` breakout in a `<script>`, **and — critically — `.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)` on the `HtmlOutput`**, which is what actually lets `window.top` escape the sandbox and auto-navigate (plain `window.top` without it needs a user gesture and just sits there). A **prominent styled `➜ המשך ליעד` button with `target="_top"`** remains as the guaranteed one-tap fallback. The click is logged server-side before the page renders, so tracking is complete regardless of whether auto-redirect fires. Requires the user to deploy the script as a Web App (Execute as: Me, Access: Anyone) **and paste the `/exec` URL into `WEBAPP_URL`**; the note under the generated code walks through it (incl. redeploy-a-new-version-on-edit + the test-email orphan row caveats). **One-run `setup()` installer** (added 2026-07-06): the generated script always includes a `setup()` function that is the *single* thing the user runs once — it idempotently creates the `sendEmailOnFormSubmit` form-submit trigger (`newTrigger(...).forSpreadsheet(ss).onFormSubmit()`, deleting any dupes via a handler-name kill-map first), **pre-creates the click-tracking columns beside the responses** (a `לחצו?` summary + one column per button from `BUTTON_LABELS`, via `_findOrAddCol_` on `getResponsesSheet_`) when tracking is on, creates the daily `sendFollowUps` trigger + lays the baseline when follow-ups are on, calls `sendTestEmail()` for instant proof, and — since 2026-07-12 — ends with a **non-blocking `ss.toast()` + `Logger.log`** (not `Browser.msgBox`, which blocked the run and threw "Cannot call from this context" when launched from the editor Run button). The tracking-readiness line checks `_webAppBase_()` (so it goes ✅ once a valid `WEBAPP_URL`/`/exec` exists) else nags with the deploy+paste step. The on-page guide dropped from 5 steps to 3 (paste → run `setup` → optional Web-App deploy + paste `/exec`); the manual trigger steps are gone (setup does them). `getResponsesSheet_` is emitted exactly once whenever tracking **or** follow-ups are on (shared helper). **Email column** (added 2026-07-06): the generated script no longer hardcodes the email as column B — a "עמודת האימייל בגיליון" dropdown (⚙️ אפשרויות מתקדמות) sets `EMAIL_COLUMN` (index into `e.values`, default 1 = column B = auto-collect), used by the submit handler and both follow-up reads. For forms where "Collect email addresses" is OFF and the email is a normal question (so it's in C/D/E…). The name-column picker is now neutral letters (C–H) too, since "first question = column C" only holds when auto-collect is on. Guide step 1 + the advanced "פעיל" badge (lit when column ≠ B) point users to it. **Column auto-detect** (added 2026-07-06): a "🔎 זיהוי אוטומטי של עמודות" paste box (top of ⚙️) — the user pastes a row (or two) copied from their responses sheet; client-side `detectColumns()` splits by tab (or comma), finds the **email** column by an `@`-containing cell (fallback: header text `email/אימייל/מייל/דוא`) and the **name** column by header text (`שם/name`), then sets the two dropdowns (auto-enabling personalize when a name is found) via `ensureColOption()` which injects an option for any column letter A–Z so detection isn't capped at H. No sheet access / OAuth (the tool is public + client-side) — the "automatic" bit is just parsing what they paste; stays private. **Templates** (תבנית dropdown fills subject/body/buttons: materials/thanks/webinar/update). **Top image/logo** (centered at the top of the email). **Two ways to set it (2026-07-06):** paste a URL (→ `TOP_IMAGE`, used as `<img src>` as-is), **or upload a file from the computer** (⬆ button + `accept="image/*"`). An uploaded file is read locally (never uploaded anywhere — the tool stays 100% client-side), auto-resized on a canvas so the longest side ≤600px (PNG kept for png/webp/gif/svg to preserve transparency, else JPEG q0.9), and **embedded into the generated code as base64** (`TOP_IMAGE_DATA` + `TOP_IMAGE_TYPE`) → a `_inlineImages_()` helper builds `Utilities.newBlob(Utilities.base64Decode(...))` and every send (submit / test / manual / **both follow-ups**) passes `inlineImages:{topLogo:…}`, with the body img referencing `cid:topLogo` via `TOP_IMAGE_SRC`. Inline/CID is required because Gmail/Outlook strip `data:` URIs from received mail. Upload wins over URL (URL blanked when a file is present). Thumbnail + filename+size shown; a red warning appears if the encoded logo >200KB (code gets long). Persisted in `localStorage['eg_logo_data']`, saved with user templates (`logoData`), cleared on remove/reset. **Drive attachment** (added 2026-06-24): an optional "צירוף קובץ מ-Google Drive" link field → `driveFileId()` extracts the file ID (`/d/ID`, `?id=ID`, or a bare ID) → injected as `ATTACH_FILE_ID`; a generated `_attachments_()` helper (`DriveApp.getFileById(id).getBlob()`, try/catch) is passed as `attachments:` on the three primary sends (submit / test / manual). Follow-ups intentionally excluded. Uses DriveApp so the script prompts for the Drive scope on first run. **🔍 full-size preview** button opens the rendered email in a new tab as a quick visual "test"; a real inbox test is the generated `sendTestEmail()` (run once in Apps Script). **Buttons** support an optional icon/emoji + per-button **style** (filled / outline / pill). The icon field is a **click-to-open emoji picker** (a trigger button showing the current emoji → opens a curated ~60-emoji grid popup with a "✕ ללא אייקון" clear option; value kept in a hidden `.b-icon` input so the rest of the code is unchanged) — not a raw text box, since typing/pasting an emoji was awkward on desktop. **Save your own template** (💾 — stored in `localStorage['eg_my_templates']`, listed under "התבניות שלי" in the dropdown, 🗑 to delete) and **↺ reset to default**. Click tracking records **per-button** engagement (one sheet column per button, `count · time`). (Open/read tracking is intentionally NOT offered — unreliable in Gmail and not feasible from Apps Script, which can't serve an image pixel.) **Follow-up emails** (added 2026-06-24): an "📨 אימייל מעקב אוטומטי" section adds **up to two** automatic follow-up letters (each: own subject/body/buttons reusing the same design+signature; days-after-submission; condition dropdown **"only non-clickers" / "everyone"**). "Only non-clickers" auto-enables click tracking (it reads the per-row `לחצו?` column). Generated code adds a shared `buildEmail_` builder, `getFollowUpContent_`, `sendFollowUps()` (a daily **time-driven** trigger — scans the form-responses sheet, dedups via a **FollowUps** sheet, and **baselines all existing rows on first run** so old submissions are never blasted; new submissions get follow-ups), and `sendFollowUpTest()`. The preview gains **מייל ראשי / מעקב 1 / מעקב 2** tabs. **Foldable UI** (2026-06-24): only the essentials (template/subject/body/buttons) show by default; everything else is in collapsible `<details class="fold">` panels — **🎨 עיצוב ושולח** (logo/style/sender/font/accent/signature), **⚙️ אפשרויות מתקדמות** (personalize + MailerLite-admin + click tracking), **📨 אימייל מעקב אוטומטי** — with a "פעיל" badge on the summary when a section is on. **Dark/light theme** (2026-07-12): the page is fully theme-aware — all colors are CSS custom props with a `:root[data-theme="light"]` override; a pill toggle (top bar, ☀️/🌙) flips `data-theme`, persists to `localStorage['eg_theme']`, and an early `<head>` script applies the saved-or-`prefers-color-scheme` theme before first paint (no flash). Light mode deepens the amber accent to `#b0700f` for contrast on white; the code block stays dark in both. The live preview column is `position: sticky` on desktop so it follows the (long) form while scrolling. **Shareable draft link** (2026-07-12): a "🔗 שמור כקישור" button (under the template picker) encodes the full `readConfig()` state into a `#t=…` URL hash via an **inlined LZString** (MIT, URL-safe compress) — subject/body-blocks/buttons/signature/colour/font/personalize/tracking/**both follow-ups** — so a teacher can bookmark or self-email it and reopen on **any device** to keep editing (on load, an init IIFE decodes `#t=` and calls `loadConfigFromLink`, a superset of `applyConfig`). The uploaded-logo base64 (`logoData`) and the MailerLite `webhook` are stripped from the link (too big / admin-private); a pasted logo **URL** is kept. The admin-only sender/phone/website prefill (public sees blank placeholders) is now a single `ADMIN_DEFAULTS` constant used by both init and reset. **Elevated to a prominent primary-styled panel** (2026-07-12, at the top of the form, under "↺ אפס הכול") after user feedback that link-saving matters — shows a visible `<input readonly>` with the link (not just a silent clipboard copy, which can fail on some mobile browsers) plus a real "העתק" button and a "📧 שלח לעצמי במייל" `mailto:` link. The old localStorage-only "💾 שמור" template button is now labeled "💾 שמור במחשב הזה" to make the browser-only scope explicit next to the cross-device link. **Found + fixed a real theme-toggle bug while wiring this up:** `.act-primary`'s `background: var(--accent)` permanently froze on the pre-toggle color after the *first* dark/light switch — a Chromium quirk where transitioning `background`/`background-color` on a var()-driven value that changes via an ancestor attribute-selector switch (`[data-theme]`) never re-settles. Root cause was two `.act` transition rules both listing `background` (the shared theme-transition rule *and* `.act`'s own pre-existing hover-transition rule at a later cascade position); fix removed `background`/`background-color` from both, verified clean across 5 consecutive real toggle clicks. Hover fade on primary buttons is now instant instead of a 0.18s darken — an accepted trade-off.
-6. **מקצר קישורים ממותג** *(admin-only card)* → `shortener/` (in-repo static page). The public TinyURL mode is now its own public tool (#10); this branded one stays admin. Management UI for Omri's own URL shortener. The page is static (GitHub Pages) and calls the **`go-shortener`** Flask service at `https://go.omri-iram.co.il/api/*` over CORS. A **segmented chooser** picks the link type: **🔗 "הקישור שלי"** → branded `go.omri-iram.co.il/xxx` (optional custom alias, listed below with click counts) via `/api/create`; **⚡ "TinyURL"** → plain `tinyurl.com/xxx` (no alias, create+copy only, not tracked) via `/api/tinyurl`. **Google-sign-in-gated** (see "Admin auth — Google sign-in" above) — the login gate has a "התחבר עם Google" button (only hello@omri-iram.co.il) → `omri_session` token sent as `X-Session`. The redirect backend + DB live in the separate `go-shortener` repo on the VPS (not here). `noindex`.
-7. **מרכז השליטה של DaVinci** *(admin-only card)* → `http://100.111.186.101:5007/` (Tailscale, your devices only, **no password**). The DaVinci Control Center on Omri's home PC. The public `go.omri-iram.co.il/davinci/` VPS route was **removed** (it runs scripts on the PC). Built/documented in the `davinci-automation` repo (`control/`).
-   - **7b. מרכז השליטה של DaVinci — במחשב הזה** *(admin-only card, `davinci-control-laptop`, added 2026-09-06 straight into the live config, v25)* → `http://127.0.0.1:5007/`. Same dashboard, but on whichever machine you are sitting at — since 2026-09-06 the laptop runs its own dashboard driving the laptop's Resolve. Only opens where a dashboard is actually running (PC or laptop); no Tailscale hop. Not in `hub_seed.py` — the seed only reproduces the original 6 categories.
-8. **מחולל קודי QR** → `qr/` (in-repo static page). URL/text → live QR; color, size, **error-correction default H**, transparent-bg, **center logo** (white backing so it still scans), **caption above/below** with font+size+color; download PNG (full composite) or SVG (code only). Uses node-qrcode via CDN (`https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js` — `toCanvas`/`toDataURL`/`toString`). Public, client-side. **Admin (unlock):** a "QR דינמי" section creates/repoints `go-shortener` links and shows scan counts — QR of a short link you can re-target after printing. Calls `go.omri-iram.co.il/api/{create,update,list}` (CORS-allowed origin) authed by the shared **`omri_session`** Google-sign-in token (`X-Session`).
-9. **בונה קישורי UTM** *(admin-only card)* → `utm/` (in-repo static page). **Public part:** Base URL + utm_source/medium/campaign/term/content → live tagged URL + copy; handles existing `?` in base, URL-encodes values, omits empty params. **Admin part (unlock — same triple-click-kicker + `omri_session` Google sign-in as qr/extra):** two `admin-only` sheets — **🔗 קצר ועקוב** shortens the built UTM URL via `go-shortener` `/api/create` (optional alias, `X-Session` auth) → branded `go.omri-iram.co.il/xxx`; **📊 השוואת קליקים** loads `/api/list`, filters links whose target contains `utm_`, parses source/medium/campaign, and renders a click-sorted bar table (which channel wins). No deps. **Convention (2026-11-13):** source = platform, medium = placement kind, campaign = the session number (`B019`) or a slug — `omri-iram.co.il/docs/utm-convention.md`; source/medium are lower-cased on build, and the suggestion lists follow it.
-10. **מקצר קישורים מהיר (TinyURL)** *(public)* → `tinyurl/` (in-repo static page). URL (+ optional custom **alias**) → plain `tinyurl.com/xxx` via the now-public `go-shortener` `/api/tinyurl` (accepts `alias`; CORS-locked to the tools origin; no password). Split out from #6 so anyone can use it.
-11. **הקלטות שיחות (Extra)** *(admin-only card)* → `extra/` (in-repo static page) backed by the **`extra-bridge`** Flask service on the VPS. Search Extra (אקסטרה) call recordings by phone / date / contact name / recent, then listen + download (MP3), or send one to a NotebookLM notebook picked in the "פנקס יעד" dropdown. Beside it: 🔄 reloads the notebook list (keeps the current choice) and ➕ creates a notebook by name and selects it (an existing notebook of exactly that name is selected instead, never duplicated). Calls `https://go.omri-iram.co.il/extra/api/{search,download}` authed by the shared **`omri_session`** Google-sign-in token (`X-Session`; missing/expired → bounce through Google); the Extra Bearer token stays server-side. Repo: `omri-il/extra-bridge` (VPS `/root/Projects/extra-bridge`, systemd `extra-bridge.service`, port 8092, **not a git repo on the VPS — deploy via scp**).
-12. **מוריד וידאו** *(admin-only card)* → `http://100.111.186.101:5112/` (Tailscale, your devices only, **no password** — trusts localhost + `100.64.0.0/10`, like the DaVinci card). A Hebrew RTL download manager **served by the existing `ytdlp-bridge`** on the home PC: paste a YouTube / Facebook / TikTok / Instagram URL → pick video (mp4 + quality best/1080p/720p) or audio (mp3) → background download into a library on the PC → per-item buttons **שמור למכשיר / תמלל / מחק** and **הורד כתוביות (SRT)**. The "תמלל" button reuses the VPS whisper-agent flow. The card links out to the Tailscale URL (no mixed-content issue — the page is served from the home PC, not GitHub Pages). Repo: `omri-il/ytdlp-bridge` (port 5112). The same service still serves the unchanged machine API `POST /download` (X-API-KEY) that the VPS whisper-agent depends on.
-14. **סטודיו ה-Gems** *(admin-only card)* → `http://100.111.186.101:5012/` (Tailscale, your devices only, **no password**). A private dev environment for building/testing educational **Gemini Gems** on Omri's home PC: PARTS authoring, a crash-test sandbox (Gem simulated via the Gemini API), an automated persona-driven eval suite (LLM-as-judge), enforced `GEMxx` numbering + version snapshots, and DIY-Kit export. Like the DaVinci/NotebookLM cards, the page is served from the home PC (no mixed-content). Repo: `omri-il/Gems-in-STEM` (Flask, port 5012, binds `0.0.0.0`).
-13. **QR דינמי (גוגל שיטס)** *(public)* → `qr-dynamic/` (in-repo static page). The serverless sibling of qr/'s admin dynamic-QR. **Two-step, no backend of ours:** (1) the user enters an initial destination URL → the tool generates a ready **Google Apps Script** (`Code.gs` with `setup()` + `doGet()` injected via `JSON.stringify` so any URL is safely escaped) that reads the destination from cell **B1** of a sheet named **QR** and meta-refresh/JS-redirects there; (2) the user deploys it as a Web app (Execute as Me, Anyone) and pastes the `/exec` URL back → the tool renders the **QR of the /exec** (node-qrcode CDN, download PNG/SVG). Re-targeting = editing cell B1; no reprint. Same "generate Apps Script for the user's own Sheet" pattern as the email-generator. Caveat surfaced in-UI: Apps Script can't do a header redirect, so scans show a brief "מעבירים אתכם…" flash. Public, client-side, no auth.
+**`email-generator/` (Apps Script it generates)**
+- Tracked links use the pasted `WEBAPP_URL` (must end in `/exec`), fallback `ScriptApp.getService().getUrl()`; otherwise the raw link, untracked.
+  Never a `/dev` URL. `_webAppBase_` rewrites `/macros/u/N/s/` → `/macros/s/` (account-slot URLs fail for logged-out recipients).
+- The `doGet` redirect page: no meta-refresh (it loads the target inside Google's sandbox iframe → "refused to connect");
+  use `window.top.location.href` **plus** `.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)`,
+  and keep the `➜ המשך ליעד` button with `target="_top"` as the fallback. The click is logged before the page renders.
+- `setup()` ends with `ss.toast()` + `Logger.log`, never `Browser.msgBox` (blocks, and throws "Cannot call from this context" from the editor).
+- Clicks are written beside each response row: a `לחצו?` summary column + one column per button (`BUTTON_LABELS`),
+  `count · dd/MM HH:mm`; button lookups start at the `לחצו?` column so a label cannot collide with a question header; `LockService` guards it.
+- Follow-ups baseline all existing rows on the first run, so old submissions are never blasted. They get no Drive attachment.
+- An uploaded logo goes in as base64 and is sent as an inline CID image (`cid:topLogo`): Gmail/Outlook strip `data:` URIs.
+- No open/read tracking: unreliable in Gmail and Apps Script cannot serve a pixel.
+- The MailerLite webhook is kept in localStorage only, never committed; it and the logo data are stripped from the `#t=` share link.
+- Theme toggle: do not put `background`/`background-color` in a `transition` on var()-driven buttons;
+  Chromium freezes the colour after a `[data-theme]` switch.
 
-16. **ייבוא טופס ל-MailerLite** *(admin-only card)* → `https://forms.omri-iram.co.il/admin/import`. Paste a Google Form **edit link** → reads all responses via the Google Forms API (no spreadsheet), auto-detects email+name, upserts everyone into a chosen MailerLite group (tag) on Omri's **personal hello@ account**. Rerun-safe (never duplicates). Optional Hebrew "איך היה?" follow-up drafted by Gemini and **sent via Gmail** (not a MailerLite campaign — that account is Premium-gated), 1–2 days later. TOTP login (its own Google Authenticator entry). Repo `omri-il/forms-to-mailerlite`, VPS systemd `forms-import` (gunicorn -w 1 :5021) + nginx + Let's Encrypt.
+**`password-cards/`**
+- Privacy is the point: zero external requests. Libraries and fonts are vendored (`vendor/`, `fonts/`); keep it that way.
+- Card art: flat SVG only, no CSS/SVG filters or masks (unreliable in html2canvas → PDF).
+- Preview scales by an inline `--u` var, never `transform: scale` (the layout box stays big and cards clip).
+- Parser: the Ministry PDF maps Hebrew to U+02A0–U+02BA and stores names reversed (`fixHebrew()`); passwords are not always
+  6 digits, so fields are assigned by elimination using pdfjs x/y coords, not fixed regex.
+- Duplex mirror: front grid `dir:rtl`, back grid `dir:ltr`. The version tag is a static constant: bump it on a release.
 
-15. **מחפש סרטונים לפי נושא** *(public card, hybrid)* → `video-search/` (in-repo static page) backed by the **`scraper-bridge`** Flask service on the VPS (repo `omri-il/Social-Media-Scraper`, VPS `/root/Projects/Social-Media-Scraper`, systemd `scraper-bridge.service`, port 8094). Type a subject → relevant videos with thumbnail/author/views/date, "פתח" links, and **client-side CSV export** (for curating teacher lists). Each YouTube result has a **"🔍 נתח"** button → `POST /scraper/api/analyze` where **Gemini watches the video** (YouTube URL passed straight to Gemini, no download) and returns a Hebrew verdict in a panel: summary, color-coded fit-to-subject (גבוהה/בינונית/נמוכה), audience level, key points, educational flag. Public but capped (10/min per IP + 200/day). Turns metadata search into actual content screening — no Apify needed for this. **YouTube is fully public & free** (`GET go.omri-iram.co.il/scraper/api/youtube`, per-IP rate-limited). **TikTok/Instagram/Facebook** chips are `admin-only` (triple-click-kicker + PIN reveal) and call `POST /scraper/api/paid` via Apify, **Google-sign-in-gated** by the shared `omri_session` token (`X-Session`; missing/expired → bounce through Google) — same sign-in as shortener/qr/extra. Server-side cost guards: `max`≤25 + 50 paid searches/day (429 over cap). Keys (YouTube/Apify) stay server-side. CLI sibling + full backend docs in the `Social-Media-Scraper` repo.
+**`whatsapp/`**
+- A change to `whatsapp/sw.js` → bump `SHELL`.
+- `localStorage.wa_api_base` overrides the API base for a local test.
+- Confirmations use `sheet()`, not `confirm()`. The late-hour check is a warning, never a block ("בכל זאת" sends `late_ok`).
+- Ochre `#ffc250` is unreadable as text on white: text uses `--accent-text` `#8a5a00`.
+- The API's `/state` range limit is 12 weeks each way.
 
-17. **כרטיסי סיסמה לתלמידים** *(public card, 🎲 כללי)* → `password-cards/` (in-repo static page, **100% client-side**). ✅ **Live** at `tools.omri-iram.co.il/password-cards/`, **v1.4.0**. A teacher uploads the Ministry-of-Education password PDF ("רשימת סיסמאות לנבחנים") — or types a few students by hand (see below) — and gets a **double-sided, print-and-cut PDF** of one personal card per student. **Privacy is the whole point:** nothing is ever sent to a server — verified zero external requests; libraries + fonts are **vendored locally** (`vendor/pdf.min.js`+worker = pdfjs-dist 3.11.174, `vendor/jspdf.umd.min.js` 2.5.1, `vendor/html2canvas.min.js` 1.4.1, `fonts/rubik-*.woff2` 300–900, `fonts/suez-one-400.woff2` for display headings), so it also works offline.
+**`qr-dynamic/`**: Apps Script cannot send a header redirect, so scans show a short "מעבירים אתכם…" page.
 
-    **Design (rebuilt from scratch in v1.3 after Omri called the original grayscale design "bad and boring" — colorful, illustrated, kid-first is the whole point):** the web UI is a "sticker badge" theme (hard offset shadows, chunky Rubik 900, big text). The **printed cards are now colorful too**, not grayscale — each card uses full-color SVG illustrations (flat shapes/paths/gradients only; **no CSS/SVG filters or masks**, unreliable in html2canvas→PDF). **"Rainbow class"**: `colorForStudent(index)` cycles an 8-color `PALETTE` (coral/orange/amber/green/teal/sky/purple/pink, each `{bg,accent,deep,ink}`) applied via `--c-*` CSS vars on `.pc-card`, so every student in a class gets a different bright color automatically — verified a full class page reads as a literal rainbow. **9 templates** in `TEMPLATES`: 5 share one "badge" layout (`badgeTheme(setName)` in `generate.js` — colored curved header + white icon circle + name) with a different SVG icon set each (`🐾 animals` fox/owl/bear/bunny/cat/frog, `🦕 dinosaurs` — full-body silhouettes with neck/tail/legs so they actually read as dinosaurs, not just cute faces — brontosaurus/t-rex/stego/triceratops/raptor/ankylosaurus, `🐙 sea` fish/whale/octopus/crab/starfish/turtle, `🚗 vehicles` car/bus/truck/train/plane/boat, `🍓 food` strawberry/apple/watermelon/ice-cream/cupcake/donut); 3 more (`🚀 space`, `🦸 heroes`, `🌈 rainbow`) are bespoke world themes with their own background/deco (space = dark radial gradient + stars + rocket/planet; heroes = sunburst + shield emblem with the student's initial; rainbow = pastel gradient + rainbow arc + sparkles); and `⬜ plain` (added per Omri's "I want one plain version" — no illustration at all, just a white card with a border/field-borders in the student's color, for anyone who wants something quieter). Credentials on the back are always in solid-white high-contrast pill boxes with per-character "boarding pass" digit boxes, regardless of theme, so they stay readable. The "rainbow class" hint text under the live preview (`HINTS` map in `ui.js`) names the actual selected theme's icon (e.g. "כל תלמיד/ה מקבל/ת דינוזאור וצבע משלו/ה") rather than one generic string — a bug Omri caught ("the writing says the same even if I change the design").
+## History
 
-    **Card designer panel:** live front+back preview (`buildPreview()`) rendered from a real student, updates instantly on any option change. **6 sizes** in `SIZES` (`xl` 2×2=4, `large` 2×3=6, `medium` 2×4=8 default, `small` 3×4=12, `mini` 4×5=20, `micro` 4×8=32 per page) — duplex mirror re-verified to hold at 4×8 (front/back card centers symmetric about page center). **Text-size slider** (`--text-scale`, 0.8–1.7×, default 1.15) multiplies every text `calc()` on the card (`calc(var(--u)*k*var(--text-scale,1))`) and updates the live preview as you drag; passed through to `generate()`. All internal card dims derive from a per-size `--u` CSS var so the card scales proportionally; **preview renders at native small size via inline `--u`, NOT `transform:scale`** — scale keeps the original layout box so cards overflow/clip (a real bug from the first cut).
-
-    **Live editing:** every name/user-code/password cell in the preview roster is an editable input — corrections write straight into the in-memory student data (survives class-toggle re-renders, updates the avatar initial live) and flow into the generated PDF.
-
-    **Manual entry mode (v1.4):** a mode toggle (📄 מקובץ PDF / ✏️ הזנה ידנית) swaps in a form — class name + institution + dynamic student rows (name/code/password, add/remove) — for fixing or printing just a few kids without a PDF. "צור כרטיסים" builds a `parsed`-shaped object in `ui.js` and calls the same `renderResult()` the PDF path uses, so it's the identical downstream UI/design/export.
-
-    **Parser gotchas (reverse-engineered from a real file):** the PDF's embedded font maps Hebrew letters to codepoints **U+02A0–U+02BA** and stores each name **reversed** (space = U+0003, punctuation = other control chars) — `fixHebrew()` de-garbles via `cp-0x02A0+0x05D0` + full-string reverse; **passwords are NOT always 6 digits** (can be alphanumeric e.g. `lavieldad2262`), so fields are assigned by elimination (date `DD/MM/YYYY` → birthdate, `\d{7}` → user-code, two Hebrew tokens → names by x-column, leftover → password) using pdfjs text-item x/y coords, not fixed regex. Multi-class files split by per-page `כיתה`/`מוסד` header (grade+number → `א'1`). **PDF output** = each A4 sheet built as HTML/CSS, front grid `dir:rtl` / back grid `dir:ltr` for exact **duplex mirror** alignment, blank cards fill the last sheet; html2canvas (scale 3) → jsPDF image-per-page. Small muted **version tag** bottom-right (`גרסה 1.4.0 · date`, static constant — no backend to fetch a build version from, unlike the Escape-Room-Energy/Bio-Podcast `/api/health` pattern). Files: `index.html`+`ui.js`+`app.js` (parser) + `generate.js` (icon library, themes, layout/PDF) + `styles.css`. Verified end-to-end against a real 45-student / 2-class file. Repo lives in tools-hub (no separate repo). ⏳ Register `password-cards` in go-shortener `TRACK_TOOLS` for click analytics.
-
-**Static assets hosted here for other projects:** `teacher-club/favicon.png` — the 64px favicon of the **Teacher-Club-TLV** Google Apps Script web app (GAS needs an external `.png` URL for `setFaviconUrl()`; artwork = `claude-config/scripts/favicon/make_favicons.py` row `teacherclub`, rasterised by `Teacher-Club-TLV/tests/raster-favicon.py`). Not a hub card. Do not delete — the live app links to it.
-
-**Hub layout:** categories/cards are config-driven now (see the "Editable Tools Hub" section above) and rendered by `js/hub-render.js` into `#hubRoot`; the **seed** (`go-shortener/hub_seed.py`) reproduces the original 6 category `<section class="cat-section">` blocks (🎬 וידאו ויוטיוב · 🎓 TAU אוניברסיטה לנוער · ✉️ אימייל · 🔗 קישורים וקודים · 🎲 כללי · 🔒 אדמין). The **🎓 TAU אוניברסיטה לנוער** category holds the three youth-science-day stations (all public): תחנת מחקר ביומימיקרי (`https://biomimicry.omri-iram.co.il` — repo `omri-il/Biomimicry-TAU`, VPS systemd `biomimicry` :5212; DNS+TLS pending), אולפן הפודקאסט המיקרוביאלי (`https://micropod.omri-iram.co.il` — moved here from the video category), and חדר הבריחה של האנרגיה (`https://energy.omri-iram.co.il`). The whole **אדמין** section is `cat-section admin-only` (hidden unless admin); individual admin tools in other sections keep the `tool-card admin-only` class. The shortener/qr/utm/extra/video-search tools log in with **"Sign in with Google"** (shared `omri_session` token, 30-day); a missing/expired token bounces the user through Google again.
-
-**Live config reorganized 2026-07-19 (v11, via the API — the seed still reproduces the old 6):** now **8 thematic categories** — 🎬 וידאו ויוטיוב (chapter-bar, video-search, whisper + davinci-control/video-downloader/obs-dashboard moved out of אדמין) · 🎟️ אירועים והרשמות (**new `eventking-events` card** → `https://events.omri-iram.co.il/admin`, plus geg-events + thanks-letter) · ✉️ אימייל ודיוור (+forms-mailerlite) · 🔗 קישורים וקודים (unchanged) · 🏫 לכיתה ולמורים (password-cards, randomizer, gems-gallery) · 🤖 AI ועוזרים (notebooklm, gems studio) · 🎓 TAU (unchanged) · 🧰 אישי (adminOnly: time-tracker, plant-care, extra). Per-card `visibility` is unchanged, so the public page still shows only the same public cards; the old catch-all 🔒 אדמין category is gone — admin cards now live in their thematic homes.
-
-## Usage analytics (tool click counts)
-
-Each `.tool-card` carries a `data-tool="<id>"`; a click fires a fire-and-forget
-`keepalive` ping to **go-shortener** `POST /api/track {tool}`. Omri-vs-visitor is
-decided **server-side** by the presence of a valid `omri_session` token (never a
-client flag). go-shortener keeps per-tool lifetime totals + 90-day daily buckets
-(`tool_stats` / `tool_stats_daily`) and serves them at authed `GET /api/stats`.
-An **admin-only** `#statsPanel` on the hub renders a ranked table (total / mine /
-visitors) with hand-rolled SVG sparklines. Counts only — no PII, no cookies, no
-third party. Only clicks **from the hub page** are counted (direct bookmarks and
-in-tool navigation are not). **Panel hidden since 2026-07-19** (Omri's request):
-the `<section id="statsPanel">` carries a `hidden` attribute and
-`maybeRenderStats()` early-returns on it (no `/api/stats` fetch either). Tracking
-itself still records clicks; to bring the table back, remove the `hidden`
-attribute in `index.html`.
-
-**Adding a tool → nothing to sync anymore.** The `/api/track` allow-list is now
-**derived from the hub config** (every card `id`), so adding a card in `/admin/`
-auto-enables its click tracking. The hardcoded `TRACK_TOOLS` set in go-shortener
-`app.py` is only a boot-time fallback. (This also picked up `password-cards`,
-which the old static set was still missing.)
-
-## Deploy
-
-Push to `master`; GitHub Pages serves the repo root. Custom domain via `CNAME` file (`tools.omri-iram.co.il`).
-
-DNS at Hostinger: CNAME `tools` → `omri-il.github.io`.
-
-**The hub now depends on the `go-shortener` backend** for its categories/cards
-(`/api/hub-config`). Deploy that side too: `ssh root@147.79.114.195`, `cd
-/root/Projects/go-shortener && git pull && systemctl restart go-shortener` — `init_db()`
-seeds `hub_config` from `hub_seed.py` on first run (no new env). If GitHub Pages is live but
-go-shortener isn't updated, the hub renders from its localStorage cache or shows a reload
-message. Cache-buster bumped to `css/style.css?v=2`.
-
-## QR on the front page
-`qr.svg` is for someone watching on a projector or YouTube. It holds the fixed address `https://tools.omri-iram.co.il` only, made once with `segno` (error M, border 2). Nothing is generated at run time and no outside service is called.
+Dated feature logs, fix stories and the old numbered tool list: `docs/HISTORY.md`.
