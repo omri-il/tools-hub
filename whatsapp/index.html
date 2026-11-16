@@ -269,7 +269,7 @@
     .btn.img-paste{margin-top:6px;width:100%;padding:8px 12px;font-size:.86rem;font-weight:500}
     .thumb{display:flex;gap:10px;align-items:center}
     .drivelink{margin-top:6px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.86rem;padding:8px 12px}
-    .thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px}
+    .thumb img,.thumb video{width:72px;height:72px;object-fit:cover;border-radius:8px}
     .check{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);margin-top:4px}
     .check.off{opacity:.55}
     .setting{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;max-width:640px;margin:0 auto 12px}
@@ -428,7 +428,7 @@
     .vr-edit{margin-top:10px}
     .vr-edit textarea{min-height:190px;margin-bottom:8px}
     .vr-edit .vbtns{margin-top:8px}
-    .vr-pic .thumb img{width:110px;height:110px}
+    .vr-pic .thumb img,.vr-pic .thumb video{width:110px;height:110px}
     .vr-filter{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:3;background:var(--card);padding:10px 0 6px}
     .vf{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--ink);cursor:pointer;font-family:inherit;font-size:.86rem;min-height:36px;padding:4px 13px}
     .vf small{color:var(--muted);font-size:.78rem}
@@ -667,7 +667,7 @@
         <div class="field">
           <label>תמונה (לא חובה)</label>
           <div id="ed-image"></div>
-          <input type="file" id="ed-file" accept="image/*" hidden>
+          <input type="file" id="ed-file" accept="image/*,video/mp4" hidden>
         </div>
         <div class="field"><label for="ed-group">לאן נשלחת</label><select id="ed-group"></select>
           <div class="sugg" id="ed-sugg"></div></div>
@@ -814,11 +814,17 @@
     function driveId(link){ const m=(link||'').match(/\/d\/([A-Za-z0-9_-]{20,})/)||(link||'').match(/[?&]id=([A-Za-z0-9_-]{20,})/); return m?m[1]:(/^[A-Za-z0-9_-]{20,}$/.test(link||'')?link:''); }
 
     // images come through the API (they need the session header), kept as blob URLs
-    const imgCache={};
+    const imgCache={}, imgType={};
     async function imageUrl(id){
       if(!id) return '';
-      if(!imgCache[id]) imgCache[id]=api('/image/'+encodeURIComponent(id)).then(r=>r.ok?r.blob():null).then(b=>b?URL.createObjectURL(b):'');
+      if(!imgCache[id]) imgCache[id]=api('/image/'+encodeURIComponent(id)).then(r=>r.ok?r.blob():null).then(b=>{ if(!b) return ''; imgType[id]=b.type; return URL.createObjectURL(b); });
       return imgCache[id];
+    }
+    // the post's media (2026-11-16): a picture in its <img>, or a short mp4 as a <video> in the img's place
+    function showMedia(img,id,u){
+      if(!(imgType[id]||'').startsWith('video/')){ img.src=u; return; }
+      const v=document.createElement('video'); v.className=img.className; v.src=u; v.controls=true; v.preload='metadata'; v.playsInline=true;
+      img.replaceWith(v);
     }
     const cardCache={};
     function linkCard(url){
@@ -835,7 +841,7 @@
       const media=b.querySelector('.media');
       if(imageId){
         const img=document.createElement('img'); img.className='photo'; img.alt=''; media.appendChild(img);
-        imageUrl(imageId).then(u=>{ if(u) img.src=u; else img.replaceWith(Object.assign(document.createElement('div'),{className:'hint',textContent:'⚠️ התמונה לא נפתחה'})); });
+        imageUrl(imageId).then(u=>{ if(u) showMedia(img,imageId,u); else img.replaceWith(Object.assign(document.createElement('div'),{className:'hint',textContent:'⚠️ התמונה לא נפתחה'})); });
       }else{
         const url=firstUrl(full);
         if(url) linkCard(url).then(c=>{ if(!c||!c.title) return;
@@ -1889,7 +1895,7 @@
         return;
       }
       box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="vr-pic-x" type="button">הסרת התמונה</button></div>';
-      imageUrl(id).then(u=>{ if(u){ const i=box.querySelector('img'); if(i) i.src=u; return; }
+      imageUrl(id).then(u=>{ if(u){ const i=box.querySelector('img'); if(i) showMedia(i,id,u); return; }
         delete imgCache[id]; if(driveId(vr.image)===id) vrSay('התמונה לא נפתחה מ-Drive: בודקים שזה קובץ תמונה ושהחשבון hello@ יכול לראות אותו',true); });
       $('vr-pic-x').onclick=()=>vrSetImage('');
     }
@@ -2426,10 +2432,10 @@
     }
     function renderImage(){
       const box=$('ed-image'); const id=driveId(image);
-      if(!id){ box.innerHTML='<div class="drop" id="drop">📷 מדביקים תמונה (Ctrl+V), גוררים אותה לכאן, או לוחצים לבחירה</div>'+
+      if(!id){ box.innerHTML='<div class="drop" id="drop">📷 מדביקים תמונה (Ctrl+V), גוררים תמונה או סרטון mp4 לכאן, או לוחצים לבחירה</div>'+
           '<button type="button" class="btn ghost img-paste" id="img-paste">📋 להדביק תמונה שהעתקתי</button>'+
           '<button type="button" class="btn ghost img-paste" id="img-yt">🖼️ להביא את התמונה מיוטיוב</button>'+
-          '<input class="drivelink" id="drivelink" dir="auto" placeholder="או מדביקים כאן קישור לתמונה ב-Drive">';
+          '<input class="drivelink" id="drivelink" dir="auto" placeholder="או מדביקים כאן קישור לתמונה או לסרטון ב-Drive">';
         $('img-yt').onclick=youtubeImage;
         const dl=$('drivelink'); dl.oninput=()=>{ if(driveId(dl.value.trim())){ image=dl.value.trim(); renderImage(); preview(); backup(); say('התמונה נלקחה מ-Drive'); } };
         $('img-paste').onclick=()=>pasteImage();
@@ -2437,10 +2443,10 @@
         d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
         d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) upload(f);};
         return; }
-      box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="img-x">הסרת התמונה</button><button class="btn ghost" id="img-yt" type="button">🖼️ לעדכן מיוטיוב</button></div>';
+      box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="img-x">הסרת התמונה או הסרטון</button><button class="btn ghost" id="img-yt" type="button">🖼️ לעדכן מיוטיוב</button></div>';
       $('img-yt').onclick=youtubeImage;
-      imageUrl(id).then(u=>{ if(u){ box.querySelector('img').src=u; return; }
-        delete imgCache[id]; if(driveId(image)===id) say('התמונה לא נפתחה מ-Drive: בודקים שזה קובץ תמונה ושהחשבון hello@ יכול לראות אותו',true); });
+      imageUrl(id).then(u=>{ const i=box.querySelector('img'); if(u){ if(i) showMedia(i,id,u); return; }
+        delete imgCache[id]; if(driveId(image)===id) say('התמונה לא נפתחה מ-Drive: בודקים שזה קובץ תמונה או סרטון mp4 ושהחשבון hello@ יכול לראות אותו',true); });
       $('img-x').onclick=()=>{ image=''; renderImage(); preview(); backup(); };
     }
     $('ed-file').onchange=e=>{ const f=e.target.files[0]; if(f) upload(f); e.target.value=''; };
@@ -2470,12 +2476,14 @@
       }catch(e){ say(e.message,true); }
     }
     async function upload(f){
-      if(!f.type.startsWith('image/')){ say('רק תמונות',true); return; }
-      say('מעלה את התמונה ל-Drive…');
+      const video=f.type==='video/mp4';
+      if(!f.type.startsWith('image/')&&!video){ say('רק תמונה או סרטון mp4',true); return; }
+      if(video&&f.size>16e6){ say('הסרטון גדול מדי לוואטסאפ (עד 16MB)',true); return; }
+      say(video?'מעלה את הסרטון ל-Drive…':'מעלה את התמונה ל-Drive…');
       try{
         const r=await api('/image',{method:'POST',body:f,headers:{'Content-Type':f.type,'X-Filename':encodeURIComponent(f.name||'image')}});
         const data=await r.json(); if(!r.ok) throw new Error(data.error||'ההעלאה נכשלה');
-        image=data.link; renderImage(); preview(); backup(); say('התמונה עלתה ✓');
+        image=data.link; renderImage(); preview(); backup(); say(video?'הסרטון עלה ✓ הוא יישלח כסרטון, וההודעה תהיה הכיתוב שלו':'התמונה עלתה ✓');
       }catch(e){ say(e.message,true); }
     }
     let previewTimer=null;
