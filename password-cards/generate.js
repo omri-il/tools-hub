@@ -1,7 +1,7 @@
-/* בניית גיליונות A4 של כרטיסיות + הפקת PDF דו-צדדי — הכל בדפדפן.
+/* בניית גיליונות A4 של כרטיסיות + הפקת PDF דו-צדדי, הכל בדפדפן.
    עיצוב צבעוני לילדים: 4 עולמות נושא (חיות/חלל/גיבורים/קשת) + "כיתת קשת"
    (כל תלמיד מקבל צבע אחר). מבנה HTML לכל נושא; הגודל נקבע ע"י ‎--u‎.
-   כל האיורים = SVG שטוח (shapes/paths/gradients) — בטוח ל-html2canvas. */
+   כל האיורים = SVG שטוח (shapes/paths/gradients), בטוח ל-html2canvas. */
 (function () {
   'use strict';
 
@@ -25,7 +25,7 @@
     { id: 'micro', label: 'ננו', note: '32 בעמוד', cols: 4, rows: 8 },
   ];
 
-  // כיתת קשת — 8 סטים חיים; כל תלמיד לפי אינדקס.
+  // כיתת קשת, 8 סטים חיים; כל תלמיד לפי אינדקס.
   const PALETTE = [
     { bg: '#FFE4E9', accent: '#FF5D73', deep: '#C81E4A', ink: '#7A1128' }, // אלמוגי
     { bg: '#FFEAD6', accent: '#FF8A3D', deep: '#D8600F', ink: '#7A3405' }, // כתום
@@ -62,7 +62,7 @@
   const SVG = (inner, extra) =>
     '<svg class="pc-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"' + (extra || '') + '>' + inner + '</svg>';
 
-  // חיות — צבועות בצבע התלמיד (accent גוף, deep צל, לבן+כהה פרטים)
+  // חיות, צבועות בצבע התלמיד (accent גוף, deep צל, לבן+כהה פרטים)
   const ANIMALS = {
     fox: (c) => SVG(
       '<path d="M18 32 L30 6 L46 28 Z" fill="' + c.deep + '"/><path d="M82 32 L70 6 L54 28 Z" fill="' + c.deep + '"/>' +
@@ -111,7 +111,7 @@
   const ANIMAL_TYPES = ['fox', 'owl', 'bear', 'bunny', 'cat', 'frog'];
   const animalSvg = (i, c) => ANIMALS[ANIMAL_TYPES[i % ANIMAL_TYPES.length]](c);
 
-  // 🦕 דינוזאורים — גוף מלא (צוואר/זנב = קווים עבים מעוגלים), כדי שייקרא "דינוזאור"
+  // 🦕 דינוזאורים, גוף מלא (צוואר/זנב = קווים עבים מעוגלים), כדי שייקרא "דינוזאור"
   const legs = (c, xs, y, h) => xs.map((x) => '<rect x="' + x + '" y="' + y + '" width="8" height="' + h + '" rx="4" fill="' + c.deep + '"/>').join('');
   const DINOS = {
     longneck: (c) => SVG(
@@ -420,7 +420,7 @@
       back: (st, x) => card('rainbow', x,
         '<div class="pc-deco">' + sparkle(x.c.accent) + sparkle('#F5B012') + sparkle(x.c.deep) + '</div>' + head('הקסם שלי') + creds(st), true),
     },
-    // ⬜ פשוט — בלי איורים, מסגרת נקייה בצבע התלמיד. לילדים גדולים יותר / מי שרוצה משהו שקט.
+    // ⬜ פשוט, בלי איורים, מסגרת נקייה בצבע התלמיד. לילדים גדולים יותר / מי שרוצה משהו שקט.
     plain: {
       front: (st, x) => card('plain', x,
         '<div class="pc-info">' + nameBlock(st, x.cls, x.inst) + '</div>'),
@@ -436,7 +436,7 @@
     return (side === 'back' ? theme.back : theme.front)(st, ctx);
   }
 
-  // side: 'front' (dir rtl) / 'back' (dir ltr — שיקוף אופקי להתלכדות דו-צדדית)
+  // side: 'front' (dir rtl) / 'back' (dir ltr, שיקוף אופקי להתלכדות דו-צדדית)
   function buildSheet(group, side, institution, className, opts, startIndex) {
     opts = norm(opts);
     const sz = sizeById(opts.size);
@@ -488,7 +488,7 @@
     const sz = sizeById(opts.size);
     const cellW = (PAGE_W - 2 * MARGIN) / sz.cols, cellH = (PAGE_H - 2 * MARGIN) / sz.rows;
     const cardW = cellW - 3.2, cardH = cellH - 3.2; // mm
-    // ככל שהכרטיס קטן — מגדילים יותר בתצוגה כדי שיישאר גדול וברור
+    // ככל שהכרטיס קטן, מגדילים יותר בתצוגה כדי שיישאר גדול וברור
     const SCALE = Math.max(0.62, Math.min(1.35, 172 / (cardW * PX_PER_MM)));
     const dispW = cardW * PX_PER_MM * SCALE, dispH = cardH * PX_PER_MM * SCALE;
     const u = (FULL_U[opts.size] || 12) * SCALE;

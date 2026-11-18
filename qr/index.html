@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>מחולל קודי QR</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="מחולל קוד QR חינמי בעברית — קישור או טקסט, צבעים, לוגו במרכז, כיתוב מעל/מתחת, והורדה כ-PNG או SVG. רץ בדפדפן." />
+  <meta name="description" content="מחולל קוד QR חינמי בעברית, קישור או טקסט, צבעים, לוגו במרכז, כיתוב מעל/מתחת, והורדה כ-PNG או SVG. רץ בדפדפן." />
   <meta property="og:title" content="מחולל קודי QR" />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <!-- Rubik + Assistant = the page. Heebo stays only because the caption-font picker
        (part of the QR image the user makes) offers it. -->
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;500;600;700&family=Heebo:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
     /* Business design language (approved 2026-11-15): light page, navy ink, white cards,
        ochre only on the one main button. The QR image's own colours are the user's and stay. */
@@ -117,12 +116,12 @@
           <div class="field row">
             <div><label for="size">גודל <span class="hint" id="sizeVal">600px</span></label><input type="range" id="size" min="200" max="1200" step="40" value="600" /></div>
             <div>
-              <label for="ec">רמת תיקון שגיאות <span class="hint">— H מומלץ, חובה עם לוגו</span></label>
+              <label for="ec">רמת תיקון שגיאות<span class="hint">, H מומלץ, חובה עם לוגו</span></label>
               <select id="ec">
-                <option value="L">L — נמוך (קוד פשוט)</option>
-                <option value="M">M — בינוני</option>
-                <option value="Q">Q — גבוה</option>
-                <option value="H" selected>H — הכי עמיד (ברירת מחדל)</option>
+                <option value="L">L, נמוך (קוד פשוט)</option>
+                <option value="M">M, בינוני</option>
+                <option value="Q">Q, גבוה</option>
+                <option value="H" selected>H, הכי עמיד (ברירת מחדל)</option>
               </select>
             </div>
           </div>
@@ -132,7 +131,7 @@
           <div class="sec-title">לוגו וכיתוב</div>
           <div class="field row">
             <div>
-              <label for="logoFile">לוגו במרכז <span class="hint">— PNG/JPG</span></label>
+              <label for="logoFile">לוגו במרכז<span class="hint">, PNG/JPG</span></label>
               <input type="file" id="logoFile" accept="image/*" />
             </div>
             <div>
@@ -177,11 +176,11 @@
     </div>
 
     <div class="sheet" id="dynSection" style="display:none;margin-top:20px">
-      <div class="sec-title">🔓 QR דינמי (אדמין) — קישור שאפשר לשנות ולעקוב</div>
-      <p class="hint" style="margin-bottom:16px">יוצרים QR שמצביע על קישור קצר משלכם (<span dir="ltr">go.omri-iram.co.il</span>). ה-QR המודפס לעולם לא משתנה — אבל אפשר לשנות בכל רגע לאן הוא מוביל, ולראות כמה סרקו אותו. מושלם לשלטים ומדבקות.</p>
+      <div class="sec-title">🔓 QR דינמי (אדמין), קישור שאפשר לשנות ולעקוב</div>
+      <p class="hint" style="margin-bottom:16px">יוצרים QR שמצביע על קישור קצר משלכם (<span dir="ltr">go.omri-iram.co.il</span>). ה-QR המודפס לעולם לא משתנה, אבל אפשר לשנות בכל רגע לאן הוא מוביל, ולראות כמה סרקו אותו. מושלם לשלטים ומדבקות.</p>
       <div class="field row">
-        <div><label for="dynUrl">יעד — לאן ה-QR יוביל</label><input type="text" id="dynUrl" dir="ltr" placeholder="https://..." /></div>
-        <div><label for="dynAlias">כינוי <span class="hint">— אופציונלי</span></label><input type="text" id="dynAlias" dir="ltr" placeholder="myqr" /></div>
+        <div><label for="dynUrl">יעד, לאן ה-QR יוביל</label><input type="text" id="dynUrl" dir="ltr" placeholder="https://..." /></div>
+        <div><label for="dynAlias">כינוי<span class="hint">, אופציונלי</span></label><input type="text" id="dynAlias" dir="ltr" placeholder="myqr" /></div>
       </div>
       <button class="btn btn-primary" id="dynCreate" type="button">צור QR דינמי</button>
       <div class="hint" id="dynMsg" style="margin-top:12px"></div>
@@ -190,7 +189,7 @@
 
 
     <footer>
-      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשום מקום.</p>
+      <p>🔒 הכל רץ בדפדפן שלכם, שום מידע לא נשלח לשום מקום.</p>
       <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
     </footer>
   </div>
@@ -316,9 +315,9 @@
       });
     })();
 
-    // ---- dynamic QR (admin) — talks to the go-shortener API ----
+    // ---- dynamic QR (admin), talks to the go-shortener API ----
     const API='https://go.omri-iram.co.il/api';
-    // Shared session token across all private tools — obtained by signing in
+    // Shared session token across all private tools, obtained by signing in
     // with Google (only hello@omri-iram.co.il); a 30-day signed token.
     const SESS_KEY='omri_session';
     function tokGet(){ try{ return localStorage.getItem(SESS_KEY)||''; }catch(_){ return ''; } }

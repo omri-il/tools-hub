@@ -41,7 +41,7 @@
   }
 
   /* Build a DocumentFragment of <section.cat-section> blocks.
-   * options.includeHidden — render "hidden" cards too (admin editor preview).
+   * options.includeHidden, render "hidden" cards too (admin editor preview).
    */
   function renderHub(cfg, options) {
     options = options || {};
@@ -51,7 +51,7 @@
     var frag = document.createDocumentFragment();
     var categories = (cfg && cfg.categories) ? cfg.categories : [];
 
-    // Favorites — a pinned section at the very top, pulled from every category.
+    // Favorites, a pinned section at the very top, pulled from every category.
     // Cards stay in their original category too; this is just a shortcut shelf.
     var favCards = [];
     categories.forEach(function (cat) {

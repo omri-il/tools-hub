@@ -10,11 +10,10 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#ffffff">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
     :root{ --bg:#f6f7f9; --card:#ffffff; --panel:#f6f7f9; --ink:#202124; --muted:#5f6368; --faint:#6f747a;
-           --line:#dadce0; --accent:#ffc250; --accent-ink:#202124; --accent-text:#8a5a00; --navy:#002045;
+           --line:#dadce0; --accent:#ffc250; --accent-ink:#202124; --accent-text:#7D5700; --navy:#002045;
            --ok:#188038; --ok-bg:#e6f4ea; --danger:#c5221f; --danger-bg:#fce8e6; --warn:#8f4e00; --warn-bg:#fef7e0;
            --draft:#6b46c1; --draft-bg:#f3effd; --radius:10px; --shadow:0 1px 3px rgba(60,64,67,.16);
            /* WhatsApp's own light look, for the previews */
@@ -1470,7 +1469,7 @@
       const inp=(v,tag)=>{ const e=document.createElement(tag||'input'); if(!tag) e.type='text'; e.value=v||''; e.dir='auto'; return e; };
       const idea=document.createElement('div'); idea.className='idea'; idea.dir='auto'; idea.textContent=c.idea+(c.notes?'\n\n'+c.notes:'');
       const title=inp(c.title), hook=inp(c.hook,'textarea'), visual=inp(c.visual);
-      const cat=document.createElement('select'); cat.innerHTML='<option value="">— קטגוריה —</option>'+kanban.categories.map(k=>'<option value="'+esc(k.key)+'">'+esc(k.he)+'</option>').join(''); cat.value=c.category||'';
+      const cat=document.createElement('select'); cat.innerHTML='<option value="">קטגוריה</option>'+kanban.categories.map(k=>'<option value="'+esc(k.key)+'">'+esc(k.he)+'</option>').join(''); cat.value=c.category||'';
       const day=document.createElement('input'); day.type='date'; day.value=c.date||'';
       const two=document.createElement('div'); two.className='row2'; two.append(field('קטגוריה',cat),field('יום',day));
       const wa=document.createElement('button'); wa.type='button'; wa.className='btn ghost'; wa.textContent='💬 לפוסט בוואטסאפ';
@@ -2071,7 +2070,7 @@
       const wrap=document.createElement('div'); wrap.className='tablewrap';
       wrap.innerHTML='<table><thead><tr>'+COLS.map(([k,l])=>'<th data-k="'+k+'">'+l+(k===sortKey?(sortDir<0?' ▼':' ▲'):'')+'</th>').join('')+'</tr></thead><tbody>'+
         rows.map(r=>'<tr><td>'+esc((r.at||'').replace('T',' '))+'</td><td>'+esc(r.category||'')+'</td><td dir="auto">'+esc(r.head||'')+'</td>'+
-          ['read_pct','reads_1h','reactions','replies','clicks','score'].map(k=>'<td class="num">'+(r[k]==null?'—':esc(r[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+          ['read_pct','reads_1h','reactions','replies','clicks','score'].map(k=>'<td class="num">'+(r[k]==null?'-':esc(r[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
       wrap.querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; sortDir=(k===sortKey)?-sortDir:-1; sortKey=k; renderResults(); });
       el.appendChild(wrap);
     }

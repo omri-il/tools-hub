@@ -1,4 +1,4 @@
-/* מחולל כרטיסי סיסמה — כל העיבוד רץ בדפדפן בלבד. שום נתון לא יוצא החוצה. */
+/* מחולל כרטיסי סיסמה, כל העיבוד רץ בדפדפן בלבד. שום נתון לא יוצא החוצה. */
 (function () {
   'use strict';
 
@@ -23,7 +23,7 @@
       } else if (cp === 0x03) {
         out += ' ';
       } else if (cp < 0x20) {
-        // תווי בקרה (0x1d=":", 0x05='"', 0x11=".") — נשמטים
+        // תווי בקרה (0x1d=":", 0x05='"', 0x11="."), נשמטים
       } else {
         out += ch;
       }
@@ -109,14 +109,14 @@
     for (const t of flat) {
       const c = clean(t.text);
       const cc = c.replace(/\s/g, '');
-      // "מוסד" — הערך נמצא משמאלו (x קטן יותר) באותה שורה
+      // "מוסד", הערך נמצא משמאלו (x קטן יותר) באותה שורה
       if (c === 'מוסד') {
         const val = leftNeighbor(rows, t);
         if (val) institution = clean(val.text);
       }
       if (cc === 'שםפרטי') firstNameX = t.x;
       if (cc === 'שםמשפחה') lastNameX = t.x;
-      // "כיתה" — הערך מוצמד לרוב לתווית ("כיתה א"), + ספרה שכנה משמאל ("1")
+      // "כיתה", הערך מוצמד לרוב לתווית ("כיתה א"), + ספרה שכנה משמאל ("1")
       if (cc.startsWith('כיתה')) {
         let cv = c.replace(/^כיתה/, '').trim();
         const row = rows.find((r) => r.items.indexOf(t) !== -1);
@@ -186,7 +186,7 @@
     // חייבת להיות שורת תלמיד: תאריך + לפחות שני שדות לא-עבריים + שם אחד לפחות
     if (!birthDate || numeric.length < 1 || hebToks.length < 1) return null;
 
-    // קוד משתמש = 7 ספרות. אם יש כמה — הימני ביותר הוא הסיסמה, הבא קוד.
+    // קוד משתמש = 7 ספרות. אם יש כמה, הימני ביותר הוא הסיסמה, הבא קוד.
     const sevenDigit = numeric.filter((t) => RE_USERCODE.test(t.s));
     let password = null;
     if (sevenDigit.length >= 2) {
@@ -203,7 +203,7 @@
         password = others[0].s;
       }
     } else {
-      // אין קוד 7 ספרות — לא נראה כמו שורת תלמיד תקינה
+      // אין קוד 7 ספרות, לא נראה כמו שורת תלמיד תקינה
       return null;
     }
 
@@ -271,7 +271,7 @@
       if (header.firstNameX != null) lastHeader.firstNameX = header.firstNameX;
       if (header.lastNameX != null) lastHeader.lastNameX = header.lastNameX;
 
-      const clsName = lastClass || '—';
+      const clsName = lastClass || '-';
       for (const row of rows) {
         const st = parseStudentRow(row, lastHeader);
         if (st) {

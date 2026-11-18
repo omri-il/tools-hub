@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>מקצר קישורים מהיר</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="מקצר קישורים חינמי — הדביקו קישור ארוך וקבלו קישור קצר של TinyURL, מיד, בלי הרשמה." />
+  <meta name="description" content="מקצר קישורים חינמי, הדביקו קישור ארוך וקבלו קישור קצר של TinyURL, מיד, בלי הרשמה." />
   <meta property="og:title" content="מקצר קישורים מהיר" />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
     /* Business design language (approved 2026-11-15): light page, navy ink, white cards,
        ochre only on the one main button. Rubik for titles and labels, Assistant for text. */
@@ -62,13 +61,13 @@
     <div class="masthead">
       <div class="kicker">הכלים של עומרי אירם</div>
       <h1>מקצר קישורים <span class="em">מהיר</span></h1>
-      <p class="lede">הדביקו קישור ארוך וקבלו קישור קצר של TinyURL — מיד, בלי הרשמה ובלי התקנה.</p>
+      <p class="lede">הדביקו קישור ארוך וקבלו קישור קצר של TinyURL, מיד, בלי הרשמה ובלי התקנה.</p>
     </div>
 
     <div class="sheet">
       <label for="url">הקישור הארוך</label>
       <input type="text" id="url" placeholder="https://example.com/very/long/link?with=params" />
-      <label for="alias" style="margin-top:14px">כינוי אישי <span style="color:var(--faint);font-weight:400;font-size:.85rem">— אופציונלי (tinyurl.com/<span dir="ltr">הכינוי</span>)</span></label>
+      <label for="alias" style="margin-top:14px">כינוי אישי<span style="color:var(--faint);font-weight:400;font-size:.85rem">, אופציונלי (tinyurl.com/<span dir="ltr">הכינוי</span>)</span></label>
       <input type="text" id="alias" dir="ltr" placeholder="my-link" />
       <button class="btn btn-primary" id="go" type="button" style="margin-top:14px">קצר את הקישור</button>
       <div class="out" id="out"><a id="shortLink" href="#" target="_blank" rel="noopener"></a></div>

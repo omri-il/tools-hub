@@ -26,7 +26,7 @@
     statusEl.textContent = msg;
   }
 
-  // צבע קבוע לכל כיתה — אותו צבע חוזר על התג ועל בועות השם בתצוגה המקדימה.
+  // צבע קבוע לכל כיתה, אותו צבע חוזר על התג ועל בועות השם בתצוגה המקדימה.
   const PALETTE = ['--sky', '--bubble', '--mint', '--sun', '--grape'];
   const classColor = (i) => 'var(' + PALETTE[i % PALETTE.length] + ')';
   const initial = (name) => (name || '•').trim()[0] || '•';
@@ -77,9 +77,9 @@
 
   // ---- בחירת כיתות + תצוגה מקדימה ----
   function renderResult(res) {
-    const inst = res.institution || '—';
+    const inst = res.institution || '-';
     const parts = res.classes
-      .map((c) => c.name + ' — ' + c.students.length + ' תלמידים')
+      .map((c) => c.name + ', ' + c.students.length + ' תלמידים')
       .join(', ');
     $('summaryHead').innerHTML =
       'מצאנו: בית ספר <b>' +
@@ -160,7 +160,7 @@
     if (tsVal) tsVal.textContent = Math.round(cardOpts.textScale * 100) + '%';
   }
 
-  // הודעת ה"קשת" מתארת את הסגנון שנבחר בפועל — בסגנונות עם סט אייקונים
+  // הודעת ה"קשת" מתארת את הסגנון שנבחר בפועל, בסגנונות עם סט אייקונים
   // מתחלף (חיות/דינוזאורים/ים/תחבורה/אוכל) גם האייקון משתנה, לא רק הצבע.
   const HINTS = {
     animals: '🐾 כל תלמיד/ה מקבל/ת חיה וצבע משלו/ה',
@@ -171,7 +171,7 @@
     space: '🚀 כל תלמיד/ה מקבל/ת צבע חלל משלו/ה',
     heroes: '🦸 כל תלמיד/ה מקבל/ת צבע גיבור/ה משלו/ה',
     rainbow: '🌈 כל תלמיד/ה מקבל/ת גוון קשת משלו/ה',
-    plain: '⬜ כרטיס נקי ופשוט — כל תלמיד/ה עם צבע מסגרת משלו/ה',
+    plain: '⬜ כרטיס נקי ופשוט, כל תלמיד/ה עם צבע מסגרת משלו/ה',
   };
 
   const DEMO = { fullName: 'ישראל ישראלי', userCode: '7000000', password: '123456', birthDate: '' };
@@ -190,7 +190,7 @@
     cardPreview.innerHTML = '';
     const row = window.PasswordCards.buildPreview(s.student, s.inst, s.cls, cardOpts, 0);
     cardPreview.appendChild(row);
-    // רצועת "כיתת קשת" — כל תלמיד מקבל צבע אחר
+    // רצועת "כיתת קשת", כל תלמיד מקבל צבע אחר
     const pal = window.PasswordCards.PALETTE || [];
     const sw = pal.map((c) => '<span class="pc-swatch" style="background:' + c.accent + '"></span>').join('');
     const strip = document.createElement('div');

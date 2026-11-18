@@ -13,8 +13,7 @@ Old detail and the full feature logs: `docs/HISTORY.md`.
   A category's `accent` colour from the admin no longer paints anything on the hub.
   Since commit `09e293d` (2026-11-15) the tool pages randomizer, qr, tinyurl, email-generator and password-cards
   are on the same business look too.
-  Still on old looks (open, they move to the business look): `admin/` and `shortener/` (old dark look from the frozen
-  `css/style-dark.css`), `qr-dynamic/`, `video-search/`, `utm/`, `extra/` (Heebo).
+  Since 2026-11-18 admin, shortener, qr-dynamic, video-search, utm and extra are on it too; `css/style-dark.css` is unused.
 
 ## How the hub works
 
@@ -138,19 +137,12 @@ The admin `#statsPanel` is **hidden since 2026-07-19** (Omri's request): `hidden
   Only product or address names keep their spelling (e.g. gemstem.co.il).
 - "Gemini Notebook", never "NotebookLM".
 - Favicons of business tools: navy `#002045` background with a white or ochre glyph; tools differ by the glyph's shape,
-  not by colour. claude-config `scripts/favicon/make_favicons.py` rows must be updated to match (open).
+  not by colour. claude-config `scripts/favicon/make_favicons.py` rows match this (2026-11-18).
 - Fonts are self-hosted, never from a CDN.
 
-**Open items (2026-11-18)**
-- Em dashes in 7 of 8 public card descriptions, in `index.html:70`, and in randomizer, tinyurl, qr and password-cards.
-- The gemstem card's text says "Gems"; the admin card "סטודיו ה-Gems" too.
-- The geg-events admin card points to `geg.omri-iram.co.il/admin` and describes v1 (archived 2026-11-01): move it to `events.gegisrael.com/admin`.
-- The hidden "שאל את NotebookLM" card: rename to Gemini Notebook or delete.
-- go-shortener `hub_seed.py` has the same "Gems" and NotebookLM texts.
-- Fonts: the hub and most tool pages still load `fonts.googleapis.com`; move to self-hosted fonts.
-- Favicon rows in `make_favicons.py` to the navy + white/ochre glyph rule.
-- Pages still on old looks (admin, shortener, qr-dynamic, video-search, utm, extra) to the business look.
-- `whatsapp/` ochre text `#8a5a00` → `#7D5700`.
+**Done 2026-11-18** (fonts self-hosted in `fonts/` + `css/fonts.css`; every page on the business look; navy favicons;
+card texts fixed in the live config and `hub_seed.py`). Only exception: the email the email-generator writes may
+`@import` a Google font for the teacher's own email (it is the user's product, not our page).
 
 **`email-generator/` (Apps Script it generates)**
 - Tracked links use the pasted `WEBAPP_URL` (must end in `/exec`), fallback `ScriptApp.getService().getUrl()`; otherwise the raw link, untracked.
@@ -181,7 +173,6 @@ The admin `#statsPanel` is **hidden since 2026-07-19** (Omri's request): `hidden
 - `localStorage.wa_api_base` overrides the API base for a local test.
 - Confirmations use `sheet()`, not `confirm()`. The late-hour check is a warning, never a block ("בכל זאת" sends `late_ok`).
 - Ochre `#ffc250` is unreadable as text on white: text uses `--accent-text` `#7D5700` (the brand file's `ochre_text`).
-  `whatsapp/index.html` still has the old `#8a5a00` (open).
 - The API's `/state` range limit is 12 weeks each way.
 
 **`qr-dynamic/`**: Apps Script cannot send a header redirect, so scans show a short "מעבירים אתכם…" page.

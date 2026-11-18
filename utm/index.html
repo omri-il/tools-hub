@@ -5,100 +5,117 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>בונה קישורי UTM</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="בונה קישורי UTM בעברית — מוסיפים מקור, מדיום וקמפיין לכל קישור כדי לדעת מאיפה הגיעו הקליקים. רץ בדפדפן." />
+  <meta name="description" content="בונה קישורי UTM בעברית, מוסיפים מקור, מדיום וקמפיין לכל קישור כדי לדעת מאיפה הגיעו הקליקים. רץ בדפדפן." />
   <meta property="og:title" content="בונה קישורי UTM" />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
+    /* Business design language (as tinyurl/): light page, navy ink, white cards,
+       ochre only on the one main button. Rubik for titles and labels, Assistant for text. */
     :root{
-      --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
-      --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#34d399; --accent2:#10b981;
-      font-family:'Heebo',system-ui,sans-serif;
+      --navy:#002045; --navy-hover:#1A365D; --ochre:#FFC250; --ochre-hover:#D69E2E;
+      --bg:#F9F9FF; --card:#FFFFFF; --panel:#FFFFFF; --soft:#F0F3FF;
+      --ink:#121C2C; --muted:#43474E; --faint:#5B6170;
+      --line:#E3E6EF; --line-strong:#C4C6CF; --bad:#BA1A1A; --good:#1A7A3A;
+      --ease:cubic-bezier(0.2,0,0,1);
+      font-family:'Assistant',system-ui,sans-serif;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{background:radial-gradient(90% 60% at 50% -10%,rgba(52,211,153,0.08),transparent 60%),var(--bg);color:var(--ink);min-height:100vh;padding:34px 22px 70px;line-height:1.5}
+    body{background:var(--bg);color:var(--ink);min-height:100vh;padding:34px 16px 70px;line-height:1.55;font-size:17px;-webkit-font-smoothing:antialiased}
     .wrap{max-width:760px;margin:0 auto}
+    .back{display:inline-block;color:var(--navy);text-decoration:none;font-family:'Rubik',sans-serif;font-weight:500;font-size:.85rem;margin-bottom:18px}
+    .back:hover{color:var(--navy-hover);text-decoration:underline;text-underline-offset:3px}
     .masthead{text-align:center;margin-bottom:34px}
-    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent)}
-    h1{font-weight:900;font-size:clamp(2rem,5vw,2.9rem);margin-top:10px}
-    h1 .em{color:var(--accent)}
-    .lede{color:var(--muted);font-weight:300;margin:14px auto 0;max-width:560px}
-    .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
-    label{display:block;font-weight:600;font-size:.9rem;margin-bottom:7px}
-    label .req{color:var(--accent)}
-    .hint{color:var(--faint);font-weight:400;font-size:.8rem}
-    input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.98rem;padding:12px 14px;direction:ltr;text-align:left}
-    input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(52,211,153,0.16)}
+    .kicker{font-family:'Rubik',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.04em;color:var(--faint);cursor:default;user-select:none}
+    h1{font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(2rem,5vw,2.9rem);margin-top:10px;color:var(--navy);line-height:1.15}
+    h1 .em{color:var(--navy);text-decoration:underline;text-decoration-color:var(--ochre);text-decoration-thickness:3px;text-underline-offset:.2em}
+    h2{font-family:'Rubik',sans-serif;font-weight:700;color:var(--navy)}
+    .lede{color:var(--muted);font-weight:400;margin:14px auto 0;max-width:560px}
+    .sheet{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 12px 28px -16px rgba(0,32,69,.28)}
+    @media(max-width:480px){.sheet{padding:20px}}
+    label{display:block;font-family:'Rubik',sans-serif;font-weight:600;font-size:.9rem;color:var(--navy);margin-bottom:7px}
+    label .req{color:var(--bad)}
+    .hint{font-family:'Assistant',sans-serif;color:var(--faint);font-weight:400;font-size:.85rem}
+    input[type=text]{width:100%;background:var(--panel);border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);font-family:'Assistant',sans-serif;font-size:1rem;padding:12px 14px;direction:ltr;text-align:left;transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+    input[type=text]::placeholder{color:var(--faint);opacity:1}
+    input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,32,69,0.14)}
     .field{margin-bottom:16px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media(max-width:520px){.row{grid-template-columns:1fr}}
-    .out{margin-top:8px;background:#08090b;border:1px solid var(--line);border-radius:12px;padding:16px;direction:ltr;text-align:left;word-break:break-all;font-family:'Consolas',monospace;font-size:.9rem;color:#bfe9d6;min-height:54px}
+    .out{margin-top:8px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px;direction:ltr;text-align:left;word-break:break-all;font-family:'Consolas',monospace;font-size:.9rem;color:var(--navy);min-height:54px}
     .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
-    .btn{font-family:inherit;font-weight:700;border:1px solid transparent;border-radius:10px;cursor:pointer;padding:11px 20px;font-size:.92rem}
-    .btn-primary{background:var(--accent);color:#04261a}
-    .btn-primary:hover{background:var(--accent2)}
-    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
-    .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-    .note{margin-top:18px;background:rgba(52,211,153,0.07);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:var(--muted);font-size:.85rem;line-height:1.7}
-    footer{margin-top:42px;color:var(--faint);font-size:.84rem;text-align:center;line-height:1.9}
-    footer a{color:var(--muted)}
-    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#04261a;font-weight:700;padding:12px 22px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+    .btn{font-family:'Rubik',sans-serif;font-weight:600;border:1.5px solid transparent;border-radius:12px;cursor:pointer;padding:12px 22px;font-size:.95rem;transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease)}
+    .btn:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+    .btn:disabled{opacity:.55;cursor:default}
+    .btn-primary{background:var(--ochre);color:var(--navy)}
+    .btn-primary:hover{background:var(--ochre-hover)}
+    /* The admin card's button: navy, so the page keeps one ochre "main action" (copy). */
+    #shorten{background:var(--navy);color:#fff}
+    #shorten:hover{background:var(--navy-hover)}
+    .btn-ghost{background:#fff;color:var(--navy);border-color:var(--navy)}
+    .btn-ghost:hover{background:var(--soft);color:var(--navy-hover);border-color:var(--navy-hover)}
+    .note{margin-top:18px;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:13px 16px;color:var(--muted);font-size:.92rem;line-height:1.7}
+    footer{margin-top:42px;color:var(--faint);font-size:.88rem;text-align:center;line-height:1.9}
+    footer a{color:var(--navy)}
+    footer a:hover{color:var(--navy-hover)}
+    .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;font-family:'Rubik',sans-serif;font-weight:600;padding:12px 22px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s var(--ease),transform .2s var(--ease);z-index:50}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     body:not(.admin) .admin-only{display:none}
     .short-result{margin-top:14px;display:none;align-items:center;gap:12px;flex-wrap:wrap;direction:ltr}
-    .short-link{font-family:'Consolas',monospace;color:#bfe9d6;font-size:.95rem}
-    .cmp-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.86rem}
+    .short-link{font-family:'Consolas',monospace;color:var(--navy);font-weight:700;font-size:.95rem}
+    #shortErr{color:var(--bad)}
+    .cmp-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.9rem}
     .cmp-table th,.cmp-table td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
-    .cmp-table th{color:var(--muted);font-weight:600;font-size:.78rem}
-    .cmp-table a{color:var(--accent);text-decoration:none;direction:ltr;display:inline-block}
-    .cmp-bar{height:8px;background:var(--accent);border-radius:5px;min-width:2px}
-    .cmp-clicks{font-variant-numeric:tabular-nums;font-weight:700;text-align:center}
+    .cmp-table th{font-family:'Rubik',sans-serif;color:var(--muted);font-weight:600;font-size:.8rem}
+    .cmp-table a{color:var(--navy);font-weight:600;text-decoration:none;direction:ltr;display:inline-block}
+    .cmp-table a:hover{color:var(--navy-hover);text-decoration:underline}
+    .cmp-bar{height:8px;background:var(--navy);border-radius:5px;min-width:2px}
+    .cmp-clicks{font-family:'Rubik',sans-serif;font-variant-numeric:tabular-nums;font-weight:700;color:var(--navy);text-align:center}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <a href="../" style="display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:18px">→ חזרה לכל הכלים</a>
+    <a class="back" href="../">→ חזרה לכל הכלים</a>
     <div class="masthead">
       <div class="kicker">הכלים של עומרי אירם</div>
       <h1>בונה קישורי <span class="em">UTM</span></h1>
-      <p class="lede">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין — וכך באנליטיקס תדעו בדיוק מאיזה ערוץ הגיעו הקליקים. ממלאים, מעתיקים, מפיצים.</p>
+      <p class="lede">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין, וכך באנליטיקס תדעו בדיוק מאיזה ערוץ הגיעו הקליקים. ממלאים, מעתיקים, מפיצים.</p>
     </div>
 
     <div class="sheet">
       <div class="field">
-        <label for="base">כתובת היעד <span class="req">*</span> <span class="hint">— הקישור שאליו מפנים</span></label>
+        <label for="base">כתובת היעד <span class="req">*</span> <span class="hint">הקישור שאליו מפנים</span></label>
         <input type="text" id="base" placeholder="https://example.com/page" value="https://omri-iram.co.il" />
       </div>
       <div class="row">
         <div class="field">
-          <label for="source">מקור (source) <span class="req">*</span> <span class="hint">— מאיפה</span></label>
+          <label for="source">מקור (source) <span class="req">*</span> <span class="hint">מאיפה</span></label>
           <input type="text" id="source" list="sources" placeholder="facebook, newsletter, whatsapp" />
           <datalist id="sources"><option value="facebook"><option value="instagram"><option value="whatsapp"><option value="newsletter"><option value="youtube"><option value="google"><option value="skool"><option value="linkedin"></datalist>
         </div>
         <div class="field">
-          <label for="medium">מדיום (medium) <span class="req">*</span> <span class="hint">— איך</span></label>
+          <label for="medium">מדיום (medium) <span class="req">*</span> <span class="hint">איך</span></label>
           <input type="text" id="medium" list="mediums" placeholder="social, email, cpc, post" />
           <datalist id="mediums"><option value="social"><option value="community"><option value="video"><option value="email"><option value="cpc"><option value="post"><option value="story"><option value="bio"><option value="qr"></datalist>
         </div>
       </div>
       <div class="field">
-        <label for="campaign">קמפיין (campaign) <span class="req">*</span> <span class="hint">— למפגש: המספר שלו (B019); אחרת שם המבצע</span></label>
+        <label for="campaign">קמפיין (campaign) <span class="req">*</span> <span class="hint">למפגש: המספר שלו (B019); אחרת שם המבצע</span></label>
         <input type="text" id="campaign" placeholder="B019, passover_2026" />
       </div>
       <div class="row">
         <div class="field">
-          <label for="term">מונח (term) <span class="hint">— אופציונלי, מילת מפתח</span></label>
+          <label for="term">מונח (term)<span class="hint">, אופציונלי, מילת מפתח</span></label>
           <input type="text" id="term" placeholder="" />
         </div>
         <div class="field">
-          <label for="content">תוכן (content) <span class="hint">— אופציונלי, להבדיל בין קישורים</span></label>
+          <label for="content">תוכן (content)<span class="hint">, אופציונלי, להבדיל בין קישורים</span></label>
           <input type="text" id="content" placeholder="button_a / button_b" />
         </div>
       </div>
 
       <label>הקישור המוכן</label>
-      <div class="out" id="out">—</div>
+      <div class="out" id="out">-</div>
       <div class="actions">
         <button class="btn btn-primary" id="copy" type="button">📋 העתק קישור</button>
         <button class="btn btn-ghost" id="clear" type="button">נקה</button>
@@ -109,7 +126,7 @@
       <h2 style="font-size:1.12rem;margin-bottom:6px">🔗 קצר ועקוב</h2>
       <p class="hint" style="margin-bottom:14px">קצרו את קישור ה-UTM עם הדומיין שלכם (go.omri-iram.co.il) כדי לספור כמה לחצו על כל ערוץ.</p>
       <div class="field">
-        <label for="alias">כינוי <span class="hint">— אופציונלי, למשל fb_pesach</span></label>
+        <label for="alias">כינוי<span class="hint">, אופציונלי, למשל fb_pesach</span></label>
         <input type="text" id="alias" placeholder="fb_pesach" />
       </div>
       <div class="actions">
@@ -119,22 +136,22 @@
         <span class="short-link" id="shortLink"></span>
         <button class="btn btn-ghost" id="copyShort" type="button">📋 העתק</button>
       </div>
-      <p class="hint" id="shortErr" style="color:#f87171;margin-top:8px"></p>
+      <p class="hint" id="shortErr" style="margin-top:8px"></p>
     </div>
 
     <div class="sheet admin-only" style="margin-top:18px">
       <h2 style="font-size:1.12rem;margin-bottom:6px">📊 השוואת קליקים</h2>
-      <p class="hint" style="margin-bottom:12px">כל קישורי ה-UTM שקיצרתם, ממוינים לפי מספר הקליקים — כך תדעו איזה ערוץ עובד.</p>
+      <p class="hint" style="margin-bottom:12px">כל קישורי ה-UTM שקיצרתם, ממוינים לפי מספר הקליקים, כך תדעו איזה ערוץ עובד.</p>
       <div class="actions"><button class="btn btn-ghost" id="loadCompare" type="button">↻ טען / רענן השוואה</button></div>
       <div id="cmpWrap"></div>
     </div>
 
     <div class="note">
-      💡 הקיצור והשוואת הקליקים זמינים במצב אדמין — שלוש לחיצות על הכותרת "הכלים של עומרי אירם" למעלה, ואז התחברות עם Google.
+      💡 הקיצור והשוואת הקליקים זמינים במצב אדמין. שלוש לחיצות על הכותרת "הכלים של עומרי אירם" למעלה, ואז התחברות עם Google.
     </div>
 
     <footer>
-      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשום מקום.</p>
+      <p>🔒 הכל רץ בדפדפן שלכם, שום מידע לא נשלח לשום מקום.</p>
       <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
     </footer>
   </div>
@@ -148,7 +165,7 @@
 
     function build(){
       const base = $('base').value.trim();
-      if(!base){ out.textContent='—'; return ''; }
+      if(!base){ out.textContent='-'; return ''; }
       const params = [
         // lower-case, so Facebook / facebook land in one bucket (convention: omri-iram.co.il docs/utm-convention.md)
         ['utm_source', $('source').value.trim().toLowerCase()],
@@ -215,8 +232,8 @@
     }
     function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function utmOf(u){ try{ const q=new URL(u).searchParams;
-      return { s:q.get('utm_source')||'—', m:q.get('utm_medium')||'—', c:q.get('utm_campaign')||'—' };
-    }catch(_){ return {s:'—',m:'—',c:'—'}; } }
+      return { s:q.get('utm_source')||'-', m:q.get('utm_medium')||'-', c:q.get('utm_campaign')||'-' };
+    }catch(_){ return {s:'-',m:'-',c:'-'}; } }
 
     $('shorten').addEventListener('click', async () => {
       const url = build(); if(!url){ $('shortErr').textContent='קודם מלאו כתובת יעד'; return; }
@@ -229,7 +246,7 @@
         $('shortLink').textContent = d.short;
         $('shortResult').style.display='flex';
         loadCompare();
-      }catch(_){ $('shortErr').textContent='שגיאת רשת — נסו שוב'; }
+      }catch(_){ $('shortErr').textContent='שגיאת רשת, נסו שוב'; }
       finally{ $('shorten').disabled=false; }
     });
     $('copyShort').addEventListener('click', async () => {
