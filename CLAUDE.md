@@ -11,8 +11,10 @@ Old detail and the full feature logs: `docs/HISTORY.md`.
   (claude-config `design/business-brand.json`): light page, navy `#002045` text and titles, white cards,
   ochre `#FFC250` only as a small "this one" mark (card hover line, favourites line), Rubik titles + Assistant text.
   A category's `accent` colour from the admin no longer paints anything on the hub.
-  `admin/` and `shortener/` keep the old dark look from the frozen `css/style-dark.css`.
-  The other tool pages (randomizer, qr, tinyurl, ...) keep their own looks.
+  Since commit `09e293d` (2026-11-15) the tool pages randomizer, qr, tinyurl, email-generator and password-cards
+  are on the same business look too.
+  Still on old looks (open, they move to the business look): `admin/` and `shortener/` (old dark look from the frozen
+  `css/style-dark.css`), `qr-dynamic/`, `video-search/`, `utm/`, `extra/` (Heebo).
 
 ## How the hub works
 
@@ -60,27 +62,28 @@ Old detail and the full feature logs: `docs/HISTORY.md`.
 
 | Tool | Where | Notes |
 |---|---|---|
-| סרגל פרקים ליוטיוב | `chapter-bar-web` (GitHub Pages) | public |
-| מערכת מענה המוני ב-Gmail | Google Apps Script web app | admin |
-| תמלול אוטומטי | whisper-agent dashboard, VPS :8080 (Tailscale + localhost per PROJECTS.md) | admin |
-| הגרלת זוכה | `randomizer/` | public, client-side |
-| מחולל אימייל לטופס | `email-generator/` | public; generates an Apps Script for the user's own Form. Admin mode adds MailerLite + Omri's details |
-| מקצר קישורים ממותג | `shortener/` → go-shortener `/api/*` | admin, Google sign-in |
-| מקצר מהיר (TinyURL) | `tinyurl/` → go-shortener `/api/tinyurl` | public, CORS-locked to the tools origin |
-| מחולל קודי QR | `qr/` (node-qrcode via jsDelivr CDN) | public; admin adds "QR דינמי" (go-shortener links + scan counts) |
-| QR דינמי (גוגל שיטס) | `qr-dynamic/` | public; generates an Apps Script whose cell B1 holds the target |
-| בונה קישורי UTM | `utm/` | admin card; admin adds shorten + click comparison |
-| הקלטות שיחות (Extra) | `extra/` → `go.omri-iram.co.il/extra/api/*` | admin; extra-bridge (VPS :8092) |
-| מחפש סרטונים | `video-search/` → scraper-bridge (VPS :8094, repo Social-Media-Scraper) | YouTube public; TikTok/IG/FB admin (Apify) |
-| כרטיסי סיסמה לתלמידים | `password-cards/` | public, 100% client-side, v1.4.0 |
-| פוסטים לוואטסאפ | `whatsapp/` → `go.omri-iram.co.il/wa/api` | admin; Content Machine's posts, also an Android PWA |
-| DaVinci control | `http://100.111.186.101:5007/` (home PC) and `http://127.0.0.1:5007/` (this machine) | admin, Tailscale, no password; repo davinci-automation `control/` |
-| מוריד וידאו | `http://100.111.186.101:5112/` (ytdlp-bridge, home PC) | admin, Tailscale, no password |
-| סטודיו ה-Gems | `http://100.111.186.101:5012/` (home PC) | admin, Tailscale; repo Gems-in-STEM is archived (→ gemstem `studio`) |
-| ייבוא טופס ל-MailerLite | `https://forms.omri-iram.co.il/admin/import` | admin; repo forms-to-mailerlite, VPS unit `forms-import` :5021 |
-| TAU stations | biomimicry / micropod / energy `.omri-iram.co.il` | public |
+| סרגל פרקים ליוטיוב | `chapter-bar-web` (GitHub Pages) | |
+| מערכת מענה המוני ב-Gmail | Google Apps Script web app | |
+| תמלול אוטומטי | whisper-agent dashboard, VPS :8080 (Tailscale + localhost per PROJECTS.md) | |
+| הגרלת זוכה | `randomizer/` | client-side |
+| מחולל אימייל לטופס | `email-generator/` | generates an Apps Script for the user's own Form. Admin mode adds MailerLite + Omri's details |
+| מקצר קישורים ממותג | `shortener/` → go-shortener `/api/*` | Google sign-in |
+| מקצר מהיר (TinyURL) | `tinyurl/` → go-shortener `/api/tinyurl` | CORS-locked to the tools origin |
+| מחולל קודי QR | `qr/` (node-qrcode via jsDelivr CDN) | admin mode adds "QR דינמי" (go-shortener links + scan counts) |
+| QR דינמי (גוגל שיטס) | `qr-dynamic/` | generates an Apps Script whose cell B1 holds the target |
+| בונה קישורי UTM | `utm/` | admin mode adds shorten + click comparison |
+| הקלטות שיחות (Extra) | `extra/` → `go.omri-iram.co.il/extra/api/*` | extra-bridge (VPS :8092) |
+| מחפש סרטונים | `video-search/` → scraper-bridge (VPS :8094, repo Social-Media-Scraper) | YouTube for all; TikTok/IG/FB need admin (Apify) |
+| כרטיסי סיסמה לתלמידים | `password-cards/` | 100% client-side, v1.4.0 |
+| פוסטים לוואטסאפ | `whatsapp/` → `go.omri-iram.co.il/wa/api` | Content Machine's posts, also an Android PWA |
+| DaVinci control | `http://100.111.186.101:5007/` (home PC) and `http://127.0.0.1:5007/` (this machine) | Tailscale, no password; repo davinci-automation `control/` |
+| מוריד וידאו | `http://100.111.186.101:5112/` (ytdlp-bridge, home PC) | Tailscale, no password |
+| סטודיו ה-Gems | `http://100.111.186.101:5012/` (home PC) | Tailscale; repo Gems-in-STEM is archived (→ gemstem `studio`) |
+| ייבוא טופס ל-MailerLite | `https://forms.omri-iram.co.il/admin/import` | repo forms-to-mailerlite, VPS unit `forms-import` :5021 |
+| TAU stations | biomimicry / micropod / energy `.omri-iram.co.il` | |
 
-The live list is the config in `/admin/`; this table is only a map of folders and backends.
+The live list, and each card's visibility (🌐 / 🔒 / 👁️‍🗨️), is the config in `/admin/`; this table is only a map of
+folders and backends, so it has no visibility column (it disagreed with live config v29 on 2026-11-18).
 `teacher-club/favicon.png` is not a card: it is the Teacher-Club-TLV Apps Script app's favicon
 (art from claude-config `scripts/favicon/make_favicons.py`, row `teacherclub`). Do not delete it, the live app links to it.
 
@@ -108,7 +111,8 @@ The admin `#statsPanel` is **hidden since 2026-07-19** (Omri's request): `hidden
   The second test checks the stats panel, which is hidden since 2026-07-19; it may need updating.
 - **Deploy:** push / merge to `master`; GitHub Pages serves the root. No workflow, no server here.
 - The hub also needs the go-shortener backend (`/api/hub-config`). Its deploy is on the VPS
-  (`ssh root@147.79.114.195`, `cd /root/Projects/go-shortener`, `git pull`, `systemctl restart go-shortener`); only with Omri's word.
+  (`ssh root@147.79.114.195`, `cd /root/Projects/go-shortener`, `git pull`, `systemctl restart go-shortener`). Deploy your own merged work yourself (NOTES.md item 11b):
+  note a rollback point (the current commit) first, then check `https://go.omri-iram.co.il/api/hub-config` live; roll back if it breaks.
   If Pages is live but go-shortener is not updated, the hub renders from cache or shows the reload message.
 
 ## Rules and known gotchas
@@ -117,16 +121,36 @@ The admin `#statsPanel` is **hidden since 2026-07-19** (Omri's request): `hidden
 - **Everything in this repo is public.** GitHub Pages (with `.nojekyll`) serves every file, including this CLAUDE.md and `docs/`
   (checked 2026-11-15: `/CLAUDE.md` returns 200). Never put a secret, key or private note in any file.
 - A change to `css/style.css` → bump the `?v=` cache-buster in `index.html` (it is `v=4` now).
-- New tool: ask Omri **ציבורי / פרטי / שניהם**. Public → card visibility 🌐; private → 🔒 admin; both → public.
+- New tool: its card is 🔒 admin by default; say so in the wrap-up, and Omri can make it 🌐 public (2026-11-18).
   A tool that touches Omri's machine or data also gets its **own** auth at its endpoint (Google sign-in or Tailscale-only).
 - Admin features inside a tool page read the same flag: `const ADMIN = localStorage.getItem('omri_admin')==='1'` (wrap in try/catch).
-- Tool pages have no "חזרה לכל הכלים" back-link, so sharing a tool URL does not expose the hub.
+- The "חזרה לכל הכלים" back-link to the hub is standard on tool pages (since 2026-06-24); a new tool page gets one too.
 - The old separate private hub `go.omri-iram.co.il/my/` is superseded; do not build on it.
 - The Google OAuth flow lives only in go-shortener; extra-bridge only verifies `X-Session`.
 - `qr.svg` holds the fixed address `https://tools.omri-iram.co.il` only (made once with `segno`, error M, border 2). Nothing generated at run time.
 - extra-bridge on the VPS is **not a git repo**: it deploys by scp.
 - ytdlp-bridge also serves the machine API `POST /download` (X-API-KEY) that the VPS whisper-agent depends on: do not break it.
 - video-search paid search has server-side caps: `max` ≤ 25 and 50 paid searches/day (429 over cap); `/analyze` 10/min per IP + 200/day.
+
+**Text and look teachers see (Omri, 2026-11-18)**
+- No em dash (—) on any page or card a teacher sees: use a full stop or a comma.
+- "Gemini Skills" / "כישורים", never "Gems", in any text a teacher reads, gemstem's card and pages included.
+  Only product or address names keep their spelling (e.g. gemstem.co.il).
+- "Gemini Notebook", never "NotebookLM".
+- Favicons of business tools: navy `#002045` background with a white or ochre glyph; tools differ by the glyph's shape,
+  not by colour. claude-config `scripts/favicon/make_favicons.py` rows must be updated to match (open).
+- Fonts are self-hosted, never from a CDN.
+
+**Open items (2026-11-18)**
+- Em dashes in 7 of 8 public card descriptions, in `index.html:70`, and in randomizer, tinyurl, qr and password-cards.
+- The gemstem card's text says "Gems"; the admin card "סטודיו ה-Gems" too.
+- The geg-events admin card points to `geg.omri-iram.co.il/admin` and describes v1 (archived 2026-11-01): move it to `events.gegisrael.com/admin`.
+- The hidden "שאל את NotebookLM" card: rename to Gemini Notebook or delete.
+- go-shortener `hub_seed.py` has the same "Gems" and NotebookLM texts.
+- Fonts: the hub and most tool pages still load `fonts.googleapis.com`; move to self-hosted fonts.
+- Favicon rows in `make_favicons.py` to the navy + white/ochre glyph rule.
+- Pages still on old looks (admin, shortener, qr-dynamic, video-search, utm, extra) to the business look.
+- `whatsapp/` ochre text `#8a5a00` → `#7D5700`.
 
 **`email-generator/` (Apps Script it generates)**
 - Tracked links use the pasted `WEBAPP_URL` (must end in `/exec`), fallback `ScriptApp.getService().getUrl()`; otherwise the raw link, untracked.
@@ -156,7 +180,8 @@ The admin `#statsPanel` is **hidden since 2026-07-19** (Omri's request): `hidden
 - A change to `whatsapp/sw.js` → bump `SHELL`.
 - `localStorage.wa_api_base` overrides the API base for a local test.
 - Confirmations use `sheet()`, not `confirm()`. The late-hour check is a warning, never a block ("בכל זאת" sends `late_ok`).
-- Ochre `#ffc250` is unreadable as text on white: text uses `--accent-text` `#8a5a00`.
+- Ochre `#ffc250` is unreadable as text on white: text uses `--accent-text` `#7D5700` (the brand file's `ochre_text`).
+  `whatsapp/index.html` still has the old `#8a5a00` (open).
 - The API's `/state` range limit is 12 weeks each way.
 
 **`qr-dynamic/`**: Apps Script cannot send a header redirect, so scans show a short "מעבירים אתכם…" page.
