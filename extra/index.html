@@ -83,7 +83,7 @@
         <div class="msg" id="msg"></div>
       </div>
       <div class="nbbar">
-        <label for="nbSelect">📓 פנקס יעד ב-NotebookLM (לכפתור "שלח" בכל הקלטה)</label>
+        <label for="nbSelect">📓 פנקס יעד ב-Gemini Notebook (לכפתור "שלח" בכל הקלטה)</label>
         <div class="nbrow">
           <select id="nbSelect"><option value="">טוען פנקסים…</option></select>
           <button class="btn btn-ghost btn-icon" id="nbRefresh" type="button" title="רענון רשימת הפנקסים" aria-label="רענון רשימת הפנקסים">🔄</button>
@@ -181,7 +181,7 @@
         (c.gist?('<div class="gist">🤖 '+c.gist+'</div>'):'')+
         '<div class="acts"><button class="btn btn-ghost play" type="button">▶ האזן</button>'+
         '<button class="btn btn-ghost dl" type="button">⬇ הורד</button>'+
-        '<button class="btn btn-ghost nbsend" type="button">📓 שלח ל-NotebookLM</button>'+
+        '<button class="btn btn-ghost nbsend" type="button">📓 שלח ל-Gemini Notebook</button>'+
         '<span class="meta st"></span></div>';
       const st=d.querySelector('.st');
       async function getBlob(){
@@ -203,14 +203,14 @@
       d.querySelector('.nbsend').addEventListener('click',async()=>{
         const nb=$('nbSelect').value;
         if(!nb){ st.textContent='בחרו פנקס יעד למעלה'; return; }
-        const btn=d.querySelector('.nbsend'); btn.disabled=true; st.textContent='שולח ל-NotebookLM… (עד דקה)';
+        const btn=d.querySelector('.nbsend'); btn.disabled=true; st.textContent='שולח ל-Gemini Notebook… (עד דקה)';
         const title='שיחה '+(c.number||c.id)+' '+(c.start||'').slice(0,10);
         try{
           const r=await apiFetch('/send-to-notebook',{method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({call_id:c.id,notebook_id:nb,title:title})});
           const j=await r.json().catch(()=>({}));
           if(!r.ok){ st.textContent = r.status===404?'אין הקלטה לשליחה':('שגיאה: '+(j.detail||j.error||r.status)); }
-          else { st.textContent='✓ נשלח ל-NotebookLM'; }
+          else { st.textContent='✓ נשלח ל-Gemini Notebook'; }
         }catch(e){ st.textContent='שגיאת רשת'; }
         finally{ btn.disabled=false; }
       });
@@ -251,7 +251,7 @@
     async function createNotebook(){
       const name=$('nbNewName').value.trim(), btn=$('nbCreate'), msg=$('nbMsg');
       if(!name){ msg.textContent='כתבו שם לפנקס.'; $('nbNewName').focus(); return; }
-      btn.disabled=true; msg.textContent='יוצר פנקס ב-NotebookLM… (עד דקה)';
+      btn.disabled=true; msg.textContent='יוצר פנקס ב-Gemini Notebook… (עד דקה)';
       try{
         const r=await apiFetch('/notebooks',{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({title:name})});
