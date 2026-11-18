@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>בונה קישורי UTM</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="בונה קישורי UTM בעברית — מוסיפים מקור, מדיום וקמפיין לכל קישור כדי לדעת מאיפה הגיעו הקליקים. רץ בדפדפן." />
+  <meta name="description" content="בונה קישורי UTM בעברית, מוסיפים מקור, מדיום וקמפיין לכל קישור כדי לדעת מאיפה הגיעו הקליקים. רץ בדפדפן." />
   <meta property="og:title" content="בונה קישורי UTM" />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
     :root{
       --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
@@ -62,43 +61,43 @@
     <div class="masthead">
       <div class="kicker">הכלים של עומרי אירם</div>
       <h1>בונה קישורי <span class="em">UTM</span></h1>
-      <p class="lede">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין — וכך באנליטיקס תדעו בדיוק מאיזה ערוץ הגיעו הקליקים. ממלאים, מעתיקים, מפיצים.</p>
+      <p class="lede">מוסיפים לכל קישור תיוג של מקור, מדיום וקמפיין, וכך באנליטיקס תדעו בדיוק מאיזה ערוץ הגיעו הקליקים. ממלאים, מעתיקים, מפיצים.</p>
     </div>
 
     <div class="sheet">
       <div class="field">
-        <label for="base">כתובת היעד <span class="req">*</span> <span class="hint">— הקישור שאליו מפנים</span></label>
+        <label for="base">כתובת היעד <span class="req">*</span><span class="hint">, הקישור שאליו מפנים</span></label>
         <input type="text" id="base" placeholder="https://example.com/page" value="https://omri-iram.co.il" />
       </div>
       <div class="row">
         <div class="field">
-          <label for="source">מקור (source) <span class="req">*</span> <span class="hint">— מאיפה</span></label>
+          <label for="source">מקור (source) <span class="req">*</span><span class="hint">, מאיפה</span></label>
           <input type="text" id="source" list="sources" placeholder="facebook, newsletter, whatsapp" />
           <datalist id="sources"><option value="facebook"><option value="instagram"><option value="whatsapp"><option value="newsletter"><option value="youtube"><option value="google"><option value="skool"><option value="linkedin"></datalist>
         </div>
         <div class="field">
-          <label for="medium">מדיום (medium) <span class="req">*</span> <span class="hint">— איך</span></label>
+          <label for="medium">מדיום (medium) <span class="req">*</span><span class="hint">, איך</span></label>
           <input type="text" id="medium" list="mediums" placeholder="social, email, cpc, post" />
           <datalist id="mediums"><option value="social"><option value="community"><option value="video"><option value="email"><option value="cpc"><option value="post"><option value="story"><option value="bio"><option value="qr"></datalist>
         </div>
       </div>
       <div class="field">
-        <label for="campaign">קמפיין (campaign) <span class="req">*</span> <span class="hint">— למפגש: המספר שלו (B019); אחרת שם המבצע</span></label>
+        <label for="campaign">קמפיין (campaign) <span class="req">*</span><span class="hint">, למפגש: המספר שלו (B019); אחרת שם המבצע</span></label>
         <input type="text" id="campaign" placeholder="B019, passover_2026" />
       </div>
       <div class="row">
         <div class="field">
-          <label for="term">מונח (term) <span class="hint">— אופציונלי, מילת מפתח</span></label>
+          <label for="term">מונח (term)<span class="hint">, אופציונלי, מילת מפתח</span></label>
           <input type="text" id="term" placeholder="" />
         </div>
         <div class="field">
-          <label for="content">תוכן (content) <span class="hint">— אופציונלי, להבדיל בין קישורים</span></label>
+          <label for="content">תוכן (content)<span class="hint">, אופציונלי, להבדיל בין קישורים</span></label>
           <input type="text" id="content" placeholder="button_a / button_b" />
         </div>
       </div>
 
       <label>הקישור המוכן</label>
-      <div class="out" id="out">—</div>
+      <div class="out" id="out">-</div>
       <div class="actions">
         <button class="btn btn-primary" id="copy" type="button">📋 העתק קישור</button>
         <button class="btn btn-ghost" id="clear" type="button">נקה</button>
@@ -109,7 +108,7 @@
       <h2 style="font-size:1.12rem;margin-bottom:6px">🔗 קצר ועקוב</h2>
       <p class="hint" style="margin-bottom:14px">קצרו את קישור ה-UTM עם הדומיין שלכם (go.omri-iram.co.il) כדי לספור כמה לחצו על כל ערוץ.</p>
       <div class="field">
-        <label for="alias">כינוי <span class="hint">— אופציונלי, למשל fb_pesach</span></label>
+        <label for="alias">כינוי<span class="hint">, אופציונלי, למשל fb_pesach</span></label>
         <input type="text" id="alias" placeholder="fb_pesach" />
       </div>
       <div class="actions">
@@ -124,17 +123,17 @@
 
     <div class="sheet admin-only" style="margin-top:18px">
       <h2 style="font-size:1.12rem;margin-bottom:6px">📊 השוואת קליקים</h2>
-      <p class="hint" style="margin-bottom:12px">כל קישורי ה-UTM שקיצרתם, ממוינים לפי מספר הקליקים — כך תדעו איזה ערוץ עובד.</p>
+      <p class="hint" style="margin-bottom:12px">כל קישורי ה-UTM שקיצרתם, ממוינים לפי מספר הקליקים, כך תדעו איזה ערוץ עובד.</p>
       <div class="actions"><button class="btn btn-ghost" id="loadCompare" type="button">↻ טען / רענן השוואה</button></div>
       <div id="cmpWrap"></div>
     </div>
 
     <div class="note">
-      💡 הקיצור והשוואת הקליקים זמינים במצב אדמין — שלוש לחיצות על הכותרת "הכלים של עומרי אירם" למעלה, ואז התחברות עם Google.
+      💡 הקיצור והשוואת הקליקים זמינים במצב אדמין. שלוש לחיצות על הכותרת "הכלים של עומרי אירם" למעלה, ואז התחברות עם Google.
     </div>
 
     <footer>
-      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשום מקום.</p>
+      <p>🔒 הכל רץ בדפדפן שלכם, שום מידע לא נשלח לשום מקום.</p>
       <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
     </footer>
   </div>
@@ -148,7 +147,7 @@
 
     function build(){
       const base = $('base').value.trim();
-      if(!base){ out.textContent='—'; return ''; }
+      if(!base){ out.textContent='-'; return ''; }
       const params = [
         // lower-case, so Facebook / facebook land in one bucket (convention: omri-iram.co.il docs/utm-convention.md)
         ['utm_source', $('source').value.trim().toLowerCase()],
@@ -215,8 +214,8 @@
     }
     function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function utmOf(u){ try{ const q=new URL(u).searchParams;
-      return { s:q.get('utm_source')||'—', m:q.get('utm_medium')||'—', c:q.get('utm_campaign')||'—' };
-    }catch(_){ return {s:'—',m:'—',c:'—'}; } }
+      return { s:q.get('utm_source')||'-', m:q.get('utm_medium')||'-', c:q.get('utm_campaign')||'-' };
+    }catch(_){ return {s:'-',m:'-',c:'-'}; } }
 
     $('shorten').addEventListener('click', async () => {
       const url = build(); if(!url){ $('shortErr').textContent='קודם מלאו כתובת יעד'; return; }
@@ -229,7 +228,7 @@
         $('shortLink').textContent = d.short;
         $('shortResult').style.display='flex';
         loadCompare();
-      }catch(_){ $('shortErr').textContent='שגיאת רשת — נסו שוב'; }
+      }catch(_){ $('shortErr').textContent='שגיאת רשת, נסו שוב'; }
       finally{ $('shorten').disabled=false; }
     });
     $('copyShort').addEventListener('click', async () => {

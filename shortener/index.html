@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>מקצר הקישורים שלי · עומרי אירם</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="קיצור קישורים אישי עם דומיין משלי — go.omri-iram.co.il. יוצרים קישור קצר, כינוי אישי, וסופרים קליקים." />
+  <meta name="description" content="קיצור קישורים אישי עם דומיין משלי, go.omri-iram.co.il. יוצרים קישור קצר, כינוי אישי, וסופרים קליקים." />
   <meta name="robots" content="noindex" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <link rel="stylesheet" href="../css/style-dark.css?v=1" />
   <style>
     .wrap { max-width: 720px; margin: 0 auto; padding: 16px 24px 80px; }
@@ -98,7 +96,7 @@
       <h1 style="font-size:clamp(28px,5vw,42px); font-weight:900; margin:0 0 8px;
                  background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;
                  background-clip:text;-webkit-text-fill-color:transparent;">מקצר הקישורים שלי</h1>
-      <p style="color:var(--text-dim); margin:0;">קישורים קצרים עם הדומיין שלי — <span style="direction:ltr;">go.omri-iram.co.il</span></p>
+      <p style="color:var(--text-dim); margin:0;">קישורים קצרים עם הדומיין שלי, <span style="direction:ltr;">go.omri-iram.co.il</span></p>
     </header>
 
     <!-- Google sign-in gate -->
@@ -120,7 +118,7 @@
           <button class="seg-btn active" data-mode="brand">🔗 הקישור שלי</button>
           <button class="seg-btn" data-mode="tiny">⚡ TinyURL</button>
         </div>
-        <p class="seg-sub" id="segSub"><span>go.omri-iram.co.il</span> — הדומיין שלך, עם כינוי אישי וספירת קליקים.</p>
+        <p class="seg-sub" id="segSub"><span>go.omri-iram.co.il</span>, הדומיין שלך, עם כינוי אישי וספירת קליקים.</p>
 
         <label for="url">הקישור הארוך</label>
         <input type="url" id="url" placeholder="https://example.com/very/long/link" dir="ltr" />
@@ -183,7 +181,7 @@
       if (authed) loadList();
     }
 
-    // Session missing/expired — bounce through Google sign-in, then retry.
+    // Session missing/expired, bounce through Google sign-in, then retry.
     async function api(path, opts = {}) {
       const headers = Object.assign({ "Content-Type": "application/json", "X-Session": token }, opts.headers || {});
       const res = await fetch(API + path, { method: opts.method, body: opts.body, headers });
@@ -204,8 +202,8 @@
     // --- mode chooser (branded go-link vs plain TinyURL) ---
     let mode = "brand";
     const segSub = {
-      brand: '<span>go.omri-iram.co.il</span> — הדומיין שלך, עם כינוי אישי וספירת קליקים.',
-      tiny:  '<span>tinyurl.com</span> — קישור קצר ופשוט, בלי המותג שלך. ליצירה והעתקה.'
+      brand: '<span>go.omri-iram.co.il</span>, הדומיין שלך, עם כינוי אישי וספירת קליקים.',
+      tiny:  '<span>tinyurl.com</span>, קישור קצר ופשוט, בלי המותג שלך. ליצירה והעתקה.'
     };
     const btnLabel = { brand: "✂️ קצר את הקישור", tiny: "⚡ צור קישור TinyURL" };
     document.querySelectorAll(".seg-btn").forEach((btn) => {
@@ -284,14 +282,14 @@
           box.appendChild(item);
         });
       } catch (e) {
-        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "צריך להתחבר מחדש — לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את הרשימה.") + '</p>';
+        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "צריך להתחבר מחדש. לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את הרשימה.") + '</p>';
       }
     }
 
     async function del(code) {
       if (!confirm("למחוק את הקישור הקצר הזה? לא ניתן לשחזר.")) return;
       try { await api("/api/delete", { method: "POST", body: JSON.stringify({ code }) }); loadList(); }
-      catch (e) { /* keep session — api() already re-prompted on 401 */ }
+      catch (e) { /* keep session, api() already re-prompted on 401 */ }
     }
 
     // --- TinyURL history ---
@@ -317,14 +315,14 @@
           box.appendChild(item);
         });
       } catch (e) {
-        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "צריך להתחבר מחדש — לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את ההיסטוריה.") + '</p>';
+        box.innerHTML = '<p class="empty">' + (e.unauthorized ? "צריך להתחבר מחדש. לחצו רענן ונסו שוב." : "לא הצלחתי לטעון את ההיסטוריה.") + '</p>';
       }
     }
 
     async function delTiny(id) {
       if (!confirm("להסיר את הקישור הזה מההיסטוריה? (הקישור עצמו ב-TinyURL ימשיך לפעול)")) return;
       try { await api("/api/tinyurl/delete", { method: "POST", body: JSON.stringify({ id }) }); loadTinyList(); }
-      catch (e) { /* keep session — api() already re-prompted on 401 */ }
+      catch (e) { /* keep session, api() already re-prompted on 401 */ }
     }
 
     render();

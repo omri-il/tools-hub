@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>מחולל אימייל אוטומטי לטופס Google</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="כלי שמייצר עבורכם את הקוד (Google Apps Script) לשליחת אימייל אוטומטי לכל מי שממלא טופס Google — עם תצוגה חיה של המייל. ממלאים, מעתיקים, מדביקים בגיליון. בעברית." />
+  <meta name="description" content="כלי שמייצר עבורכם את הקוד (Google Apps Script) לשליחת אימייל אוטומטי לכל מי שממלא טופס Google, עם תצוגה חיה של המייל. ממלאים, מעתיקים, מדביקים בגיליון. בעברית." />
   <meta property="og:title" content="מחולל אימייל אוטומטי לטופס Google" />
-  <meta property="og:description" content="מייצר את הקוד לשליחת אימייל אוטומטי בעת מילוי טופס Google — עם תצוגה חיה. בלי לכתוב קוד ביד." />
+  <meta property="og:description" content="מייצר את הקוד לשליחת אימייל אוטומטי בעת מילוי טופס Google, עם תצוגה חיה. בלי לכתוב קוד ביד." />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <script>
     // apply the saved (or system) theme before first paint, to avoid a flash
     (function(){
@@ -74,7 +72,7 @@
     .block-card, .btn-item, .fu-block, .preview-desk, .icon-trigger {
       /* background-color intentionally excluded: transitioning it alongside a var()-driven
          `background` shorthand (e.g. .act-primary) makes Chromium permanently freeze the
-         painted color after the first theme switch — background changes apply instantly instead. */
+         painted color after the first theme switch, background changes apply instantly instead. */
       transition: border-color .28s ease, color .28s ease, box-shadow .28s ease;
     }
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -121,7 +119,7 @@
       font-size: 0.74rem; font-weight: 700; letter-spacing: .28em; text-transform: none;
       color: var(--gold); margin-bottom: 14px;
     }
-    .kicker::before, .kicker::after { content: "—"; opacity: .5; margin: 0 10px; }
+    .kicker::before, .kicker::after { content: none; }
     h1.title {
       font-family: var(--serif); font-weight: 900; color: var(--ink);
       font-size: clamp(2.1rem, 5.2vw, 3.4rem); line-height: 1.08; letter-spacing: -0.02em;
@@ -438,7 +436,7 @@
       font-family: var(--sans); font-weight: 700; border: 1px solid transparent; border-radius: 10px; cursor: pointer;
       padding: 11px 18px; font-size: 0.9rem;
       /* no `background` here: transitioning it while .act-primary's background is var(--accent)-driven
-         makes the color permanently freeze after a dark/light switch (Chromium quirk) — see the shared
+         makes the color permanently freeze after a dark/light switch (Chromium quirk), see the shared
          transition rule above for details. Hover still fades via border-color/color. */
       transition: transform .1s, border-color .18s, color .18s;
     }
@@ -552,7 +550,7 @@
     <div class="masthead reveal-in">
       <div class="kicker">הכלים של עומרי אירם</div>
       <h1 class="title">מחולל אימייל <span class="em">אוטומטי</span> לטופס</h1>
-      <p class="lede">כותבים את המכתב פעם אחת, מקבלים קוד מוכן — וכל מי שממלא את טופס ה-Google שלכם מקבל אותו מיד, אוטומטית. בלי לכתוב שורת קוד.</p>
+      <p class="lede">כותבים את המכתב פעם אחת, מקבלים קוד מוכן, וכל מי שממלא את טופס ה-Google שלכם מקבל אותו מיד, אוטומטית. בלי לכתוב שורת קוד.</p>
       <div class="rule"></div>
     </div>
 
@@ -570,7 +568,7 @@
             <div class="slp-icon">🔗</div>
             <div class="slp-text">
               <div class="slp-title">שמרו קישור לעבודה שלכם</div>
-              <div class="slp-sub">קישור אחד שפותח את הטיוטה המלאה שלכם — בכל מחשב, בכל דפדפן, בכל זמן.</div>
+              <div class="slp-sub">קישור אחד שפותח את הטיוטה המלאה שלכם, בכל מחשב, בכל דפדפן, בכל זמן.</div>
             </div>
             <button id="saveLinkBtn" type="button" class="act act-primary" style="white-space:nowrap;">🔗 צור קישור לשמירה</button>
           </div>
@@ -582,29 +580,29 @@
         </div>
 
         <div class="field">
-          <label for="template">התחל מתבנית <span class="hint">— ממלא נושא, גוף וכפתורים</span></label>
+          <label for="template">התחל מתבנית<span class="hint">, ממלא נושא, גוף וכפתורים</span></label>
           <div style="display:flex;gap:8px;align-items:stretch;">
             <select id="template" style="flex:1;">
-              <option value="">— בחרו תבנית (לא חובה) —</option>
+              <option value="">בחרו תבנית (לא חובה)</option>
               <option value="materials">חומרים מהמפגש</option>
               <option value="thanks">תודה על ההרשמה</option>
               <option value="webinar">הזמנה לוובינר</option>
               <option value="update">עדכון / ניוזלטר קצר</option>
               <optgroup label="התבניות שלי" id="myTemplates" style="display:none;"></optgroup>
             </select>
-            <button id="saveTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 14px;font-size:0.82rem;" title="שומר תבנית במחשב הזה בלבד — לא תופיע במחשב אחר">💾 שמור במחשב הזה</button>
+            <button id="saveTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 14px;font-size:0.82rem;" title="שומר תבנית במחשב הזה בלבד, לא תופיע במחשב אחר">💾 שמור במחשב הזה</button>
             <button id="delTpl" type="button" class="act act-ghost" style="white-space:nowrap;padding:0 12px;font-size:0.82rem;" title="מחק את התבנית הנבחרת">🗑</button>
           </div>
         </div>
 
         <div class="field">
-          <label for="subject">נושא המייל <span class="hint">— מופיע גם ככותרת בראש המכתב</span></label>
+          <label for="subject">נושא המייל<span class="hint">, מופיע גם ככותרת בראש המכתב</span></label>
           <input type="text" id="subject" placeholder="לדוגמה: איך לבחור את כלי ה-AI הנכון בהוראת מדעים?" />
         </div>
 
         <div class="field">
           <label>גוף המכתב
-            <span class="hint">— בנוי מבלוקים: טקסט, כפתורים, תמונה וקו מפריד. גררו ⠿ או ▲▼ כדי לסדר.</span>
+           <span class="hint">, בנוי מבלוקים: טקסט, כפתורים, תמונה וקו מפריד. גררו ⠿ או ▲▼ כדי לסדר.</span>
           </label>
           <div class="blocks" id="blocks"></div>
           <div class="add-block-bar" id="addBlockBar">
@@ -616,11 +614,11 @@
         </div>
 
         <details class="fold" id="foldDesign">
-        <summary>🎨 עיצוב ושולח <span class="s-sub">— צבע, גופן, לוגו, חתימה</span></summary>
+        <summary>🎨 עיצוב ושולח<span class="s-sub">, צבע, גופן, לוגו, חתימה</span></summary>
         <div class="fold-body">
 
         <div class="field">
-          <label for="logo">תמונה / לוגו בראש המייל <span class="hint">— אופציונלי</span></label>
+          <label for="logo">תמונה / לוגו בראש המייל<span class="hint">, אופציונלי</span></label>
           <input type="url" id="logo" dir="ltr" placeholder="https://example.com/logo.png" />
           <div class="logo-upload-row">
             <input type="file" id="logoFile" accept="image/*" hidden />
@@ -634,19 +632,19 @@
               <button type="button" class="logo-remove" id="logoRemove">✕ הסר לוגו</button>
             </div>
           </div>
-          <p class="logo-warn" id="logoWarn">⚠️ הקובץ גדול יחסית — הקוד שנוצר יהיה ארוך. כדאי להעלות תמונה קטנה או פשוטה יותר.</p>
-          <p class="hint" style="margin-top:7px;">אפשר להדביק קישור ישיר לתמונה (אתר / Google Drive) <strong>או</strong> להעלות קובץ מהמחשב — קובץ שתעלו מוטמע ישירות בקוד כדי שיוצג בכל תוכנת דואר. יופיע במרכז בראש המייל.</p>
+          <p class="logo-warn" id="logoWarn">⚠️ הקובץ גדול יחסית, הקוד שנוצר יהיה ארוך. כדאי להעלות תמונה קטנה או פשוטה יותר.</p>
+          <p class="hint" style="margin-top:7px;">אפשר להדביק קישור ישיר לתמונה (אתר / Google Drive) <strong>או</strong> להעלות קובץ מהמחשב. קובץ שתעלו מוטמע ישירות בקוד כדי שיוצג בכל תוכנת דואר. יופיע במרכז בראש המייל.</p>
 
-          <label for="attachLink" style="margin-top:16px;">צירוף קובץ מ-Google Drive <span class="hint">— קישור, אופציונלי</span></label>
+          <label for="attachLink" style="margin-top:16px;">צירוף קובץ מ-Google Drive<span class="hint">, קישור, אופציונלי</span></label>
           <input type="url" id="attachLink" dir="ltr" placeholder="https://drive.google.com/file/d/.../view" />
-          <p class="hint" style="margin-top:7px;">הדביקו קישור לקובץ ב-Drive (PDF / מצגת / תמונה). שתפו אותו כ"כל מי שיש לו הקישור — צופה". הקובץ יצורף לכל מייל. <strong>הקוד ישתמש ב-DriveApp ולכן יבקש הרשאת Drive בפעם הראשונה.</strong></p>
+          <p class="hint" style="margin-top:7px;">הדביקו קישור לקובץ ב-Drive (PDF / מצגת / תמונה). שתפו אותו כ"כל מי שיש לו הקישור, צופה". הקובץ יצורף לכל מייל. <strong>הקוד ישתמש ב-DriveApp ולכן יבקש הרשאת Drive בפעם הראשונה.</strong></p>
         </div>
 
         <div class="field">
           <div style="margin-bottom:13px;">
-            <label for="style" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">סגנון מוכן <span class="hint">— צבע + גופן בלחיצה</span></label>
+            <label for="style" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">סגנון מוכן<span class="hint">, צבע + גופן בלחיצה</span></label>
             <select id="style">
-              <option value="">— מותאם אישית —</option>
+              <option value="">מותאם אישית</option>
               <option value="minimal">מינימליסטי</option>
               <option value="colorful">צבעוני</option>
               <option value="warm">חם ואישי</option>
@@ -661,18 +659,18 @@
             <div>
               <label for="emailFont" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">גופן המייל</label>
               <select id="emailFont">
-                <option value="arial">ברירת מחדל — Arial (נקי)</option>
-                <option value="heebo">הֵיבּוֹ — מודרני</option>
-                <option value="rubik">רוּבּיק — ידידותי</option>
-                <option value="assistant">אסיסטנט — קליל</option>
-                <option value="frank">פְרַנְק רוּהְל — אלגנטי (serif)</option>
+                <option value="arial">ברירת מחדל, Arial (נקי)</option>
+                <option value="heebo">הֵיבּוֹ, מודרני</option>
+                <option value="rubik">רוּבּיק, ידידותי</option>
+                <option value="assistant">אסיסטנט, קליל</option>
+                <option value="frank">פְרַנְק רוּהְל, אלגנטי (serif)</option>
                 <option value="tahoma">טהומה</option>
-                <option value="georgia">ג׳ורג׳יה — קלאסי (serif)</option>
+                <option value="georgia">ג׳ורג׳יה, קלאסי (serif)</option>
               </select>
             </div>
           </div>
           <div style="margin-top:13px;">
-            <label for="accent" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">צבע ראשי <span class="hint">— כותרת המייל והקישורים</span></label>
+            <label for="accent" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">צבע ראשי<span class="hint">, כותרת המייל והקישורים</span></label>
             <select id="accent">
               <option value="#1a73e8">כחול</option>
               <option value="#0d9488">טורקיז</option>
@@ -686,7 +684,7 @@
         </div>
 
         <div class="field">
-          <label>פרטי קשר בחתימה <span class="hint">— יופיעו בתחתית המכתב; השאירו ריק כדי לא להציג</span></label>
+          <label>פרטי קשר בחתימה<span class="hint">, יופיעו בתחתית המכתב; השאירו ריק כדי לא להציג</span></label>
           <div class="two">
             <div>
               <label for="phone" style="font-weight:500;font-size:0.82rem;display:block;margin-bottom:6px;color:var(--ink-soft);">טלפון</label>
@@ -703,24 +701,24 @@
         </details>
 
         <details class="fold" id="foldAdvanced">
-        <summary>⚙️ אפשרויות מתקדמות <span class="summary-on">פעיל</span> <span class="s-sub">— עמודת אימייל, פנייה בשם, מעקב</span></summary>
+        <summary>⚙️ אפשרויות מתקדמות <span class="summary-on">פעיל</span><span class="s-sub">, עמודת אימייל, פנייה בשם, מעקב</span></summary>
         <div class="fold-body">
 
         <div class="field" id="detectField">
-          <label for="pasteRows">🔎 זיהוי אוטומטי של עמודות <span class="hint">— לא חובה, אבל חוסך חיפוש ידני</span></label>
-          <textarea id="pasteRows" placeholder="הדביקו כאן שורה מהגיליון — רצוי את שורת הכותרות, ואם אפשר גם שורת תגובה אחת לדוגמה."></textarea>
+          <label for="pasteRows">🔎 זיהוי אוטומטי של עמודות<span class="hint">, לא חובה, אבל חוסך חיפוש ידני</span></label>
+          <textarea id="pasteRows" placeholder="הדביקו כאן שורה מהגיליון, רצוי את שורת הכותרות, ואם אפשר גם שורת תגובה אחת לדוגמה."></textarea>
           <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;">
             <button type="button" class="act act-ghost" id="detectBtn" style="padding:9px 16px;font-size:0.85rem;">זהה עמודות</button>
             <span id="detectResult" class="detect-result"></span>
           </div>
-          <p class="hint" style="margin-top:8px;">פותחים את גיליון התגובות, מסמנים את שורת הכותרות (ואם רוצים — גם שורת תגובה אחת), מעתיקים ב-Ctrl+C ומדביקים כאן. הכלי יזהה לבד את עמודת האימייל והשם ויעדכן את הבחירות למטה. הכול נשאר בדפדפן שלכם.</p>
+          <p class="hint" style="margin-top:8px;">פותחים את גיליון התגובות, מסמנים את שורת הכותרות (ואם רוצים, גם שורת תגובה אחת), מעתיקים ב-Ctrl+C ומדביקים כאן. הכלי יזהה לבד את עמודת האימייל והשם ויעדכן את הבחירות למטה. הכול נשאר בדפדפן שלכם.</p>
         </div>
         <hr class="divider">
 
         <div class="field">
-          <label for="emailCol">עמודת האימייל בגיליון <span class="hint">— לאן יישלח המייל</span></label>
+          <label for="emailCol">עמודת האימייל בגיליון<span class="hint">, לאן יישלח המייל</span></label>
           <select id="emailCol">
-            <option value="1">עמודה B — נאסף אוטומטית (ברירת מחדל)</option>
+            <option value="1">עמודה B, נאסף אוטומטית (ברירת מחדל)</option>
             <option value="2">עמודה C</option>
             <option value="3">עמודה D</option>
             <option value="4">עמודה E</option>
@@ -728,14 +726,14 @@
             <option value="6">עמודה G</option>
             <option value="7">עמודה H</option>
           </select>
-          <p class="hint" style="margin-top:7px;">עמודה A היא תמיד חותמת הזמן. אם הפעלתם <strong>"Collect email addresses"</strong> בטופס — האימייל בעמודה B, השאירו כברירת מחדל. אם ביקשתם את האימייל <strong>כשאלה רגילה בטופס</strong> — פתחו את הגיליון, בדקו באיזו עמודה מופיעה כתובת המייל, ובחרו אותה כאן.</p>
+          <p class="hint" style="margin-top:7px;">עמודה A היא תמיד חותמת הזמן. אם הפעלתם <strong>"Collect email addresses"</strong> בטופס, האימייל בעמודה B, השאירו כברירת מחדל. אם ביקשתם את האימייל <strong>כשאלה רגילה בטופס</strong>, פתחו את הגיליון, בדקו באיזו עמודה מופיעה כתובת המייל, ובחרו אותה כאן.</p>
         </div>
         <hr class="divider">
 
         <div class="field" style="margin-bottom:6px;">
           <div class="check">
             <input type="checkbox" id="personalize" />
-            <label for="personalize">פנייה אישית בשם <span class="hint">— החליפו את <code>{שם}</code> בשם מתוך הטופס</span></label>
+            <label for="personalize">פנייה אישית בשם<span class="hint">, החליפו את <code>{שם}</code> בשם מתוך הטופס</span></label>
           </div>
           <div class="reveal" id="nameReveal">
             <label for="nameCol" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">באיזו עמודה בגיליון נמצא השם?</label>
@@ -755,9 +753,9 @@
         <hr class="divider">
 
         <div class="field" style="margin-bottom:4px;">
-          <label for="webhook">חיבור ל-MailerLite <span class="hint">— אישי, רק במצב אדמין</span></label>
+          <label for="webhook">חיבור ל-MailerLite<span class="hint">, אישי, רק במצב אדמין</span></label>
           <input type="url" id="webhook" placeholder="כתובת ה-webhook (נשמרת רק בדפדפן שלך)" dir="ltr" />
-          <p class="hint" style="margin-top:7px;">🔒 אם תמלא — הקוד יוסיף משתתפים אוטומטית למעקב 5 הימים. הכתובת נשמרת רק במחשב שלך ולא מתפרסמת בדף.</p>
+          <p class="hint" style="margin-top:7px;">🔒 אם תמלא, הקוד יוסיף משתתפים אוטומטית למעקב 5 הימים. הכתובת נשמרת רק במחשב שלך ולא מתפרסמת בדף.</p>
           <div class="reveal" id="eventReveal" style="padding-inline-start:0;margin-top:13px;display:none;">
             <div class="two">
               <div><label for="eventName" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">שם האירוע</label>
@@ -773,12 +771,12 @@
         <div class="field" style="margin-bottom:6px;">
           <div class="check">
             <input type="checkbox" id="trackClicks" />
-            <label for="trackClicks">מעקב קליקים <span class="hint">— ראו מי לחץ על איזה קישור ומתי, בגיליון שלכם</span></label>
+            <label for="trackClicks">מעקב קליקים<span class="hint">, ראו מי לחץ על איזה קישור ומתי, בגיליון שלכם</span></label>
           </div>
           <div class="reveal" id="trackReveal">
-            <label for="campaign" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">שם הקמפיין <span class="hint">— מבדיל בין מיילים שונים באותו גיליון</span></label>
+            <label for="campaign" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:6px;">שם הקמפיין<span class="hint">, מבדיל בין מיילים שונים באותו גיליון</span></label>
             <input type="text" id="campaign" placeholder="לדוגמה: סדנת AI מאי" />
-            <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, ולכל כפתור נפתחת <strong>עמודה משלו</strong> לצד תשובות הטופס (עמודת <code>לחצו?</code> לסימון כללי + עמודה לכל כפתור עם מספר הלחיצות והזמן), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת — ההוראות יופיעו מתחת לקוד.</p>
+            <p class="hint" style="margin-top:7px;">🔗 כל כפתור במייל יעבור דרך מעקב, ולכל כפתור נפתחת <strong>עמודה משלו</strong> לצד תשובות הטופס (עמודת <code>לחצו?</code> לסימון כללי + עמודה לכל כפתור עם מספר הלחיצות והזמן), וימשיך מיד ליעד. צריך לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת, ההוראות יופיעו מתחת לקוד.</p>
           </div>
         </div>
 
@@ -786,13 +784,13 @@
         </details>
 
         <details class="fold" id="foldFollow">
-        <summary>📨 אימייל מעקב אוטומטי <span class="summary-on">פעיל</span> <span class="s-sub">— נשלח כמה ימים אחרי מילוי הטופס</span></summary>
+        <summary>📨 אימייל מעקב אוטומטי <span class="summary-on">פעיל</span><span class="s-sub">, נשלח כמה ימים אחרי מילוי הטופס</span></summary>
         <div class="fold-body">
 
         <div class="field" style="margin-bottom:6px;">
           <div class="check">
             <input type="checkbox" id="followUp" />
-            <label for="followUp">הפעל אימייל מעקב אוטומטי <span class="hint">— נשלח אוטומטית כמה ימים אחרי מילוי הטופס</span></label>
+            <label for="followUp">הפעל אימייל מעקב אוטומטי<span class="hint">, נשלח אוטומטית כמה ימים אחרי מילוי הטופס</span></label>
           </div>
           <div class="reveal" id="followReveal">
 
@@ -817,7 +815,7 @@
                 <input type="text" id="fu1Subject" placeholder="לדוגמה: רק רציתי לוודא שקיבלת..." />
               </div>
               <div style="margin-top:13px;">
-                <label class="fu-lbl">גוף מייל המעקב <span class="hint">— בלוקים: טקסט / כפתורים / תמונה / קו · <code>{שם}</code> יוחלף בשם</span></label>
+                <label class="fu-lbl">גוף מייל המעקב<span class="hint">, בלוקים: טקסט / כפתורים / תמונה / קו · <code>{שם}</code> יוחלף בשם</span></label>
                 <div class="blocks" id="fu1Blocks"></div>
                 <div class="add-block-bar" id="fu1AddBar">
                   <button type="button" data-add="text">➕ טקסט</button>
@@ -831,13 +829,13 @@
             <!-- Add second follow-up -->
             <div class="check" style="margin-top:18px;">
               <input type="checkbox" id="followUp2" />
-              <label for="followUp2">הוסף מעקב שני <span class="hint">— מייל נוסף, מאוחר יותר ברצף</span></label>
+              <label for="followUp2">הוסף מעקב שני<span class="hint">, מייל נוסף, מאוחר יותר ברצף</span></label>
             </div>
             <div class="fu-block" id="fu2Block" style="display:none;margin-top:13px;">
               <div class="fu-tag">📨 מעקב שני</div>
               <div class="two">
                 <div>
-                  <label class="fu-lbl" for="fu2Days">לשלוח אחרי כמה ימים? <span class="hint">— מיום מילוי הטופס</span></label>
+                  <label class="fu-lbl" for="fu2Days">לשלוח אחרי כמה ימים?<span class="hint">, מיום מילוי הטופס</span></label>
                   <input type="text" id="fu2Days" inputmode="numeric" value="7" />
                 </div>
                 <div>
@@ -853,7 +851,7 @@
                 <input type="text" id="fu2Subject" placeholder="לדוגמה: הזדמנות אחרונה..." />
               </div>
               <div style="margin-top:13px;">
-                <label class="fu-lbl">גוף מייל המעקב <span class="hint">— בלוקים: טקסט / כפתורים / תמונה / קו · <code>{שם}</code> יוחלף בשם</span></label>
+                <label class="fu-lbl">גוף מייל המעקב<span class="hint">, בלוקים: טקסט / כפתורים / תמונה / קו · <code>{שם}</code> יוחלף בשם</span></label>
                 <div class="blocks" id="fu2Blocks"></div>
                 <div class="add-block-bar" id="fu2AddBar">
                   <button type="button" data-add="text">➕ טקסט</button>
@@ -864,7 +862,7 @@
               </div>
             </div>
 
-            <p class="hint" style="margin-top:15px;line-height:1.8;">⏰ מיילי המעקב חלים על מילויי טופס <strong>חדשים</strong> מרגע ההתקנה — מי שכבר מילא לא יקבל מעקב למפרע. הבדיקה היומית מוקמת אוטומטית כשמריצים <code>setup</code> — אין צורך להגדיר טריגר ידנית.</p>
+            <p class="hint" style="margin-top:15px;line-height:1.8;">⏰ מיילי המעקב חלים על מילויי טופס <strong>חדשים</strong> מרגע ההתקנה, מי שכבר מילא לא יקבל מעקב למפרע. הבדיקה היומית מוקמת אוטומטית כשמריצים <code>setup</code>, אין צורך להגדיר טריגר ידנית.</p>
           </div>
         </div>
 
@@ -885,7 +883,7 @@
           <button type="button" class="act act-ghost pv-tab" id="pvTabFu2" data-pv="fu2" style="display:none;">מעקב 2</button>
         </div>
         <div class="preview-desk">
-          <div class="preview-tab" id="subjPreview">— נושא —</div>
+          <div class="preview-tab" id="subjPreview">נושא</div>
           <div id="emailPreview"></div>
         </div>
       </div>
@@ -905,41 +903,41 @@
       <details class="guide">
         <summary>איך מתקינים את הקוד? שלושה שלבים</summary>
         <ol>
-          <li>ודאו שהטופס אוסף כתובות אימייל — או דרך <strong>"Collect email addresses"</strong> (אז האימייל בעמודה B), או כשאלה רגילה בטופס. אם האימייל <strong>אינו</strong> בעמודה B, בחרו את העמודה הנכונה תחת <strong>⚙️ אפשרויות מתקדמות → עמודת האימייל</strong> — או פשוט הדביקו שם שורה מהגיליון תחת <strong>🔎 זיהוי אוטומטי</strong> והכלי יזהה לבד.</li>
+          <li>ודאו שהטופס אוסף כתובות אימייל, או דרך <strong>"Collect email addresses"</strong> (אז האימייל בעמודה B), או כשאלה רגילה בטופס. אם האימייל <strong>אינו</strong> בעמודה B, בחרו את העמודה הנכונה תחת <strong>⚙️ אפשרויות מתקדמות → עמודת האימייל</strong>, או פשוט הדביקו שם שורה מהגיליון תחת <strong>🔎 זיהוי אוטומטי</strong> והכלי יזהה לבד.</li>
           <li>פתחו את <strong>הגיליון המחובר לטופס</strong> → תפריט <code>Extensions</code> → <code>Apps Script</code>. מחקו את הקוד הקיים, <strong>הדביקו את הקוד מכאן</strong>, ולחצו על 💾 לשמירה.</li>
-          <li>בחרו למעלה את הפונקציה <code>setup</code> ולחצו <strong>▶ Run</strong> פעם אחת, ואשרו את ההרשאות. זהו — <code>setup</code> מקימה את הטריגר לבד, שולחת אליכם מייל בדיקה, ומודיעה לכם שהכול מוכן. <strong>אין צורך להגדיר טריגרים ידנית.</strong></li>
+          <li>בחרו למעלה את הפונקציה <code>setup</code> ולחצו <strong>▶ Run</strong> פעם אחת, ואשרו את ההרשאות. זהו. <code>setup</code> מקימה את הטריגר לבד, שולחת אליכם מייל בדיקה, ומודיעה לכם שהכול מוכן. <strong>אין צורך להגדיר טריגרים ידנית.</strong></li>
         </ol>
         <p style="color:var(--ink-soft);padding-bottom:16px;">זהו. מעכשיו כל מי שימלא את הטופס יקבל את המכתב אוטומטית.</p>
       </details>
 
       <div id="trackNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:#F0F3FF;border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
-        <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר מוסיפה עבורכם <strong>עמודות מעקב לצד תשובות הטופס</strong> — עמודת <code>לחצו?</code> לסימון כללי, ו<strong>עמודה נפרדת לכל כפתור</strong> (כך שלחיצות על כפתורים שונים לא דורסות זו את זו). נשאר <strong>צעד ידני אחד בלבד</strong> — לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
+        <p style="margin-bottom:10px;"><strong style="color:var(--accent);">📊 מעקב קליקים מופעל.</strong> הרצת <code>setup</code> כבר מוסיפה עבורכם <strong>עמודות מעקב לצד תשובות הטופס</strong>, עמודת <code>לחצו?</code> לסימון כללי, ו<strong>עמודה נפרדת לכל כפתור</strong> (כך שלחיצות על כפתורים שונים לא דורסות זו את זו). נשאר <strong>צעד ידני אחד בלבד</strong>, לפרסם את הסקריפט כ-Web App ולהדביק את הכתובת, כדי שהלחיצות יירשמו. עשו זאת שלב אחר שלב:</p>
         <ol style="margin:0;padding-inline-start:22px;line-height:2;">
           <li>למעלה מימין לחצו על הכפתור <code>Deploy</code>.</li>
           <li>בתפריט שנפתח בחרו <code>New deployment</code>.</li>
           <li>ליד הכותרת "Select type" לחצו על גלגל השיניים ⚙️ ובחרו <code>Web app</code>.</li>
           <li>בשדה <code>Execute as</code> בחרו <code>Me</code> (זה אתם).</li>
           <li>בשדה <code>Who has access</code> בחרו <code>Anyone</code> (כל אחד).</li>
-          <li>לחצו על <code>Deploy</code>, ואם תתבקשו — אשרו את ההרשאות.</li>
-          <li>בחלון שנפתח תופיע כתובת <strong>Web app URL</strong> שמסתיימת ב-<code>/exec</code> — לחצו על כפתור ה-<code>Copy</code> <strong>שלצד הכתובת עצמה</strong> (לא להעתיק משורת הכתובת של הדפדפן).</li>
+          <li>לחצו על <code>Deploy</code>, ואם תתבקשו, אשרו את ההרשאות.</li>
+          <li>בחלון שנפתח תופיע כתובת <strong>Web app URL</strong> שמסתיימת ב-<code>/exec</code>. לחצו על כפתור ה-<code>Copy</code> <strong>שלצד הכתובת עצמה</strong> (לא להעתיק משורת הכתובת של הדפדפן).</li>
           <li>חזרו לעורך, הדביקו את הכתובת בין המרכאות בשורה <code>var WEBAPP_URL = "";</code> שבראש הקוד, ולחצו 💾 לשמירה.</li>
-          <li>הריצו שוב את <code>setup</code> — אמורה להופיע ההודעה "✅ מעקב קליקים פעיל". שלחו לעצמכם מייל בדיקה חדש ולחצו על כפתור — הפעם הוא יעביר אתכם ליעד.</li>
+          <li>הריצו שוב את <code>setup</code>. אמורה להופיע ההודעה "✅ מעקב קליקים פעיל". שלחו לעצמכם מייל בדיקה חדש ולחצו על כפתור. הפעם הוא יעביר אתכם ליעד.</li>
         </ol>
-        <p style="margin-top:10px;font-size:0.85rem;color:var(--ink-faint);">💡 זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד — לכן צריך את הלחיצות האלה פעם אחת.<br>
-        🛟 קיבלתם "Sorry, unable to open the file"? כמעט תמיד הכתובת שהודבקה כללה קטע כמו <code>/u/1/</code> (כתובת שנעולה לחשבון שלכם). הכלי מנקה אותו אוטומטית — פשוט העתיקו מחדש את הקוד המעודכן מכאן, הדביקו בעורך, הדביקו שוב את כתובת ה-<code>/exec</code>, והריצו <code>setup</code>.<br>
-        🔁 אם בעתיד תשנו את הקוד — פרסמו <strong>גרסה חדשה</strong> (Deploy ← Manage deployments ← ✏️ ← New version), אחרת הקוד הישן ימשיך לרוץ.<br>
-        ➜ אחרי לחיצה על כפתור במייל, הנמען מועבר ליעד אוטומטית (לרוב עם הבזק קצר של עמוד ביניים "מעבירים אתכם…"). בדפדפנים מחמירים עשוי להופיע כפתור <strong>"המשך ליעד"</strong> ללחיצה אחת — זה תקין. הלחיצה נרשמת בכל מקרה.<br>
-        ℹ️ מייל הבדיקה שנשלח אליכם עשוי להוסיף בגיליון שורה אחת בתחתית עם האימייל שלכם — זה תקין.</p>
+        <p style="margin-top:10px;font-size:0.85rem;color:var(--ink-faint);">💡 זהו הצעד היחיד ש-Google לא מאפשרת לסקריפט לעשות לבד, לכן צריך את הלחיצות האלה פעם אחת.<br>
+        🛟 קיבלתם "Sorry, unable to open the file"? כמעט תמיד הכתובת שהודבקה כללה קטע כמו <code>/u/1/</code> (כתובת שנעולה לחשבון שלכם). הכלי מנקה אותו אוטומטית. פשוט העתיקו מחדש את הקוד המעודכן מכאן, הדביקו בעורך, הדביקו שוב את כתובת ה-<code>/exec</code>, והריצו <code>setup</code>.<br>
+        🔁 אם בעתיד תשנו את הקוד, פרסמו <strong>גרסה חדשה</strong> (Deploy ← Manage deployments ← ✏️ ← New version), אחרת הקוד הישן ימשיך לרוץ.<br>
+        ➜ אחרי לחיצה על כפתור במייל, הנמען מועבר ליעד אוטומטית (לרוב עם הבזק קצר של עמוד ביניים "מעבירים אתכם…"). בדפדפנים מחמירים עשוי להופיע כפתור <strong>"המשך ליעד"</strong> ללחיצה אחת, זה תקין. הלחיצה נרשמת בכל מקרה.<br>
+        ℹ️ מייל הבדיקה שנשלח אליכם עשוי להוסיף בגיליון שורה אחת בתחתית עם האימייל שלכם, זה תקין.</p>
       </div>
 
       <p id="followUpNote" style="display:none;margin-top:16px;color:var(--ink-soft);background:#F0F3FF;border:1px solid var(--line);border-radius:12px;padding:14px 18px;line-height:1.85;">
-        <strong style="color:var(--accent);">📨 אימייל מעקב מופעל.</strong> אין מה להגדיר — הרצת <code>setup</code> כבר מקימה את הבדיקה היומית ויוצרת בסיס (מי שכבר מילא לא יקבל מעקב למפרע; רק מילויים חדשים מכאן ואילך).<br>
-        💡 רוצים לראות איך המעקב ייראה? הריצו <code>sendFollowUpTest</code> — יישלח אליכם עותק בדיקה של כל מייל מעקב.
+        <strong style="color:var(--accent);">📨 אימייל מעקב מופעל.</strong> אין מה להגדיר. הרצת <code>setup</code> כבר מקימה את הבדיקה היומית ויוצרת בסיס (מי שכבר מילא לא יקבל מעקב למפרע; רק מילויים חדשים מכאן ואילך).<br>
+        💡 רוצים לראות איך המעקב ייראה? הריצו <code>sendFollowUpTest</code>. יישלח אליכם עותק בדיקה של כל מייל מעקב.
       </p>
     </div>
 
     <footer>
-      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשום מקום.</p>
+      <p>🔒 הכל רץ בדפדפן שלכם, שום מידע לא נשלח לשום מקום.</p>
       <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a> · <a href="mailto:hello@omri-iram.co.il">hello@omri-iram.co.il</a></p>
     </footer>
   </div>
@@ -969,7 +967,7 @@
     // Admin-only prefill for sender/contact (public sees blank placeholders). Edit here once.
     const ADMIN_DEFAULTS = { sender: 'עומרי אירם', phone: '052-512-1007', website: 'omri-iram.co.il' };
 
-    // ----- LZString (URI-safe compress/decompress only) — MIT, pieroxy/lz-string. Used for shareable-draft links. -----
+    // ----- LZString (URI-safe compress/decompress only), MIT, pieroxy/lz-string. Used for shareable-draft links. -----
     const LZString = (function(){
       var f = String.fromCharCode;
       var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
@@ -1204,7 +1202,7 @@
         if (bl.type === 'text') return bodyToText((bl.content || '').replace(/\{שם\}/g, sampleName));
         if (bl.type === 'buttons') return (bl.items || []).filter(b => b.text && b.url)
           .map(b => (b.icon ? b.icon + ' ' : '') + b.text + ': ' + b.url).join('\n');
-        if (bl.type === 'divider') return '—';
+        if (bl.type === 'divider') return '-';
         return '';  // image: no text
       }).filter(Boolean).join('\n\n');
     }
@@ -1344,7 +1342,7 @@
       }
       if (bl.type === 'divider'){
         return '<div class="divider-toggle">' +
-            '<button type="button" data-var="line" class="' + (bl.variant !== 'space' ? 'on' : '') + '">— קו</button>' +
+            '<button type="button" data-var="line" class="' + (bl.variant !== 'space' ? 'on' : '') + '">➖ קו</button>' +
             '<button type="button" data-var="space" class="' + (bl.variant === 'space' ? 'on' : '') + '">␣ רווח</button>' +
           '</div>';
       }
@@ -1433,7 +1431,7 @@
         card.querySelectorAll('.btn-editor').forEach(wireButtonEditor);
         card.querySelector('.add-2nd-btn').addEventListener('click', () => {
           const wrap = card.querySelector('.buttons-editors');
-          if (wrap.querySelectorAll('.btn-editor').length >= 2) { alert('אפשר עד שני כפתורים לצד זה — הוסיפו בלוק כפתורים נוסף לשורה נפרדת.'); return; }
+          if (wrap.querySelectorAll('.btn-editor').length >= 2) { alert('אפשר עד שני כפתורים לצד זה, הוסיפו בלוק כפתורים נוסף לשורה נפרדת.'); return; }
           wrap.appendChild(makeButtonEditor({}));
           update();
         });
@@ -1672,7 +1670,7 @@
         '<div style="direction: rtl; text-align: right; font-family: ' + font + '; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">' +
           ((cfg.logoData || cfg.logo) ? '<div style="text-align:center;margin-bottom:18px;"><img src="' + (cfg.logoData || esc(cfg.logo)) + '" alt="" style="max-width:100%;border-radius:8px;"></div>' : '') +
           '<h2 style="color: ' + accent + '; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-top: 0; font-size: 20px;">' + esc(subject) + '</h2>' +
-          (bodyHtml || '<p style="color:#94a3b8;font-size:15px;">— הוסיפו בלוקים כדי לראות תצוגה —</p>') +
+          (bodyHtml || '<p style="color:#94a3b8;font-size:15px;">הוסיפו בלוקים כדי לראות תצוגה</p>') +
           signatureHtml(cfg.senderName, accent, cfg.phone, cfg.website) +
         '</div>';
       emailPreview.innerHTML = html;
@@ -1777,25 +1775,25 @@
       const trackHeader = trackOn
         ? '\n// ===== מעקב קליקים =====\n' +
           'var WEBAPP_URL = "";  // ← אחרי פרסום כ-Web App: הדביקו כאן את הכתובת שמסתיימת ב-/exec\n' +
-          'var BUTTON_LABELS = [' + buttonLabelsLiteral + '];  // שם כל כפתור — נוצרת עמודת מעקב נפרדת לכל אחד\n' +
+          'var BUTTON_LABELS = [' + buttonLabelsLiteral + '];  // שם כל כפתור, נוצרת עמודת מעקב נפרדת לכל אחד\n' +
           'var CAMPAIGN = ' + JSON.stringify(cfg.campaign || 'default') + ';  // שם הקמפיין (ללוג בלבד)\n' +
           '// =======================\n'
         : '';
 
       const trackedFn = trackOn
-        ? '\n\n// כתובת ה-/exec של ה-Web App: קודם מה שהדבקתם ב-WEBAPP_URL, אחרת זיהוי אוטומטי — ורק אם מסתיים ב-/exec.\n' +
+        ? '\n\n// כתובת ה-/exec של ה-Web App: קודם מה שהדבקתם ב-WEBAPP_URL, אחרת זיהוי אוטומטי, ורק אם מסתיים ב-/exec.\n' +
           'function _webAppBase_() {\n' +
           '  var u = "";\n' +
           '  if (WEBAPP_URL && /\\/exec$/.test(WEBAPP_URL)) u = WEBAPP_URL;\n' +
           '  else { try { var s = ScriptApp.getService().getUrl(); if (s && /\\/exec$/.test(s)) u = s; } catch (e) {} }\n' +
-          '  // מסירים /u/מספר/ מהכתובת — הוא נועל אותה לחשבון אחד וגורם לשגיאת "unable to open the file" אצל נמענים אחרים\n' +
+          '  // מסירים /u/מספר/ מהכתובת, הוא נועל אותה לחשבון אחד וגורם לשגיאת "unable to open the file" אצל נמענים אחרים\n' +
           '  return u.replace(/\\/macros\\/u\\/\\d+\\/s\\//, "/macros/s/");\n' +
           '}\n' +
           '\n' +
           'function trackedLink_(url, recipient, label) {\n' +
           '  try {\n' +
           '    var base = _webAppBase_();\n' +
-          '    if (!base) return url;  // אין כתובת /exec תקינה — הקישור עובד ישירות (בלי מעקב)\n' +
+          '    if (!base) return url;  // אין כתובת /exec תקינה, הקישור עובד ישירות (בלי מעקב)\n' +
           '    return base + "?r=" + encodeURIComponent(recipient || "") +\n' +
           '      "&l=" + encodeURIComponent(label || "") + "&u=" + encodeURIComponent(url);\n' +
           '  } catch (e) { return url; }\n' +
@@ -1829,7 +1827,7 @@
           '        if (String(emails[i][0]).trim().toLowerCase() === key) { target = i + 2; break; }\n' +
           '      }\n' +
           '    }\n' +
-          '    if (!target) {                          // הנמען לא נמצא בתגובות — שורה חדשה בתחתית\n' +
+          '    if (!target) {                          // הנמען לא נמצא בתגובות, שורה חדשה בתחתית\n' +
           '      target = last + 1;\n' +
           '      sheet.getRange(target, emailCol).setValue(email);\n' +
           '    }\n' +
@@ -1837,7 +1835,7 @@
           '    // עמודת סיכום: ✓ אם לחץ על כפתור כלשהו (משמשת גם את מייל המעקב "רק מי שלא לחץ")\n' +
           '    var sumCol = _findOrAddCol_(sheet, "לחצו?", 0);\n' +
           '    sheet.getRange(target, sumCol).setValue("✓");\n' +
-          '    // עמודה ייעודית לכפתור — מחפשים רק מעמודת הסיכום ואילך, כדי לא להתנגש בכותרת של שאלת טופס\n' +
+          '    // עמודה ייעודית לכפתור, מחפשים רק מעמודת הסיכום ואילך, כדי לא להתנגש בכותרת של שאלת טופס\n' +
           '    var btnCol = _findOrAddCol_(sheet, label, sumCol - 1);\n' +
           '    var prev = parseInt(String(sheet.getRange(target, btnCol).getValue() || ""), 10); if (isNaN(prev)) prev = 0;\n' +
           '    sheet.getRange(target, btnCol).setValue((prev + 1) + " · " + when);\n' +
@@ -1854,7 +1852,7 @@
           '    \'<!doctype html><meta charset="utf-8">\' +\n' +
           // דף התוצאה של Apps Script מוגש בתוך iframe מוגן: meta-refresh או ניווט רגיל היו
           // טוענים את היעד *בתוך* ה-iframe (ואתרים כמו ynet חוסמים הטמעה → "refused to connect").
-          // לכן פורצים ל-top; ואם הדפדפן חוסם ניווט-top אוטומטי (סנדבוקס) — נשאר כפתור ללחיצה אחת.
+          // לכן פורצים ל-top; ואם הדפדפן חוסם ניווט-top אוטומטי (סנדבוקס), נשאר כפתור ללחיצה אחת.
           '    \'<script>try{ window.top.location.href = \' + JSON.stringify(safe) + \'; }catch(e){ try{ window.top.location.replace(\' + JSON.stringify(safe) + \'); }catch(e2){} }<\\/script>\' +\n' +
           '    \'<div style="font-family:sans-serif;text-align:center;margin-top:60px;direction:rtl">\' +\n' +
           '    \'<p style="font-size:16px;color:#334155;margin-bottom:18px">מעבירים אתכם ליעד…</p>\' +\n' +
@@ -1902,7 +1900,7 @@
 '\n\n\n' +
 '// ====================================================\n' +
 '//  אימייל מעקב אוטומטי (Follow-up)\n' +
-'//  הפונקציה setup (למטה) כבר יוצרת את הטריגר היומי ואת הבסיס —\n' +
+'//  הפונקציה setup (למטה) כבר יוצרת את הטריגר היומי ואת הבסיס -\n' +
 '//  אין צורך להגדיר כאן שום דבר ידנית.\n' +
 '// ====================================================\n' +
 'var FOLLOWUP_CONFIG = [\n' +
@@ -1932,7 +1930,7 @@ fuConfigItems.join(',\n') + '\n' +
 '\n' +
 '  var doneSheet = ss.getSheetByName("FollowUps");\n' +
 '  if (!doneSheet) {\n' +
-'    // ריצה ראשונה: מי שכבר מילא מסומן כ"טופל" — לא נשלח לו מעקב למפרע.\n' +
+'    // ריצה ראשונה: מי שכבר מילא מסומן כ"טופל", לא נשלח לו מעקב למפרע.\n' +
 '    doneSheet = ss.insertSheet("FollowUps");\n' +
 '    doneSheet.appendRow(["זמן", "נמען", "מעקב"]);\n' +
 '    for (var r = 1; r < data.length; r++) {\n' +
@@ -2018,15 +2016,15 @@ fuConfigItems.join(',\n') + '\n' +
       // ----- one-click installer: setup() -----
       // Always generated. Auto-creates the form-submit trigger + (when relevant) the
       // click-tracking columns beside the responses, the daily follow-up trigger + baseline,
-      // sends a test email, and reports whether the Web App is deployed. Idempotent — safe to re-run.
+      // sends a test email, and reports whether the Web App is deployed. Idempotent, safe to re-run.
       const setupClicks = trackOn
-        ? '  // עמודות מעקב קליקים — עמודת סיכום "לחצו?" + עמודה לכל כפתור, מראש לצד תשובות הטופס\n' +
+        ? '  // עמודות מעקב קליקים, עמודת סיכום "לחצו?" + עמודה לכל כפתור, מראש לצד תשובות הטופס\n' +
           '  var _rs = getResponsesSheet_(ss);\n' +
           '  if (_rs) {\n' +
           '    var _sc = _findOrAddCol_(_rs, "לחצו?", 0);\n' +
           '    for (var _bi = 0; _bi < BUTTON_LABELS.length; _bi++) _findOrAddCol_(_rs, BUTTON_LABELS[_bi], _sc - 1);\n' +
-          '    msg.push("✅ עמודות מעקב מוכנות — \\"לחצו?\\" + עמודה לכל כפתור (" + BUTTON_LABELS.length + ")");\n' +
-          '  } else msg.push("⚠️ לא נמצא גיליון תגובות — ודאו שהסקריפט פתוח מהגיליון המחובר לטופס");\n' +
+          '    msg.push("✅ עמודות מעקב מוכנות, \\"לחצו?\\" + עמודה לכל כפתור (" + BUTTON_LABELS.length + ")");\n' +
+          '  } else msg.push("⚠️ לא נמצא גיליון תגובות, ודאו שהסקריפט פתוח מהגיליון המחובר לטופס");\n' +
           '\n'
         : '';
 
@@ -2034,13 +2032,13 @@ fuConfigItems.join(',\n') + '\n' +
         ? '  // טריגר יומי לאימיילי מעקב + יצירת בסיס (מי שכבר מילא לא יקבל מעקב למפרע)\n' +
           '  ScriptApp.newTrigger("sendFollowUps").timeBased().everyDays(1).atHour(9).create();\n' +
           '  sendFollowUps();\n' +
-          '  msg.push("✅ אימיילי מעקב מופעלים — בדיקה יומית אוטומטית");\n' +
+          '  msg.push("✅ אימיילי מעקב מופעלים, בדיקה יומית אוטומטית");\n' +
           '\n'
         : '';
 
       const setupTrackStatus = trackOn
         ? '  // האם קיימת כתובת /exec תקינה? (חובה כדי שמעקב הקליקים ירשום נתונים)\n' +
-          '  if (_webAppBase_()) msg.push("✅ מעקב קליקים פעיל — הכול מוכן!");\n' +
+          '  if (_webAppBase_()) msg.push("✅ מעקב קליקים פעיל, הכול מוכן!");\n' +
           '  else msg.push("⚠️ נשאר צעד אחרון למעקב קליקים:\\nDeploy ← New deployment ← Web app ← Execute as: Me ← Who has access: Anyone ← Deploy,\\nואז העתיקו את כתובת ה-/exec, הדביקו אותה בשורה WEBAPP_URL בראש הקוד, והריצו שוב setup");\n' +
           '\n'
         : '';
@@ -2052,9 +2050,9 @@ fuConfigItems.join(',\n') + '\n' +
       const setupFn =
 '\n\n\n' +
 '// ====================================================\n' +
-'//  התקנה בלחיצה אחת — הריצו פעם אחת את setup\n' +
+'//  התקנה בלחיצה אחת, הריצו פעם אחת את setup\n' +
 '//  יוצר את הטריגר' + (fuOn ? 'ים' : '') + (trackOn ? ' + עמודות מעקב' : '') + ', שולח מייל בדיקה, ומאשר הרשאות.\n' +
-'//  אפשר להריץ שוב בכל עת — לא ייווצרו כפילויות.\n' +
+'//  אפשר להריץ שוב בכל עת, לא ייווצרו כפילויות.\n' +
 '// ====================================================\n' +
 'function setup() {\n' +
 '  var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
@@ -2066,12 +2064,12 @@ setupClicks +
 '  var trg = ScriptApp.getProjectTriggers();\n' +
 '  for (var i = 0; i < trg.length; i++) { if (kill[trg[i].getHandlerFunction()]) ScriptApp.deleteTrigger(trg[i]); }\n' +
 '  ScriptApp.newTrigger("sendEmailOnFormSubmit").forSpreadsheet(ss).onFormSubmit().create();\n' +
-'  msg.push("✅ טריגר הותקן — כל מי שממלא את הטופס יקבל מייל אוטומטית");\n' +
+'  msg.push("✅ טריגר הותקן, כל מי שממלא את הטופס יקבל מייל אוטומטית");\n' +
 '\n' +
 setupFollow +
-'  // מייל בדיקה — הוכחה מיידית שהכול עובד\n' +
+'  // מייל בדיקה, הוכחה מיידית שהכול עובד\n' +
 '  sendTestEmail();\n' +
-'  msg.push("✅ מייל בדיקה נשלח אליכם — בדקו את תיבת הדואר");\n' +
+'  msg.push("✅ מייל בדיקה נשלח אליכם, בדקו את תיבת הדואר");\n' +
 '\n' +
 setupTrackStatus +
 '  try { ss.toast(msg.join("  ·  "), "🎉 ההתקנה הושלמה", 8); } catch (e) {}\n' +
@@ -2081,10 +2079,10 @@ setupTrackStatus +
       return (
 '/**\n' +
 ' * אימייל אוטומטי בעת מילוי טופס Google' + (hasWebhook ? ' + הוספה ל-MailerLite' : '') + (fuOn ? ' + אימייל מעקב' : '') + '\n' +
-' * נוצר במחולל של עומרי אירם — https://tools.omri-iram.co.il/email-generator/\n' +
+' * נוצר במחולל של עומרי אירם, https://tools.omri-iram.co.il/email-generator/\n' +
 ' *\n' +
 ' * התקנה: Extensions → Apps Script בגיליון המחובר לטופס, הדביקו קוד זה,\n' +
-' * הריצו פעם אחת את הפונקציה setup ואשרו הרשאות — היא יוצרת את הטריגר' + (fuOn ? 'ים' : '') + ',\n' +
+' * הריצו פעם אחת את הפונקציה setup ואשרו הרשאות, היא יוצרת את הטריגר' + (fuOn ? 'ים' : '') + ',\n' +
 (trackOn
   ? ' * ומוסיפה עמודות מעקב לצד התשובות, ושולחת מייל בדיקה. למעקב קליקים פרסמו גם כ-Web App.\n'
   : ' * ושולחת אליכם מייל בדיקה.\n') +
@@ -2118,7 +2116,7 @@ trackHeader +
 '    \' text-decoration: none; font-weight: bold; font-size: 15px; margin: 10px; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">\' + label + \'</a>\';\n' +
 '}\n' +
 '\n' +
-'// בונה משותף לכל המיילים (ראשי + מעקב) — עובר על מערך הבלוקים לפי הסדר.\n' +
+'// בונה משותף לכל המיילים (ראשי + מעקב), עובר על מערך הבלוקים לפי הסדר.\n' +
 'function buildEmail_(subject, BLOCKS, recipientEmail, recipientName) {\n' +
 '  var nm = recipientName || "";\n' +
 '  var bodyHtml = "";\n' +
@@ -2180,7 +2178,7 @@ mlFunction +
 'function _attachments_() {\n' +
 '  if (!ATTACH_FILE_ID) return [];\n' +
 '  try { return [DriveApp.getFileById(ATTACH_FILE_ID).getBlob()]; }\n' +
-'  catch (e) { Logger.log("צירוף הקובץ נכשל — בדקו שהקובץ קיים ומשותף: " + e); return []; }\n' +
+'  catch (e) { Logger.log("צירוף הקובץ נכשל, בדקו שהקובץ קיים ומשותף: " + e); return []; }\n' +
 '}\n' +
 '\n' +
 '// מחזיר את כל התמונות המוטמעות (inline): הלוגו בראש המייל + בלוקי תמונה שהועלו.\n' +
@@ -2335,15 +2333,15 @@ setupFn
       const nCols = Math.max(...rows.map(r => r.length));
 
       let emailCol = -1, nameCol = -1;
-      // email — by content (@ anywhere in the column), most reliable
+      // email, by content (@ anywhere in the column), most reliable
       for (let c = 0; c < nCols && emailCol === -1; c++){
         for (const r of rows){ if (r[c] && CONTAINS_EMAIL.test(r[c])){ emailCol = c; break; } }
       }
-      // email — fallback to header text
+      // email, fallback to header text
       if (emailCol === -1){
         for (let c = 0; c < nCols; c++){ if (header[c] && /e-?mail|אימייל|אימיל|מייל|דוא/i.test(header[c])){ emailCol = c; break; } }
       }
-      // name — by header text (skip timestamp col 0 and the email col)
+      // name, by header text (skip timestamp col 0 and the email col)
       for (let c = 1; c < nCols; c++){
         if (c === emailCol) continue;
         if (header[c] && /שם|full ?name|\bname\b/i.test(header[c])){ nameCol = c; break; }
@@ -2356,7 +2354,7 @@ setupFn
         personalizeEl.checked = true; nameRevealEl.classList.add('show');
         found.push('שם = עמודה ' + colLetter(nameCol));
       }
-      if (!found.length){ setDetectResult('לא זוהו עמודות — נסו להדביק גם שורת תגובה, או בחרו ידנית למטה.', 'warn'); return; }
+      if (!found.length){ setDetectResult('לא זוהו עמודות, נסו להדביק גם שורת תגובה, או בחרו ידנית למטה.', 'warn'); return; }
       update();
       setDetectResult('✓ זוהה: ' + found.join(' · ') + (nameCol >= 1 ? ' · הופעלה פנייה אישית' : ''), 'ok');
     }
@@ -2384,10 +2382,10 @@ setupFn
 
     // ---------- templates ----------
     const TEMPLATES = {
-      materials: { subject: 'החומרים מהמפגש שלנו 📎', body: 'שלום {שם},\n\nתודה רבה שהשתתפת! מצרף כאן את כל החומרים מהמפגש — המצגת והסרטון.\n\nאשמח לשמוע מה היה לך הכי שימושי.', buttons: [['לצפייה במצגת', '', '#1a73e8'], ['לצפייה בסרטון', '', '#ea4335']] },
-      thanks:    { subject: 'תודה על ההרשמה! 🎉', body: 'שלום {שם},\n\nתודה שנרשמת — שמחתי מאוד!\n\nכאן כל מה שצריך כדי להתחיל. נתראה בקרוב.', buttons: [['לכל הפרטים', '', '#1a73e8']] },
+      materials: { subject: 'החומרים מהמפגש שלנו 📎', body: 'שלום {שם},\n\nתודה רבה שהשתתפת! מצרף כאן את כל החומרים מהמפגש, המצגת והסרטון.\n\nאשמח לשמוע מה היה לך הכי שימושי.', buttons: [['לצפייה במצגת', '', '#1a73e8'], ['לצפייה בסרטון', '', '#ea4335']] },
+      thanks:    { subject: 'תודה על ההרשמה! 🎉', body: 'שלום {שם},\n\nתודה שנרשמת, שמחתי מאוד!\n\nכאן כל מה שצריך כדי להתחיל. נתראה בקרוב.', buttons: [['לכל הפרטים', '', '#1a73e8']] },
       webinar:   { subject: 'הזמנה לוובינר 📅', body: 'שלום {שם},\n\nאני מזמין אותך לוובינר חינמי.\n\nשמרו את המקום ביומן, וביום האירוע לחצו על הקישור להצטרפות.', buttons: [['להצטרפות לוובינר', '', '#34a853'], ['הוספה ליומן', '', '#f59e0b']] },
-      update:    { subject: 'עדכון קצר ✨', body: 'שלום {שם},\n\nרציתי לעדכן אותך בכמה דברים חדשים.\n\n**הנה העיקר** — קראו ולחצו לפרטים.', buttons: [['קראו עוד', '', '#9334e8']] },
+      update:    { subject: 'עדכון קצר ✨', body: 'שלום {שם},\n\nרציתי לעדכן אותך בכמה דברים חדשים.\n\n**הנה העיקר**, קראו ולחצו לפרטים.', buttons: [['קראו עוד', '', '#9334e8']] },
     };
     // built-in templates + the user's own saved templates (localStorage)
     const TPL_KEY = 'eg_my_templates';
@@ -2437,7 +2435,7 @@ setupFn
       const packed = LZString.compressToEncodedURIComponent(JSON.stringify(cfg));
       return location.origin + location.pathname + '#t=' + packed;
     }
-    // Restore every field from a decoded config (superset of applyConfig — also follow-ups,
+    // Restore every field from a decoded config (superset of applyConfig, also follow-ups,
     // personalize, tracking). Mirrors the reset handler's field list.
     function loadConfigFromLink(cfg){
       if (!cfg || typeof cfg !== 'object') return;
@@ -2499,15 +2497,15 @@ setupFn
       const linkOut = $('slpLinkOut'), row = $('slpRow'), emailBtn = $('slpEmailBtn');
       linkOut.value = link;
       row.style.display = 'flex';
-      const subj = encodeURIComponent('הטיוטה שלי — מחולל אימייל אוטומטי');
+      const subj = encodeURIComponent('הטיוטה שלי, מחולל אימייל אוטומטי');
       const body = encodeURIComponent(
-        'קישור לטיוטה שלי — פותח אותה בדיוק במקום שהפסקתי, בכל מחשב:\n\n' + link +
+        'קישור לטיוטה שלי, פותח אותה בדיוק במקום שהפסקתי, בכל מחשב:\n\n' + link +
         '\n\nנוצר בכלי של עומרי אירם: https://tools.omri-iram.co.il/email-generator/'
       );
       emailBtn.href = 'mailto:?subject=' + subj + '&body=' + body;
-      const note = logoData ? ' (לוגו שהעליתם כקובץ אינו נכלל — השתמשו בקישור לתמונה כדי שיישמר)' : '';
+      const note = logoData ? ' (לוגו שהעליתם כקובץ אינו נכלל, השתמשו בקישור לתמונה כדי שיישמר)' : '';
       try { await navigator.clipboard.writeText(link); showToast('🔗 הקישור נוצר והועתק' + note); }
-      catch(_) { showToast('🔗 הקישור נוצר — העתיקו אותו מהתיבה למטה' + note); }
+      catch(_) { showToast('🔗 הקישור נוצר, העתיקו אותו מהתיבה למטה' + note); }
       linkOut.focus(); linkOut.select();
     });
     $('slpCopyBtn').addEventListener('click', async () => {

@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>מחפש סרטונים לפי נושא</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="חיפוש סרטונים לפי נושא ביוטיוב (חינמי) ובטיקטוק/אינסטגרם/פייסבוק — תוצאות עם קישורים וייצוא ל-CSV." />
+  <meta name="description" content="חיפוש סרטונים לפי נושא ביוטיוב (חינמי) ובטיקטוק/אינסטגרם/פייסבוק, תוצאות עם קישורים וייצוא ל-CSV." />
   <meta property="og:title" content="מחפש סרטונים לפי נושא" />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
     :root{ --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9; --faint:#6c727c; --line:rgba(255,255,255,0.09); --accent:#fb7185; --accent2:#f43f5e; --ok:#34d399; --warn:#fbbf24; font-family:'Heebo',system-ui,sans-serif; }
     *{box-sizing:border-box;margin:0;padding:0}
@@ -215,7 +214,7 @@
       render(all);
       $('go').disabled=false;
       if(!all.length){ msg.className='msg err'; msg.textContent=errs.length?('לא נמצאו תוצאות. '+errs.join(' · ')):'לא נמצאו תוצאות.'; }
-      else{ msg.className='msg'; msg.textContent=errs.length?('שימו לב — '+errs.join(' · ')):''; }
+      else{ msg.className='msg'; msg.textContent=errs.length?('שימו לב, '+errs.join(' · ')):''; }
     }
 
     function sortResults(a,sort){
@@ -268,7 +267,7 @@
       const fitCls={'גבוהה':'fit-high','בינונית':'fit-mid','נמוכה':'fit-low'}[a.fits]||'fit-mid';
       const pts=(a.key_points||[]).map(p=>'<li>'+esc(p)+'</li>').join('');
       panel.innerHTML=
-        '<span class="fit '+fitCls+'">התאמה לנושא: '+esc(a.fits||'—')+'</span>'+
+        '<span class="fit '+fitCls+'">התאמה לנושא: '+esc(a.fits||'-')+'</span>'+
         (a.is_educational===false?' <span class="fit fit-low">לא חינוכי</span>':'')+
         '<div>'+esc(a.summary||'')+'</div>'+
         (pts?'<ul>'+pts+'</ul>':'')+

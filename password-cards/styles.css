@@ -11,11 +11,11 @@
 /* ============================================================
    שני עולמות בקובץ אחד:
    1. מעטפת הדף (רקע, כותרת, פרטיות, מתג, אזור ההעלאה, מסגרות,
-      כפתורים, פוטר) — בשפת העיצוב של העסק (2026-11-15): דף בהיר,
+      כפתורים, פוטר), בשפת העיצוב של העסק (2026-11-15): דף בהיר,
       כחול-נייבי, כרטיסים לבנים, אוקר רק לכפתור הראשי. משתני --b-*.
-   2. מעצב הכרטיס, התצוגה החיה והכרטיסים המודפסים — צבעוניים לילדים,
+   2. מעצב הכרטיס, התצוגה החיה והכרטיסים המודפסים, צבעוניים לילדים,
       בכוונה (עומרי, "הגרסה האפורה משעממת"). הם ממשיכים להשתמש
-      במשתני "המדבקה" הישנים (--ink, --sun, --bubble...) — אל תשנו אותם.
+      במשתני "המדבקה" הישנים (--ink, --sun, --bubble...), אל תשנו אותם.
    ============================================================ */
 :root{
   /* --- עולם הכרטיסים (מעצב + תצוגה חיה): לא לגעת --- */
@@ -129,7 +129,7 @@ h1 .em{color:inherit}
 .cls-name{font-weight:700;font-size:1rem;color:var(--b-ink)}
 .cls-count{color:var(--b-quiet);font-weight:400;font-size:.86rem}
 
-/* ---------- תצוגה מקדימה — "רשימת כיתה" ---------- */
+/* ---------- תצוגה מקדימה, "רשימת כיתה" ---------- */
 .preview-wrap{overflow-x:auto;margin-top:6px}
 table{width:100%;border-collapse:collapse;font-size:.92rem}
 th,td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--b-line);white-space:nowrap}
@@ -181,7 +181,7 @@ footer a:hover{color:var(--b-navy-hover)}
   .drop{padding:34px 14px}
 }
 
-/* תג גרסה — פינה קטנה ולא פולשנית, כמו בשאר הכלים */
+/* תג גרסה, פינה קטנה ולא פולשנית, כמו בשאר הכלים */
 .version-tag{
   position:fixed;bottom:8px;inset-inline-start:10px;z-index:40;
   font-size:.68rem;color:var(--b-quiet);opacity:.75;font-weight:500;
@@ -251,7 +251,7 @@ footer a:hover{color:var(--b-navy-hover)}
 .pc-swatch{width:20px;height:20px;border-radius:6px;border:2px solid var(--ink)}
 
 /* ============================================================
-   הכרטיסים המודפסים — צבעוני לילדים. 4 עולמות (‎pc-tpl-*‎),
+   הכרטיסים המודפסים, צבעוני לילדים. 4 עולמות (‎pc-tpl-*‎),
    "כיתת קשת": צבע לכל תלמיד דרך ‎--c-*‎ על הכרטיס. הגודל דרך ‎--u‎.
    כל האיורים SVG שטוח (בטוח ל-html2canvas). שיקוף אופקי לגב (dir).
    ============================================================ */
@@ -296,7 +296,7 @@ footer a:hover{color:var(--b-navy-hover)}
 .pc-badge{background:#fff;border-radius:50%;box-shadow:0 calc(var(--u)*0.28) 0 rgba(0,0,0,.10);
   padding:calc(var(--u)*0.55);width:calc(var(--u)*5.8);height:calc(var(--u)*5.8);flex:0 0 auto}
 
-/* ---- פרטי התחברות (גב) — תיבות בניגודיות גבוהה ---- */
+/* ---- פרטי התחברות (גב), תיבות בניגודיות גבוהה ---- */
 .pc-backhead{position:relative;z-index:2;font-family:'Suez One','Rubik',sans-serif;font-size:calc(var(--u)*1.28*var(--text-scale,1));margin:calc(var(--u)*0.5) 0 calc(var(--u)*0.7)}
 .pc-creds{position:relative;z-index:2;width:100%;padding:0 calc(var(--u)*0.9);display:flex;flex-direction:column;gap:calc(var(--u)*0.7);align-items:stretch}
 .pc-field{width:100%;background:rgba(255,255,255,.94);border-radius:calc(var(--u)*0.7);padding:calc(var(--u)*0.45) calc(var(--u)*0.5);box-shadow:0 calc(var(--u)*0.14) 0 rgba(0,0,0,.08)}
@@ -361,7 +361,7 @@ footer a:hover{color:var(--b-navy-hover)}
 .pc-tpl-rainbow .pc-backhead{color:var(--c-deep)}
 .pc-tpl-rainbow .pc-field{border:2pt solid var(--c-accent)}
 
-/* ============ ⬜ פשוט — בלי איורים, מסגרת נקייה בצבע התלמיד ============ */
+/* ============ ⬜ פשוט, בלי איורים, מסגרת נקייה בצבע התלמיד ============ */
 .pc-card.pc-tpl-plain{background:#fff;border:2pt solid var(--c-accent);justify-content:center}
 .pc-tpl-plain .pc-info{width:100%;text-align:center;padding:0 calc(var(--u)*1.4)}
 .pc-tpl-plain .pc-name{color:var(--c-ink);font-size:calc(var(--u)*2.05*var(--text-scale,1))}

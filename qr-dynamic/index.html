@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QR דינמי — מבוסס Google Sheet</title>
+  <title>QR דינמי, מבוסס Google Sheet</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <meta name="description" content="צרו קוד QR שאפשר לשנות לאן הוא מפנה בלי להדפיס מחדש — היעד נשמר בתא בגוגל שיטס שלכם. חינמי, בלי שרת, רץ בדפדפן." />
-  <meta property="og:title" content="QR דינמי — מבוסס Google Sheet" />
+  <meta name="description" content="צרו קוד QR שאפשר לשנות לאן הוא מפנה בלי להדפיס מחדש, היעד נשמר בתא בגוגל שיטס שלכם. חינמי, בלי שרת, רץ בדפדפן." />
+  <meta property="og:title" content="QR דינמי, מבוסס Google Sheet" />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
     :root{
       --bg:#0c0d10; --card:#14161b; --panel:#0f1115; --ink:#ecedf0; --muted:#aab0b9;
@@ -65,14 +64,14 @@
     <div class="masthead">
       <div class="kicker">הכלים של עומרי אירם</div>
       <h1>QR <span class="em">דינמי</span></h1>
-      <p class="lede">קוד QR אחד שאפשר <strong>לשנות לאן הוא מפנה בכל רגע — בלי להדפיס מחדש</strong>. היעד נשמר בתא בגוגל שיטס שלכם; משנים את התא, וה-QR כבר מפנה למקום החדש. הכל חינמי, בלי שרת שלי, רץ אצלכם.</p>
+      <p class="lede">קוד QR אחד שאפשר <strong>לשנות לאן הוא מפנה בכל רגע, בלי להדפיס מחדש</strong>. היעד נשמר בתא בגוגל שיטס שלכם; משנים את התא, וה-QR כבר מפנה למקום החדש. הכל חינמי, בלי שרת שלי, רץ אצלכם.</p>
     </div>
 
     <!-- STEP 1 -->
     <div class="sheet">
       <div class="step"><div class="num">1</div><h2>צרו את הקוד</h2></div>
       <div class="field">
-        <label for="dest">כתובת היעד ההתחלתית <span class="hint">— לאן ה-QR יפנה בהתחלה (אפשר לשנות אחר כך)</span></label>
+        <label for="dest">כתובת היעד ההתחלתית<span class="hint">, לאן ה-QR יפנה בהתחלה (אפשר לשנות אחר כך)</span></label>
         <input type="text" id="dest" placeholder="https://example.com/my-page" />
       </div>
       <div class="actions">
@@ -93,7 +92,7 @@
           <li>לחצו <b>Deploy → New deployment</b> → סוג <b>Web app</b> → <b>Execute as: Me</b> → <b>Who has access: Anyone</b> → <b>Deploy</b>. העתיקו את כתובת ה-Web app (מסתיימת ב-<code>/exec</code>).</li>
           <li>הדביקו אותה בשלב 2 למטה וצרו את ה-QR.</li>
         </ol>
-        <div class="note">💡 <b>איך משנים יעד בעתיד:</b> פותחים את הגיליון, עוברים לגיליון <code>QR</code>, ומשנים את תא <code>B1</code>. זהו — ה-QR המודפס כבר מפנה למקום החדש.</div>
+        <div class="note">💡 <b>איך משנים יעד בעתיד:</b> פותחים את הגיליון, עוברים לגיליון <code>QR</code>, ומשנים את תא <code>B1</code>. זהו. ה-QR המודפס כבר מפנה למקום החדש.</div>
       </div>
     </div>
 
@@ -101,7 +100,7 @@
     <div class="sheet">
       <div class="step"><div class="num">2</div><h2>צרו את ה-QR</h2></div>
       <div class="field">
-        <label for="exec">כתובת ה-Web app שקיבלתם <span class="hint">— מסתיימת ב-/exec</span></label>
+        <label for="exec">כתובת ה-Web app שקיבלתם<span class="hint">, מסתיימת ב-/exec</span></label>
         <input type="text" id="exec" placeholder="https://script.google.com/macros/s/AKfy…/exec" />
       </div>
       <div class="actions">
@@ -123,7 +122,7 @@
     </div>
 
     <footer>
-      <p>🔒 הכל רץ בדפדפן שלכם — שום מידע לא נשלח לשרת שלי. ה-QR מפנה אל ה-Apps Script שלכם, שקורא את היעד מהגיליון שלכם.</p>
+      <p>🔒 הכל רץ בדפדפן שלכם, שום מידע לא נשלח לשרת שלי. ה-QR מפנה אל ה-Apps Script שלכם, שקורא את היעד מהגיליון שלכם.</p>
       <p>מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p>
     </footer>
   </div>
@@ -138,7 +137,7 @@
     function buildCode(initialUrl){
       const INIT = JSON.stringify(initialUrl);   // safe JS string literal
       return `/**
- * QR דינמי — מפנה לכתובת שמופיעה בתא B1 של הגיליון "QR".
+ * QR דינמי, מפנה לכתובת שמופיעה בתא B1 של הגיליון "QR".
  * כדי לשנות לאן ה-QR מפנה: ערכו את תא B1. אין צורך ליצור QR חדש.
  * נוצר ב: https://tools.omri-iram.co.il/qr-dynamic/
  */
@@ -149,7 +148,7 @@ var INITIAL_URL = ${INIT};
 function setup() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
-  sh.getRange('A1').setValue('כתובת היעד — ערכו את התא שמשמאל כדי לשנות לאן ה-QR מפנה:').setFontWeight('bold');
+  sh.getRange('A1').setValue('כתובת היעד, ערכו את התא שמשמאל כדי לשנות לאן ה-QR מפנה:').setFontWeight('bold');
   if (!String(sh.getRange(CELL).getValue()).trim()) sh.getRange(CELL).setValue(INITIAL_URL);
   sh.setColumnWidth(2, 380);
 }

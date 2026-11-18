@@ -7,11 +7,9 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="description" content="אוסף כלים חינמיים שבניתי כדי לעזור למורים, יוצרי תוכן ומשתמשי AI לעבוד מהר יותר." />
   <meta property="og:title" content="הכלים של עומרי אירם" />
-  <meta property="og:description" content="אוסף כלים חינמיים — סרגל פרקים ליוטיוב, מענה המוני ב-Gmail, תמלול אוטומטי לסרטונים, הגרלת זוכה, מחולל אימייל אוטומטי לטופס, ועוד." />
+  <meta property="og:description" content="אוסף כלים חינמיים. סרגל פרקים ליוטיוב, מענה המוני ב-Gmail, תמלול אוטומטי לסרטונים, הגרלת זוכה, מחולל אימייל אוטומטי לטופס, ועוד." />
   <meta property="og:locale" content="he_IL" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/fonts.css?v=1" />
   <link rel="stylesheet" href="css/style.css?v=4" />
   <style>
     /* Admin-only tools: hidden until admin mode is unlocked, then shown in a distinct purple identity */
@@ -67,7 +65,7 @@
       <span class="brand-name">עומרי אירם</span>
     </div>
     <h1>הכלים שבניתי</h1>
-    <p class="tagline">אוסף כלים חינמיים שעוזרים לי בעבודה היומיומית — ומוצאים את הדרך לעוד אנשים. הכל רץ ישר בדפדפן או בחשבון שלכם, בלי להתקין כלום.</p>
+    <p class="tagline">אוסף כלים חינמיים שעוזרים לי בעבודה היומיומית, ומוצאים את הדרך לעוד אנשים. הכל רץ ישר בדפדפן או בחשבון שלכם, בלי להתקין כלום.</p>
     </div>
     <figure class="scan">
       <img src="qr.svg" alt="קוד QR לכתובת הכלי" width="124" height="124">
@@ -78,9 +76,9 @@
   <main aria-label="כלים">
 
     <!-- Stats panel hidden by request (2026-07-19). To bring it back: remove
-         the `hidden` attribute — the render JS keys off it and will resume. -->
+         the `hidden` attribute, the render JS keys off it and will resume. -->
     <section id="statsPanel" class="cat-section admin-only" aria-label="סטטיסטיקה" hidden>
-      <h2 class="cat">📊 סטטיסטיקה — שימוש בכלים</h2>
+      <h2 class="cat">📊 סטטיסטיקה, שימוש בכלים</h2>
       <div id="statsBody"><p class="stats-msg">טוען…</p></div>
     </section>
 
@@ -181,7 +179,7 @@
 
       // ---- Admin usage table (only in admin mode; runs once, post-render) ---
       function maybeRenderStats() {
-        // The panel's `hidden` attribute is the on/off switch — when the admin
+        // The panel's `hidden` attribute is the on/off switch, when the admin
         // decides to hide the stats section, skip the /api/stats fetch too.
         var panel = document.getElementById('statsPanel');
         if (!panel || panel.hidden) return;

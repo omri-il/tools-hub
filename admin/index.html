@@ -6,9 +6,7 @@
   <title>עריכת מרכז הכלים · אדמין</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta name="robots" content="noindex" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <link rel="stylesheet" href="../css/style-dark.css?v=1" />
   <style>
     body { padding-bottom: 60px; }
@@ -303,7 +301,7 @@
     var treeEl = document.getElementById('tree');
 
     // A card row is built the same way whether it's inside its real category
-    // or inside the pinned favorites shortcut at the top of the tree — both
+    // or inside the pinned favorites shortcut at the top of the tree, both
     // reference the same underlying card object, so edits made in either
     // place need a full tree re-render to stay in sync (draggable:false for
     // the favorites shortcut, since it isn't a real reorderable list).
@@ -355,7 +353,7 @@
     function renderTree(){
       treeEl.innerHTML = '';
 
-      // ⭐ Favorites — a pinned shortcut at the top of the editor tree, mirroring
+      // ⭐ Favorites, a pinned shortcut at the top of the editor tree, mirroring
       // the pinned section on the public hub. Quick access while managing;
       // not draggable (cards keep living in their real category below).
       var favPairs = [];
@@ -446,7 +444,7 @@
         var rows = block.querySelectorAll('.card-row');
         var newCards = [];
         rows.forEach(function(row){
-          // a card may have moved in from another category — search all cats
+          // a card may have moved in from another category, search all cats
           var cid = row.getAttribute('data-card-id');
           var card = null;
           state.config.categories.some(function(c){
@@ -552,7 +550,7 @@
       }));
       inspEl.appendChild(fieldText('מזהה לאנליטיקס', card.id, function(v){
         card.id = v.trim();
-      }, 'אותיות/מספרים/מקף בלבד. משמש לספירת קליקים — עדיף לא לשנות אחרי פרסום.'));
+      }, 'אותיות/מספרים/מקף בלבד. משמש לספירת קליקים, עדיף לא לשנות אחרי פרסום.'));
 
       var del = document.createElement('button'); del.className='btn danger'; del.textContent='🗑 מחק כרטיס';
       del.style.marginTop='8px';
@@ -561,13 +559,13 @@
     }
 
     // update tree label live without losing selection/scroll
-    // (does NOT refresh the inspector — inspector fields call this on every
+    // (does NOT refresh the inspector, inspector fields call this on every
     // keystroke, so refreshing it here would rebuild the input the user is
     // typing into and steal focus mid-word)
     function touchTree(){ renderTree(); renderPreview(); }
 
     // same, but also refreshes the inspector panel if the edited card/category
-    // is the one currently selected — for edits made from the tree row itself
+    // is the one currently selected, for edits made from the tree row itself
     // (inline rename, ⭐/vis toggles), which never originate inside the inspector.
     function touchTreeForCard(card){
       renderTree(); renderPreview();
@@ -642,14 +640,14 @@
       api('/api/hub-config').then(function(r){ return r.json(); }).then(function(server){
         if (!force && (server.version || 0) > state.loadedVersion){
           if (!confirm('נשמרה גרסה חדשה יותר ממקום אחר (גרסה '+server.version+'). לשמור בכל זאת ולדרוס אותה?')){
-            setStatus('הביטול בוצע — לא נשמר.', 'err'); return;
+            setStatus('הביטול בוצע, לא נשמר.', 'err'); return;
           }
         }
         setStatus('שומר…');
         return api('/api/hub-config', { method:'POST', body: JSON.stringify(state.config) })
           .then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); })
           .then(function(res){
-            if (res.status === 401){ setStatus('פג התוקף — מתחבר מחדש…', 'err'); setTimeout(signIn, 800); return; }
+            if (res.status === 401){ setStatus('פג התוקף, מתחבר מחדש…', 'err'); setTimeout(signIn, 800); return; }
             if (res.status !== 200){ setStatus('שגיאה: ' + (res.j.error || res.status), 'err'); return; }
             state.loadedVersion = res.j.version;
             state.config.version = res.j.version;
@@ -665,7 +663,7 @@
       api('/api/hub-config/undo', { method:'POST' })
         .then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); })
         .then(function(res){
-          if (res.status === 401){ setStatus('פג התוקף — מתחבר מחדש…', 'err'); setTimeout(signIn, 800); return; }
+          if (res.status === 401){ setStatus('פג התוקף, מתחבר מחדש…', 'err'); setTimeout(signIn, 800); return; }
           if (res.status !== 200){ setStatus('אין גרסה קודמת לשחזור.', 'err'); return; }
           state.config = res.j; state.loadedVersion = res.j.version || 0; state.sel = null;
           (state.config.categories || []).forEach(function(c){
