@@ -8,95 +8,119 @@
   <meta name="description" content="קיצור קישורים אישי עם דומיין משלי, go.omri-iram.co.il. יוצרים קישור קצר, כינוי אישי, וסופרים קליקים." />
   <meta name="robots" content="noindex" />
   <link rel="stylesheet" href="../css/fonts.css?v=1" />
-  <link rel="stylesheet" href="../css/style-dark.css?v=1" />
   <style>
-    .wrap { max-width: 720px; margin: 0 auto; padding: 16px 24px 80px; }
-    .back { display: inline-block; color: var(--text-dim); text-decoration: none; font-size: 14px; margin: 24px 0 8px; }
-    .back:hover { color: var(--text); }
+    /* Business design language (approved 2026-11-15): light page, navy ink, white cards,
+       ochre only on the one main button. Rubik for titles, labels, buttons; Assistant for text. */
+    :root{
+      --navy:#002045; --navy-hover:#1A365D; --ochre:#FFC250; --ochre-hover:#D69E2E;
+      --bg:#F9F9FF; --card:#FFFFFF; --soft:#F0F3FF;
+      --ink:#121C2C; --muted:#43474E; --faint:#5B6170;
+      --line:#E3E6EF; --line-strong:#C4C6CF;
+      --bad:#BA1A1A; --good:#1A7A3A; --ease:cubic-bezier(0.2,0,0,1);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:'Assistant',system-ui,sans-serif;font-size:17px;line-height:1.55;min-height:100vh;-webkit-font-smoothing:antialiased}
+    .wrap { max-width: 720px; margin: 0 auto; padding: 34px 16px 80px; }
+    .back { display: inline-block; color: var(--navy); text-decoration: none; font-family: 'Rubik', sans-serif;
+      font-weight: 500; font-size: .85rem; margin-bottom: 18px; }
+    .back:hover { color: var(--navy-hover); text-decoration: underline; text-underline-offset: 3px; }
+    .masthead { text-align: center; margin-bottom: 10px; }
+    .kicker { font-family: 'Rubik', sans-serif; font-size: .78rem; font-weight: 600; letter-spacing: .04em; color: var(--faint); }
+    h1 { font-family: 'Rubik', sans-serif; font-weight: 800; font-size: clamp(2rem,5vw,2.8rem); margin: 10px 0 0;
+      color: var(--navy); line-height: 1.15; }
+    h1 .em { text-decoration: underline; text-decoration-color: var(--ochre); text-decoration-thickness: 3px; text-underline-offset: .2em; }
+    .lede { color: var(--muted); margin: 14px auto 0; max-width: 520px; }
+    .lede span { direction: ltr; display: inline-block; }
     .panel {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 20px; padding: 28px 26px; margin-top: 20px;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 20px; padding: 26px; margin-top: 20px;
+      box-shadow: 0 12px 28px -16px rgba(0,32,69,.28);
     }
-    .panel h2 { margin: 0 0 6px; font-size: 20px; }
-    .panel .hint { color: var(--text-soft); font-size: 14px; margin: 0 0 18px; }
-    label { display: block; font-size: 14px; color: var(--text-dim); margin: 14px 0 6px; }
+    @media (max-width: 480px) { .panel { padding: 20px; } }
+    .panel h2 { margin: 0 0 6px; font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 20px; color: var(--navy); }
+    .panel .hint { color: var(--muted); font-size: 15px; margin: 0 0 18px; }
+    label { display: block; font-family: 'Rubik', sans-serif; font-weight: 600; font-size: .9rem; color: var(--navy); margin: 14px 0 7px; }
     input[type=text], input[type=url], input[type=password] {
-      width: 100%; padding: 13px 15px; border-radius: 12px;
-      border: 1px solid var(--border); background: rgba(0,0,0,0.25);
-      color: var(--text); font-family: inherit; font-size: 15px; direction: ltr; text-align: left;
+      width: 100%; padding: 13px 14px; border-radius: 12px;
+      border: 1px solid var(--line-strong); background: var(--card);
+      color: var(--ink); font-family: 'Assistant', sans-serif; font-size: 1rem; direction: ltr; text-align: left;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
     }
-    input:focus { outline: none; border-color: var(--accent); }
+    input::placeholder { color: var(--faint); opacity: 1; }
+    input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(0,32,69,0.14); }
+    /* LTR row: the fixed prefix reads first, then the alias the user types */
     .alias-row { display: flex; align-items: stretch; gap: 0; direction: ltr; }
     .alias-row .prefix {
-      display: flex; align-items: center; padding: 0 12px; font-size: 13px;
-      color: var(--text-soft); background: rgba(0,0,0,0.35);
-      border: 1px solid var(--border); border-left: none;
-      border-radius: 0 12px 12px 0; white-space: nowrap;
+      order: -1; display: flex; align-items: center; padding: 0 12px; font-size: .9rem;
+      color: var(--muted); background: var(--soft);
+      border: 1px solid var(--line-strong); border-right: none;
+      border-radius: 12px 0 0 12px; white-space: nowrap;
     }
-    .alias-row input { border-radius: 12px 0 0 12px; }
+    .alias-row input { border-radius: 0 12px 12px 0; min-width: 0; }
+    /* every button starts as the one main action (ochre, navy text); the others override below */
     button {
-      font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
-      border: none; border-radius: 12px; padding: 13px 22px; color: #fff;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      transition: transform .15s ease, opacity .15s ease;
+      font-family: 'Rubik', sans-serif; font-weight: 600; font-size: .95rem; cursor: pointer;
+      border: 1.5px solid transparent; border-radius: 12px; padding: 12px 22px;
+      background: var(--ochre); color: var(--navy);
+      transition: background-color .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
     }
-    button:hover { transform: translateY(-1px); }
-    button:disabled { opacity: .5; cursor: default; transform: none; }
+    button:hover { background: var(--ochre-hover); }
+    button:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+    button:disabled { opacity: .5; cursor: default; }
     .seg {
       display: flex; gap: 6px; margin-bottom: 8px; padding: 5px;
-      background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 12px;
+      background: var(--soft); border: 1px solid var(--line); border-radius: 14px;
     }
     .seg-btn {
-      flex: 1; background: transparent; color: var(--text-dim); font-weight: 500;
-      padding: 10px; border-radius: 8px; font-size: 14px;
+      flex: 1; background: transparent; color: var(--muted); font-weight: 500;
+      padding: 10px; border-radius: 10px; font-size: .9rem;
     }
-    .seg-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
-    .seg-btn:hover:not(.active) { color: var(--text); transform: none; }
-    .seg-sub { color: var(--text-soft); font-size: 13px; margin: 0 2px 6px; direction: rtl; }
+    .seg-btn.active { background: var(--navy); color: #fff; }
+    .seg-btn:hover:not(.active) { background: var(--card); color: var(--navy); }
+    .seg-sub { color: var(--faint); font-size: .85rem; margin: 0 2px 6px; direction: rtl; }
     .seg-sub span { direction: ltr; display: inline-block; }
     .btn-row { margin-top: 20px; }
     .ghost {
-      background: transparent; border: 1px solid var(--border); color: var(--text-dim);
-      padding: 8px 14px; font-size: 13px; font-weight: 500;
+      background: var(--card); border-color: var(--navy); color: var(--navy);
+      padding: 8px 14px; font-size: .82rem; font-weight: 500;
     }
-    .ghost:hover { color: var(--text); border-color: var(--border-hover); }
-    .msg { font-size: 14px; margin-top: 14px; }
-    .msg.error { color: #fca5a5; }
+    .ghost:hover { background: var(--soft); color: var(--navy-hover); border-color: var(--navy-hover); }
+    .msg { font-size: .9rem; margin-top: 14px; }
+    .msg.error { color: var(--bad); }
     .result {
-      margin-top: 18px; padding: 16px 18px; border-radius: 14px;
-      background: var(--tag-bg); border: 1px solid var(--border);
+      margin-top: 18px; padding: 16px 18px; border-radius: 12px;
+      background: var(--soft); border: 1px solid var(--line);
       display: none; align-items: center; gap: 12px; flex-wrap: wrap;
     }
     .result.show { display: flex; }
-    .result a { color: var(--tag-text); font-weight: 700; direction: ltr; word-break: break-all; }
+    .result a { color: var(--navy); font-family: 'Rubik', sans-serif; font-weight: 700; direction: ltr; word-break: break-all; text-decoration: none; }
+    .result a:hover { color: var(--navy-hover); text-decoration: underline; text-underline-offset: 3px; }
     .links { margin-top: 28px; }
-    .links h3 { font-size: 15px; color: var(--text-dim); margin: 0 0 12px; font-weight: 500; }
+    .links h3 { font-family: 'Rubik', sans-serif; font-size: 17px; color: var(--navy); margin: 0 0 14px; font-weight: 700; }
     .link-item {
       display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-      padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px;
       background: var(--card); margin-bottom: 10px;
     }
-    .link-item .short { color: var(--tag-text); font-weight: 700; direction: ltr; text-decoration: none; }
-    .link-item .short:hover { text-decoration: underline; }
-    .link-item .dest { color: var(--text-soft); font-size: 12px; direction: ltr; flex: 1 1 100%; word-break: break-all; }
-    .clicks { font-size: 13px; color: var(--text-dim); background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .link-item:hover { border-color: var(--line-strong); }
+    .link-item .short { color: var(--navy); font-family: 'Rubik', sans-serif; font-weight: 700; direction: ltr; text-decoration: none; word-break: break-all; }
+    .link-item .short:hover { color: var(--navy-hover); text-decoration: underline; text-underline-offset: 3px; }
+    .link-item .dest { color: var(--faint); font-size: .8rem; direction: ltr; text-align: left; flex: 1 1 100%; word-break: break-all; }
+    .clicks { font-family: 'Rubik', sans-serif; font-size: .8rem; font-weight: 500; color: var(--navy-hover); background: var(--soft); border: 1px solid var(--line); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
     .spacer { flex: 1; }
-    .icon-btn { background: transparent; border: none; padding: 6px 8px; font-size: 15px; color: var(--text-soft); cursor: pointer; }
-    .icon-btn:hover { color: var(--text); transform: none; }
-    .empty { color: var(--text-soft); font-size: 14px; }
-    .gate-note { color: var(--text-soft); font-size: 13px; margin-top: 10px; }
+    .icon-btn { background: transparent; border: none; padding: 6px 8px; font-size: 15px; color: var(--faint); cursor: pointer; border-radius: 8px; }
+    .icon-btn:hover { background: var(--soft); color: var(--navy); }
+    .empty { color: var(--faint); font-size: .95rem; }
+    .gate-note { color: var(--faint); font-size: .85rem; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <div class="bg-glow" aria-hidden="true"></div>
-
   <div class="wrap">
-    <a class="back" href="../">← כל הכלים</a>
-    <header style="text-align:center; padding: 12px 0 4px;">
-      <h1 style="font-size:clamp(28px,5vw,42px); font-weight:900; margin:0 0 8px;
-                 background:linear-gradient(135deg,#fff,#c4b5fd);-webkit-background-clip:text;
-                 background-clip:text;-webkit-text-fill-color:transparent;">מקצר הקישורים שלי</h1>
-      <p style="color:var(--text-dim); margin:0;">קישורים קצרים עם הדומיין שלי, <span style="direction:ltr;">go.omri-iram.co.il</span></p>
+    <a class="back" href="../">→ חזרה לכל הכלים</a>
+    <header class="masthead">
+      <div class="kicker">הכלים של עומרי אירם</div>
+      <h1>מקצר הקישורים <span class="em">שלי</span></h1>
+      <p class="lede">קישורים קצרים עם הדומיין שלי, <span>go.omri-iram.co.il</span></p>
     </header>
 
     <!-- Google sign-in gate -->
