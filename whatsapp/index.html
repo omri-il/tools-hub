@@ -697,10 +697,13 @@
         if(i>=5&&!posts.length) continue;   // Friday and Saturday only with a post
         const name=DAY_HE[i]+' '+lab(date), now=date===t;
         let status=['none','ריק'];
-        if(posts.length){
-          const all=posts.map(statusOf).sort((a,b)=>URGENT[a[0]]-URGENT[b[0]]);
-          status=[all[0][0],(posts.length>1?posts.length+' פוסטים · ':'')+all[0][1]];
-        }
+        // a day with a post that went out or will go out shows that post; drafts left beside it are not "waiting"
+        const real=posts.filter(p=>p.sent||waiting(p)||p.failed), open=posts.filter(p=>p.draft&&!p.sent);
+        if(real.length){
+          const all=real.map(statusOf).sort((a,b)=>URGENT[a[0]]-URGENT[b[0]]);
+          status=[all[0][0],(real.length>1?real.length+' פוסטים · ':'')+all[0][1]];
+        }else if(open.length) status=date>=t?['draft',open.length>1?open.length+' טיוטות מחכות':'טיוטה מחכה']:['none','לא נשלח'];
+        else if(posts.length) status=['skip','דילגת'];
         const click=posts.length===1?()=>openPost(posts[0]):posts.length>1?()=>daySheet(date,name,posts,date>=t):date>=t?()=>openEditor({date}):null;
         const row=mk(click?'button':'div','wrow'+(now?' now':''),'',click);
         row.append(mk('span','wd',name+(now?', היום':'')),mk('span','ws s-'+status[0],status[1]));
