@@ -1,7 +1,7 @@
 // The WhatsApp posts app on the phone (a PWA, 2026-10-22): the page itself, kept for a moment
 // without a connection; what is shared into the app from another app ("share → פוסטים"); and the
 // notifications the server sends (bot/push.py). Scope: /whatsapp/ only.
-const SHELL = 'wa-shell-v2', SHARE = 'wa-share';
+const SHELL = 'wa-shell-v3', SHARE = 'wa-share';
 const PAGES = ['./', './manifest.webmanifest', './favicon.svg', './icons/icon-192.png'];
 
 self.addEventListener('install', e => {
