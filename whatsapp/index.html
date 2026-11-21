@@ -78,14 +78,27 @@
     .week{display:flex;flex-direction:column;gap:8px}
     .week h2{margin:0;font-size:17px;font-weight:700;color:var(--navy)}
     .wlist{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-    .wrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border:0;border-bottom:1px solid #E6EAF1;
-          font-size:16px;background:#fff;color:var(--navy);width:100%;text-align:start;min-height:52px}
-    .wrow:last-child{border-bottom:0}
+    /* a day: its name and status, and under them what is already in it (Omri, 2026-11-21: "שלא יהיה נסתר") */
+    .wday{display:flex;align-items:center;border-bottom:1px solid #E6EAF1;background:#fff}
+    .wday:last-child{border-bottom:0}
+    .wday.now{background:var(--today)}
+    .wrow{display:flex;flex-direction:column;gap:4px;padding:14px 20px;border:0;
+          font-size:16px;background:transparent;color:var(--navy);flex:1;min-width:0;text-align:start;min-height:52px}
     button.wrow:hover{background:#F7F9FC}
-    .wrow.now{background:var(--today)}
+    .wtop{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%}
     .wrow .wd{font-weight:500;white-space:nowrap}
-    .wrow.now .wd{font-weight:700}
+    .wday.now .wd{font-weight:700}
     .wrow .ws{text-align:end;min-width:0}
+    /* one line, cut at a whole word (a cut inside an English name looks broken in RTL) */
+    .wtxt{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;width:100%;font-size:15px;color:var(--muted);overflow:hidden;overflow-wrap:anywhere}
+    .wtxt b{font-weight:600;color:var(--ink)}
+    /* the other channels, on every post that went out or waits to go out */
+    .wch{flex:none;margin-inline-end:12px;min-height:40px;padding:0 12px;border-radius:10px;background:#fff;color:var(--navy);
+         border:1px solid #C9D1DE;font-size:14px;font-weight:500;white-space:nowrap}
+    .wch:hover{border-color:var(--navy)}
+    .dline-w{display:flex;align-items:center;gap:8px}
+    .dline-w .dline{flex:1;min-width:0}
+    .dline-w .wch{margin:0}
     .s-sent{color:var(--ok)} .s-wait{color:var(--navy)} .s-draft{color:var(--accent-text);font-weight:500}
     .s-fail{color:var(--danger);font-weight:500} .s-skip,.s-none{color:var(--muted)}
     .wnav{display:flex;justify-content:space-between;gap:8px}
@@ -242,6 +255,7 @@
       .wrap{gap:16px}
       .dcard{padding:18px}
       .wrow{padding:12px 14px}
+      .wch{margin-inline-end:8px;padding:0 10px}
       .overlay{padding:0}
       /* one column; the buttons at the bottom however short the page */
       .editor{display:flex;flex-direction:column;border-radius:0;min-height:100vh;min-height:100dvh;padding:14px 12px 0;gap:6px;border:0}
@@ -692,6 +706,17 @@
       const t=mk('span','',firstLine(p.text)||'(בלי טקסט)'); t.dir='auto';
       b.append(t,mk('span','s-'+cls,words));
       b.onclick=()=>{ if(sheetDone) sheetDone(false); openPost(p); };
+      const ch=chButton(p);
+      if(!ch) return b;
+      const w=document.createElement('div'); w.className='dline-w'; w.append(b,ch);
+      return w;
+    }
+    // "📣 לערוצים": the same post, with a link of its own, to Facebook, Skool and the 052 groups (Omri, 2026-11-21:
+    // "למה אין לי כאן שליחה לערוצים נוספים?"); on every post that went out or waits to go out, not only today's
+    function chButton(p){
+      if(!(p.sent||waiting(p))||!hasVersions(p)||!channels().length) return null;
+      const b=mk('button','wch','📣 לערוצים',e=>{ e.stopPropagation(); if(sheetDone) sheetDone(false); openVersions(p.text,p.image); });
+      b.title='לשלוח את אותו פוסט לקבוצות הפייסבוק, לסקול ולקבוצות של 052';
       return b;
     }
     // ---- the week of T: one row a day, its status at the other end ----
@@ -713,9 +738,24 @@
         }else if(open.length) status=date>=t?['draft',open.length>1?open.length+' טיוטות מחכות':'טיוטה מחכה']:['none','לא נשלח'];
         else if(posts.length) status=['skip','דילגת'];
         const click=posts.length===1?()=>openPost(posts[0]):posts.length>1?()=>daySheet(date,name,posts,date>=t):date>=t?()=>openEditor({date}):null;
-        const row=mk(click?'button':'div','wrow'+(now?' now':''),'',click);
-        row.append(mk('span','wd',name+(now?', היום':'')),mk('span','ws s-'+status[0],status[1]));
-        box.appendChild(row);
+        const row=mk(click?'button':'div','wrow','',click);
+        const top=document.createElement('span'); top.className='wtop';
+        top.append(mk('span','wd',name+(now?', היום':'')),mk('span','ws s-'+status[0],status[1]));
+        row.appendChild(top);
+        // what is in the day: the post that went out or waits; else his own draft; else the system's suggestion
+        // (a day that passed shows only what went out: a draft left there never went anywhere)
+        const mine=open.filter(p=>!p.made_by), shown=real[0]||(date>=t?mine[0]||open[0]:null);
+        if(shown){
+          const tx=document.createElement('span'); tx.className='wtxt'; tx.dir='auto';
+          if(!real.length&&!mine.length){ const b=document.createElement('b'); b.textContent='הצעה: '; tx.appendChild(b); }
+          tx.appendChild(document.createTextNode(firstLine(shown.text)||'(בלי טקסט)'));
+          row.appendChild(tx);
+        }
+        const day=document.createElement('div'); day.className='wday'+(now?' now':'');
+        day.appendChild(row);
+        const ch=real.length===1?chButton(real[0]):null;
+        if(ch) day.appendChild(ch);
+        box.appendChild(day);
       }
       const f=firstWeek();
       $('week-prev').disabled=addDays(start,-7)<addDays(f,-7*MAXW);
