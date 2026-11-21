@@ -87,10 +87,15 @@ folders and backends, so it has no visibility column (it disagreed with live con
 (art from claude-config `scripts/favicon/make_favicons.py`, row `teacherclub`). Do not delete it, the live app links to it.
 
 **`whatsapp/` in short:** the API is content-machine's `bot/wa_web.py` (systemd `content-machine-wa-web`), which checks
-`X-Session` with go-shortener; posts live in the Google Sheet "פוסטים לוואטסאפ". Board views חודש · שבוע · יום · רשימה,
-approvals, typo check, ideas, 🎬 kanban, 📣 versions for other channels (✓ פרסמתי כאן, 🚀 Claude posts to Facebook),
-late-hour warning, 📊 מי עוזר לי (2026-11-15: clicks a post and sign-ups per channel). Feature-by-feature detail
-lives in content-machine's CLAUDE.md and in `docs/HISTORY.md`. PWA files: `whatsapp/manifest.webmanifest`, `whatsapp/sw.js`, `whatsapp/icons/`.
+`X-Session` with go-shortener; posts live in the Google Sheet "פוסטים לוואטסאפ". **One screen, no tabs** (2026-11-21,
+Omri approved the mockup; the tabs, calendar, kanban, panels and the Facebook queue were deleted after 14 days of use
+showed he only writes, sends, and sends versions to 052): the day card for T (today if a posting day, else the next
+one: its post done, or one candidate at a time: his draft, a system draft, an idea), "לכתוב פוסט משלי", and the week
+list (`/state` `weeks` + `archive`, more weeks by `weeks` / `back`). The gear swaps in the settings. The status line
+shows only a problem (a gateway down, events not read, Shabbat quiet hours now). Kept as they were: the editor with
+its typo check and late-hour warning, send now, the fix of a sent post, and the 📣 versions window (copy, 📤 from 052,
+🧪 test). Feature-by-feature detail of the server lives in content-machine's CLAUDE.md and in `docs/HISTORY.md`.
+PWA files: `whatsapp/manifest.webmanifest`, `whatsapp/sw.js`, `whatsapp/icons/`.
 
 ## Usage analytics
 

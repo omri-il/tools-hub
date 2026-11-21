@@ -12,100 +12,98 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="../css/fonts.css?v=1" />
   <style>
-    :root{ --bg:#f6f7f9; --card:#ffffff; --panel:#f6f7f9; --ink:#202124; --muted:#5f6368; --faint:#6f747a;
-           --line:#dadce0; --accent:#ffc250; --accent-ink:#202124; --accent-text:#7D5700; --navy:#002045;
-           --ok:#188038; --ok-bg:#e6f4ea; --danger:#c5221f; --danger-bg:#fce8e6; --warn:#8f4e00; --warn-bg:#fef7e0;
-           --draft:#6b46c1; --draft-bg:#f3effd; --radius:10px; --shadow:0 1px 3px rgba(60,64,67,.16);
+    :root{ --bg:#F3F5F9; --card:#ffffff; --panel:#f6f7f9; --ink:#002045; --muted:#4A5568; --faint:#6f747a;
+           --line:#DDE3EC; --accent:#FFC250; --accent-ink:#002045; --accent-text:#7D5700; --navy:#002045; --navy-2:#00356F;
+           --ok:#14532D; --ok-bg:#DFF3E6; --danger:#c5221f; --danger-bg:#fce8e6; --warn:#8f4e00; --warn-bg:#fef7e0;
+           --today:#FFF6E0; --radius:16px; --shadow:0 1px 3px rgba(60,64,67,.12);
            /* WhatsApp's own light look, for the previews */
            --wa-bg:#efeae2; --bubble:#ffffff; --wa-ink:#111b21; --wa-muted:#667781; --wa-link:#027eb5; --wa-name:#1f8a4c;
            font-family:'Rubik','Segoe UI',Arial,sans-serif; }
     *{box-sizing:border-box;margin:0;padding:0}
+    html{overflow-x:clip}
     ::placeholder{color:var(--faint);opacity:1}
     ::selection{background:rgba(255,194,80,.45);color:var(--ink)}
-    body{background:var(--bg);color:var(--ink);min-height:100vh;padding:28px 16px 80px;line-height:1.5}
-    .wrap{max-width:1040px;margin:0 auto}
-    .back{display:inline-block;color:var(--faint);text-decoration:none;font-size:.85rem;margin-bottom:14px}
-    .masthead{text-align:center;margin-bottom:20px}
-    .kicker{font-size:.74rem;font-weight:700;letter-spacing:.06em;color:var(--accent-text);cursor:default;user-select:none}
-    h1{font-weight:900;font-size:clamp(1.8rem,5vw,2.5rem);margin-top:8px}
-    h1 .em{color:var(--accent-text)}
-    .lede{color:var(--muted);font-weight:300;margin:8px auto 0;max-width:560px}
-    .statusbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 18px;font-size:.86rem}
-    .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted)}
-    .pill b{color:var(--ink);font-weight:600}
-    .pill.ok{border-color:#b7dfc2;background:var(--ok-bg)} .pill.ok b{color:var(--ok)} .pill.bad{border-color:#f3b8b5;background:var(--danger-bg);color:var(--danger)}
-    .pill a{color:inherit}
-    .shnote{color:var(--faint);font-size:.8rem;padding:4px 0}
-    .tabs{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
-    .tab{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--muted);padding:8px 18px;cursor:pointer;font-family:inherit;font-size:.92rem;font-weight:600}
-    .tab.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-    .pane{display:none} .pane.active{display:block}
-    h2{font-size:1.05rem;font-weight:700;margin:26px 4px 10px;color:var(--muted)}
-    .day{display:grid;grid-template-columns:230px 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:10px}
-    .day.today{box-shadow:0 0 0 2px var(--accent)}
-    .day.past{opacity:.6}
-    .day aside h3{font-size:1.05rem;font-weight:700}
-    .day aside .cat{color:var(--faint);font-size:.82rem;margin:2px 0 8px}
-    .plan{font-size:.86rem;color:var(--muted);margin-bottom:4px}
-    .plan .st{color:var(--faint);font-size:.76rem}
-    .plan.empty{color:var(--faint);font-size:.8rem}
-    .add{margin-top:8px;background:transparent;border:1px dashed rgba(232,160,20,.5);color:var(--accent-text);border-radius:10px;padding:6px 12px;font-family:inherit;font-size:.86rem;cursor:pointer}
-    .add:hover{background:rgba(232,160,20,.08)}
-    .chat{background:var(--wa-bg);border-radius:12px;padding:14px 12px;min-height:72px;display:flex;flex-direction:column;gap:10px;
-          background-image:radial-gradient(rgba(0,0,0,.025) 1px,transparent 1px);background-size:14px 14px}
-    .item{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-    .meta{display:flex;gap:6px;align-items:center;font-size:.76rem;color:var(--muted)}
-    .chip{border:1px solid currentColor;border-radius:999px;padding:0 8px;font-size:.72rem;white-space:nowrap}
-    .chip.sent{color:var(--ok)} .chip.wait{color:var(--warn)} .chip.fail{color:var(--danger)} .chip.skip{color:var(--faint)}
-    .chip.draft{color:var(--draft)}
-    .chip.to{color:var(--wa-link)}
-    select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:10px 12px}
-    .sugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center;font-size:.8rem;color:var(--muted)}
-    .sg{background:transparent;border:1px dashed rgba(232,160,20,.5);color:var(--accent-text);border-radius:999px;padding:3px 10px;font-family:inherit;font-size:.8rem;cursor:pointer}
-    .sg.on{background:rgba(232,160,20,.16);border-style:solid}
-    .ev .grp{font-size:.78rem;color:var(--muted)}
-    .bubble.draft{outline:1.5px dashed var(--draft)}
-    .evday{font-size:.84rem;color:var(--draft);margin-bottom:4px}
-    .events{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:6px}
-    .ev{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
-    .ev.promote{border-color:rgba(214,140,0,.55)}
-    .ev .when{font-size:.8rem;color:var(--muted)}
-    .ev .name{font-weight:700;font-size:.95rem;line-height:1.35}
-    .ev .nums{display:flex;flex-wrap:wrap;gap:6px;font-size:.78rem;color:var(--muted)}
-    .ev .nums span{background:rgba(0,0,0,.05);border-radius:999px;padding:1px 8px}
-    .ev .nums .hot{color:var(--warn);background:var(--warn-bg)}
-    .ev .post{font-size:.8rem;color:var(--faint)}
-    .ev .add{margin-top:auto;align-self:flex-start}
-    .evnote{color:var(--faint);font-size:.82rem;margin:0 4px 6px}
-    .ev .links{display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem}
-    .ev .links a{color:var(--wa-link);text-decoration:none} .ev .links .no{color:var(--faint)}
-    .chip.md{color:#0b6fa4;max-width:300px;display:inline-block;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
-    .ev .seats{font-size:.8rem;color:var(--ink)} .ev .seats.full{color:var(--danger)}
-    .ev .hist{display:flex;flex-direction:column;gap:2px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}
-    .ev .hist .h-sent{color:var(--ok)} .ev .hist .h-fail{color:var(--danger)} .ev .hist .h-skip{color:var(--faint)} .ev .hist .h-draft{color:var(--draft)}
-    details.evs>summary{cursor:pointer;list-style:none;font-size:1.05rem;font-weight:700;margin:26px 4px 10px;color:var(--muted)}
-    details.evs>summary::-webkit-details-marker{display:none}
-    details.evs>summary::before{content:'◂ ';font-size:.8rem} details.evs[open]>summary::before{content:'▾ '}
-    .meta{flex-wrap:wrap}
-    .chip.ev{display:inline-block;color:var(--draft);max-width:300px;vertical-align:middle;overflow:hidden;text-overflow:ellipsis}
-    .sugpost{position:relative;max-width:min(460px,94%);border:1.5px dashed rgba(107,70,193,.7);border-radius:8px 0 8px 8px;padding:8px 10px;
-           background:rgba(107,70,193,.06);color:var(--muted);font-size:.86rem;cursor:pointer;line-height:1.45}
-    .sugpost:hover{background:rgba(107,70,193,.12)}
-    .sugpost b{color:var(--ink)} .sugpost .gtext{white-space:pre-line;color:var(--faint);font-size:.8rem;margin-top:4px;max-height:4.4em;overflow:hidden}
-    .sugpost .gbtns{display:flex;gap:6px;margin-top:6px}
-    .sugpost .gbtns button{background:transparent;border:1px solid rgba(107,70,193,.6);color:var(--draft);border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
-    [draggable=true]{cursor:grab}
-    .drop-on{box-shadow:0 0 0 2px var(--draft);background:rgba(107,70,193,.06)}
-    .dragging{opacity:.4}
-    .draghint{color:var(--faint);font-size:.8rem;margin:0 4px 8px}
-    #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);color:var(--ink);
-           border-radius:10px;padding:10px 16px;font-size:.92rem;z-index:50;display:none;max-width:90vw}
-    #toast.err{border-color:var(--danger);color:var(--danger)}
-    .bubble{position:relative;max-width:min(460px,94%);background:var(--bubble);color:var(--wa-ink);border-radius:8px 0 8px 8px;padding:6px 9px 20px;
+    body{background:var(--bg);color:var(--ink);min-height:100vh;padding:24px 16px 80px;line-height:1.6}
+    button{font-family:inherit;cursor:pointer}
+    button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+    .wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+    .back{color:var(--faint);text-decoration:none;font-size:.85rem;align-self:flex-start}
+    @media (display-mode:standalone){ .back{display:none} }
+    /* the header: the title and the gear */
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{margin:0;font-size:clamp(1.5rem,6vw,1.9rem);font-weight:700;color:var(--navy)}
+    .gear{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid #C9D1DE;border-radius:12px;color:var(--navy)}
+    .gear[hidden]{display:none}
+    /* the status line: only a problem shows */
+    .statusbar{display:flex;flex-wrap:wrap;gap:8px;font-size:.9rem}
+    .statusbar:empty{display:none}
+    .pill{background:var(--danger-bg);border:1px solid #f3b8b5;color:var(--danger);border-radius:999px;padding:5px 12px}
+    .pill b{font-weight:600}
+    .loading,.error{text-align:center;color:var(--muted);padding:40px 0}
+    .error{color:var(--danger)}
+    /* the day card */
+    .dcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;gap:16px}
+    .dhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .tag{background:var(--accent);color:var(--navy);font-size:15px;font-weight:700;padding:4px 14px;border-radius:999px}
+    .dwhen{font-size:15px;color:var(--muted)}
+    .dtitle{margin:0;font-size:22px;font-weight:700;color:var(--navy);line-height:1.35;overflow-wrap:anywhere}
+    .dwhy{font-size:16px;color:var(--muted);overflow-wrap:anywhere}
+    .wa{background:var(--wa-bg);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;
+        background-image:radial-gradient(rgba(0,0,0,.045) 1px,transparent 1px);background-size:14px 14px}
+    /* a long post stays short in the day card, so the send button is on the first screen; a click opens all of it */
+    .dcard .wa .bubble{max-height:300px;overflow:hidden;cursor:pointer}
+    .dcard .wa .bubble.clip{-webkit-mask-image:linear-gradient(#000 75%,transparent);mask-image:linear-gradient(#000 75%,transparent)}
+    .dbtns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .b-main,.b-sec,.b-link{min-height:48px;border-radius:12px;font-size:17px}
+    .b-main{padding:0 22px;background:var(--navy);color:#fff;border:0;font-weight:700}
+    .b-main:hover{background:var(--navy-2)}
+    .b-sec{padding:0 20px;background:#fff;color:var(--navy);border:1px solid var(--navy);font-weight:500}
+    .b-link{padding:0 12px;background:transparent;color:var(--navy);border:0;font-weight:500;text-decoration:underline}
+    .b-main:disabled,.b-sec:disabled,.b-link:disabled{opacity:.55;cursor:default}
+    .counter{font-size:14px;color:var(--muted);margin-inline-start:auto}
+    .done{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .done-l{display:flex;align-items:center;gap:12px}
+    .okicon{width:40px;height:40px;flex:none;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:flex;align-items:center;justify-content:center}
+    .done-big{font-size:20px;font-weight:700;color:var(--navy)}
+    .done-sub{font-size:15px;color:var(--muted)}
+    .dlist{display:flex;flex-direction:column;gap:8px}
+    .dline{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;padding:8px 14px;background:#fff;
+           border:1px solid var(--line);border-radius:12px;font-size:16px;color:var(--navy);text-align:start;width:100%}
+    .dline span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+    .empty{font-size:18px;color:var(--muted)}
+    /* write my own */
+    .write{min-height:56px;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:var(--navy);border:1px dashed var(--navy);border-radius:var(--radius);font-size:18px;font-weight:500}
+    .write.main{background:var(--navy);color:#fff;border-style:solid}
+    /* the week */
+    .week{display:flex;flex-direction:column;gap:8px}
+    .week h2{margin:0;font-size:17px;font-weight:700;color:var(--navy)}
+    .wlist{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+    .wrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border:0;border-bottom:1px solid #E6EAF1;
+          font-size:16px;background:#fff;color:var(--navy);width:100%;text-align:start;min-height:52px}
+    .wrow:last-child{border-bottom:0}
+    button.wrow:hover{background:#F7F9FC}
+    .wrow.now{background:var(--today)}
+    .wrow .wd{font-weight:500;white-space:nowrap}
+    .wrow.now .wd{font-weight:700}
+    .wrow .ws{text-align:end;min-width:0}
+    .s-sent{color:var(--ok)} .s-wait{color:var(--navy)} .s-draft{color:var(--accent-text);font-weight:500}
+    .s-fail{color:var(--danger);font-weight:500} .s-skip,.s-none{color:var(--muted)}
+    .wnav{display:flex;justify-content:space-between;gap:8px}
+    .wnav .b-link{font-size:15px;min-height:44px}
+    .pane[hidden]{display:none}
+    footer{text-align:center;color:var(--faint);font-size:.8rem}
+    footer a{color:var(--muted)}
+    #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border:1px solid var(--ink);
+           border-radius:10px;padding:10px 16px;font-size:.92rem;z-index:50;display:none;max-width:90vw;box-shadow:0 4px 14px rgba(60,64,67,.3)}
+    #toast.err{background:var(--danger);border-color:var(--danger)}
+    #toast .undo{background:none;border:0;color:var(--accent);font-size:.92rem;font-weight:700;margin-inline-start:12px;padding:0}
+    /* a WhatsApp bubble */
+    .bubble{position:relative;max-width:min(460px,100%);background:var(--bubble);color:var(--wa-ink);border-radius:8px 0 8px 8px;padding:6px 9px 20px;
             box-shadow:0 1px .5px rgba(11,20,26,.13);font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14.2px;line-height:19px;cursor:pointer;text-align:start}
     .bubble::before{content:"";position:absolute;top:0;right:-8px;border:8px solid transparent;border-top-color:var(--bubble);border-right:0}
     .bubble:hover{outline:1px solid rgba(232,160,20,.45)}
     .bubble.noclick{cursor:default} .bubble.noclick:hover{outline:none}
+    .bubble.skipped{opacity:.55}
     .bubble .who{display:block;color:var(--wa-name);font-size:12.8px;font-weight:600;margin-bottom:2px}
     .bubble .text{white-space:normal;overflow-wrap:anywhere}
     .bubble .text a{color:var(--wa-link);text-decoration:none;unicode-bidi:isolate}
@@ -120,145 +118,43 @@
     .bubble .card b{font-size:13.5px}
     .bubble .card span{font-size:12.5px;color:var(--wa-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .bubble .card small{font-size:12px;color:var(--wa-muted)}
-    .bubble.skipped{opacity:.55}
-    .stats{display:flex;flex-wrap:wrap;gap:6px;font-size:.78rem;color:var(--muted)}
-    .stats span{background:rgba(0,0,0,.05);border-radius:999px;padding:1px 8px}
-    .none{border:1.5px dashed rgba(197,34,31,.55);color:var(--danger);border-radius:8px;padding:10px;text-align:center;font-size:.9rem}
-    .none.past{border-color:var(--line);color:var(--faint)}
-    .more{display:block;margin:18px auto 0;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 18px;font-family:inherit;cursor:pointer}
-    /* the calendar: month / week / day / list (Omri, 2026-10-29) */
-    .calbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:22px 0 12px}
-    .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
-    .seg button{background:transparent;border:0;color:var(--muted);border-radius:999px;padding:6px 14px;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer}
-    .seg button.on{background:var(--accent);color:var(--accent-ink)}
-    .calnav{display:flex;gap:6px;align-items:center}
-    .calnav h2{margin:0 8px;color:var(--ink);font-size:1.1rem;min-width:150px;text-align:center}
-    .navb{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;min-width:40px;height:36px;padding:0 12px;font-family:inherit;font-size:.9rem;cursor:pointer}
-    .navb:disabled{opacity:.35;cursor:default}
-    .calnote{color:var(--faint);font-size:.8rem;margin:0 4px 8px}
-    .legend{display:flex;flex-wrap:wrap;gap:4px 12px;color:var(--faint);font-size:.76rem;margin:8px 4px 0}
-    .mgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) repeat(2,minmax(0,.55fr));gap:4px}
-    .mhead{text-align:center;font-size:.78rem;color:var(--faint);font-weight:600;padding:2px 0}
-    .mhead .s{display:none}
-    .mcell{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:104px;padding:5px 6px;display:flex;flex-direction:column;gap:2px;cursor:pointer;min-width:0}
-    .mcell:hover{border-color:rgba(232,160,20,.45)}
-    .mcell.out{opacity:.35} .mcell.past{background:var(--panel)} .mcell.closed{background:transparent;cursor:default}
-    .mcell.closed:hover{border-color:var(--line)}
-    .mcell.today{box-shadow:0 0 0 2px var(--accent)}
-    .mcell .num{display:flex;justify-content:space-between;gap:4px;font-size:.84rem;font-weight:700}
-    .mcell .num small{font-weight:400;color:var(--faint);font-size:.68rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .mcell .es{display:flex;flex-direction:column;gap:2px;min-width:0}
-    .ce{font-size:.72rem;line-height:1.3;border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(0,0,0,.05);color:var(--muted)}
-    .ce.sent{background:var(--ok-bg);color:var(--ok)} .ce.wait{background:var(--warn-bg);color:var(--warn)}
-    .ce.draft{background:var(--draft-bg);color:var(--draft)} .ce.fail{background:var(--danger-bg);color:var(--danger)}
-    .ce.skip{color:var(--faint);text-decoration:line-through}
-    .ce.sug{background:transparent;border:1px dashed rgba(107,70,193,.7);color:var(--draft)}
-    .ce.evt{background:transparent;color:var(--draft);padding-inline:2px}
-    .ce.more{background:transparent;color:var(--faint)}
-    .ce.none{background:transparent;color:var(--danger);opacity:.7}
-    .ce.x{display:none}
-    .wgrid{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;align-items:start}
-    .wcol{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
-    .wcol.today{box-shadow:0 0 0 2px var(--accent)} .wcol.past{opacity:.7} .wcol.closed{background:transparent}
-    .wcol .wh{cursor:pointer;border-bottom:1px solid var(--line);padding-bottom:6px}
-    .wcol .wh h3{font-size:1rem;font-weight:700} .wcol .wh .cat{color:var(--faint);font-size:.78rem}
-    .wcol .wh:hover h3{color:var(--accent-text)}
-    .wcol .plan{font-size:.78rem}
-    .wpost{background:var(--wa-bg);border:1px solid var(--line);border-radius:10px;padding:7px 9px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
-    .wpost:hover{border-color:rgba(232,160,20,.45)}
-    .wpost.draft{border:1.5px dashed var(--draft)} .wpost.skipped{opacity:.55}
-    .wpost .wt a{pointer-events:none;color:var(--wa-link)}
-    .wpost .wt{font-size:.82rem;color:var(--wa-ink);white-space:pre-line;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
-    .wpost .fixsent{align-self:flex-start}
-    .wpost .meta .chip{max-width:100%;overflow:hidden;text-overflow:ellipsis}
-    .wcol .sugpost{max-width:100%;font-size:.8rem}
-    .wcol .none{font-size:.8rem;padding:8px}
-    .wcol .add{margin-top:0;align-self:stretch}
-    .closednote{color:var(--faint);font-size:.82rem;text-align:center;padding:8px 0}
-    /* dragging (2026-10-29): every day that takes a post lights up while one is carried; a long press on the phone */
-    .movable{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-    .grip{color:var(--faint);font-size:.9rem;line-height:1;cursor:grab;margin-inline-end:2px}
-    body.dragging-on [data-drop]:not(.shut){outline:2px dashed #b9a6ef;outline-offset:-2px}
-    body.dragging-on [data-drop].drop-on{outline:2px solid var(--draft);background:var(--draft-bg)}
-    .drag-ghost{position:fixed;z-index:60;pointer-events:none;opacity:.92;box-shadow:0 8px 24px rgba(60,64,67,.35);transform:rotate(-2deg);
-           background:var(--card);border-radius:10px;max-height:160px;overflow:hidden}
-    /* approved = green (Omri, 2026-10-29: "if I approved it, it shows in green"); sent = solid green */
-    .chip.ok{color:var(--ok);background:var(--ok-bg)}
-    .chip.sent{color:#fff;background:var(--ok);border-color:var(--ok)}
-    .ce.ok{background:var(--ok-bg);color:var(--ok);box-shadow:inset 0 0 0 1px #9fd3ae}
-    .ce.sent{background:var(--ok);color:#fff}
-    .wpost.ok{border-color:#9fd3ae;box-shadow:inset 3px 0 0 var(--ok)}
-    .apv-ok{color:var(--ok)}
-    /* 📜 what was sent */
-    .hist-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
-    .hist-tools input{flex:1 1 220px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:.95rem;padding:9px 12px}
-    .hist-day{margin:18px 4px 8px;font-size:.95rem;font-weight:600;color:var(--ink)}
-    .hist-item{display:grid;grid-template-columns:200px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-               box-shadow:var(--shadow);padding:12px;margin-bottom:8px}
-    .hist-item .hmeta{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--muted)}
-    .hist-item .hmeta b{color:var(--ink);font-size:.95rem}
-    .hist-item .chat{min-height:0}
-    @media (max-width:760px){ .hist-item{grid-template-columns:1fr} }
-    /* 🎬 the content kanban */
-    .kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:start}
-    .kcol{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:8px;display:flex;flex-direction:column;gap:8px;min-height:120px;min-width:0}
-    .kcol h3{font-size:.95rem;font-weight:600;display:flex;justify-content:space-between;padding:2px 4px}
-    .kcol h3 small{color:var(--faint);font-weight:400}
-    .kcard{background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 2px rgba(60,64,67,.1);padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
-    .kcard:hover{border-color:#e6b04a}
-    .kcard .kt{font-weight:600;font-size:.9rem;line-height:1.35;overflow-wrap:anywhere}
-    .kcard .kh{font-size:.8rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .kcard .kchips{display:flex;flex-wrap:wrap;gap:4px;font-size:.72rem;color:var(--muted)}
-    .kcard .kchips span{background:var(--panel);border-radius:999px;padding:0 7px}
-    .kcard .kchips .miss{background:var(--warn-bg);color:var(--warn)}
-    .kcol .kmore{background:none;border:0;color:var(--muted);font-family:inherit;font-size:.82rem;cursor:pointer}
-    .kform{display:flex;flex-direction:column;gap:10px}
-    .kform label{margin-bottom:2px}
-    .kform input,.kform select,.kform textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:16px;padding:8px 10px}
-    .kform textarea{min-height:70px;resize:vertical}
-    .kform .idea{background:var(--panel);border-radius:8px;padding:8px 10px;font-size:.88rem;color:var(--muted);white-space:pre-line;max-height:9em;overflow:auto}
-    .kform .row2{gap:8px}
-    @media (max-width:760px){ .kgrid{grid-template-columns:1fr} }
-    /* 💡 ideas for posts */
-    .ev.idea .post{color:var(--muted)}
-    .ev.idea .outline{margin:0;padding-inline-start:18px;font-size:.8rem;color:var(--muted)}
-    .ev.idea .postbtns{margin-top:auto}
-    .ev.idea .add{margin-top:0}
-    .add.later{border-color:var(--line);color:var(--muted)}
-    @media (max-width:760px){
-      .calbar{gap:8px;margin-top:16px;scroll-margin-top:64px}  /* below the sticky tabs */
-      .seg{width:100%} .seg button{flex:1;padding:8px 4px}
-      .calnav{width:100%;justify-content:space-between} .calnav h2{min-width:0;font-size:1rem;margin:0}
-      .mgrid{grid-template-columns:repeat(5,minmax(0,1fr)) repeat(2,minmax(0,.45fr));gap:3px}
-      .mhead .l{display:none} .mhead .s{display:inline}
-      .mcell{min-height:64px;padding:3px}
-      .mcell .num{font-size:.78rem} .mcell .num small{display:none}
-      .mcell .es{flex-direction:row;flex-wrap:wrap;gap:1px}
-      .ce{padding:0 2px;font-size:.7rem} .ce .ct{display:none} .ce.x{display:block} .ce.more{display:none}
-      .wgrid{grid-template-columns:1fr}
-    }
-    .loading,.error{text-align:center;color:var(--muted);padding:40px 0}
-    .error{color:var(--danger)}
-    /* editor */
+    /* settings */
+    .setting{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+    .setting .check{font-size:1rem;color:var(--ink)}
+    .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chrow{display:grid;grid-template-columns:110px 1fr 40px;grid-template-areas:"n n x" "k u u" "g g g";gap:6px;margin-top:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+    .chrow .n{grid-area:n} .chrow .k{grid-area:k} .chrow .u{grid-area:u} .chrow .x{grid-area:x} .chrow .g{grid-area:g}
+    .chrow .g[hidden]{display:none}
+    .chrow input,.chrow select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:16px;padding:7px 9px}
+    .chrow .x{background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--faint);font-size:1rem;min-height:44px}
+    /* the app on the phone: install, notifications */
+    .appbar{display:flex;flex-direction:column;gap:8px}
+    .appbar:empty{display:none}
+    .banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid #f0dfae;border-radius:12px;padding:10px 12px;font-size:.9rem}
+    .banner span{flex:1;min-width:180px}
+    .banner .btn{padding:8px 14px;font-size:.88rem}
+    .banner .x{background:none;border:0;color:var(--faint);font-size:1.1rem;padding:4px;min-width:44px;min-height:44px}
+    /* the editor and the other windows (kept as they were) */
     .overlay{position:fixed;inset:0;background:rgba(32,33,36,.45);display:none;align-items:flex-start;justify-content:center;padding:28px 12px;overflow:auto;z-index:20}
     .overlay.open{display:flex}
-    .editor{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(980px,100%);padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .editor{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(980px,100%);padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:18px;box-shadow:var(--shadow)}
     .editor h3{grid-column:1/-1;font-size:1.15rem}
+    .editor>*{min-width:0}
     .field{margin-bottom:12px}
     label{display:block;font-weight:600;font-size:.84rem;margin-bottom:5px;color:var(--muted)}
-    input[type=date],input[type=time],textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:10px 12px}
+    select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:10px 12px}
+    input[type=date],input[type=time],textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.96rem;padding:10px 12px}
     textarea{min-height:230px;resize:vertical;line-height:1.55}
-    input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,160,20,.16)}
+    input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,194,80,.35)}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .hint{font-size:.76rem;color:var(--faint);margin-top:4px}
-    .toolbar{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
-    .tb{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;min-width:34px;height:30px;font-family:inherit;cursor:pointer;padding:0 8px}
-    .toolbar{position:relative}
+    .toolbar{position:relative;display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+    .tb{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;min-width:34px;height:30px;padding:0 8px}
     .emojis{position:absolute;top:36px;right:0;z-index:5;width:min(352px,100%);max-height:300px;overflow:auto;background:var(--card);
             border:1px solid var(--line);border-radius:12px;padding:6px 8px 8px;box-shadow:0 10px 30px rgba(60,64,67,.22)}
     .emojis h4{font-size:.72rem;font-weight:600;color:var(--faint);margin:6px 4px 2px}
     .emojis .grid{display:flex;flex-wrap:wrap}
-    .emojis button{background:none;border:0;border-radius:8px;width:38px;height:38px;font-size:1.35rem;line-height:1;cursor:pointer;
+    .emojis button{background:none;border:0;border-radius:8px;width:38px;height:38px;font-size:1.35rem;line-height:1;
                    font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif}
     .emojis button:hover,.emojis button:focus-visible{background:rgba(232,160,20,.14);outline:none}
     .emojis .tip{font-size:.72rem;color:var(--faint);margin:8px 4px 0}
@@ -266,21 +162,26 @@
     .drop{border:1.5px dashed var(--line);border-radius:10px;padding:12px;text-align:center;color:var(--muted);font-size:.86rem;cursor:pointer}
     .drop.over{border-color:var(--accent);color:var(--accent-text)}
     .btn.img-paste{margin-top:6px;width:100%;padding:8px 12px;font-size:.86rem;font-weight:500}
-    .thumb{display:flex;gap:10px;align-items:center}
-    .drivelink{margin-top:6px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.86rem;padding:8px 12px}
+    .thumb{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px}
+    .drivelink{margin-top:6px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:.86rem;padding:8px 12px}
     .check{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);margin-top:4px}
     .check.off{opacity:.55}
-    .setting{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;max-width:640px;margin:0 auto 12px}
-    .setting .check{font-size:1rem;color:var(--ink)}
-    .phone{background:var(--wa-bg);border-radius:var(--radius);padding:16px 12px;min-height:200px;
-           background-image:radial-gradient(rgba(0,0,0,.025) 1px,transparent 1px);background-size:14px 14px}
+    .sugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center;font-size:.8rem;color:var(--muted)}
+    .sg{background:transparent;border:1px dashed rgba(232,160,20,.5);color:var(--accent-text);border-radius:999px;padding:3px 10px;font-size:.8rem}
+    .sg.on{background:rgba(232,160,20,.16);border-style:solid}
+    .phone{background:var(--wa-bg);border-radius:10px;padding:16px 12px;min-height:200px;
+           background-image:radial-gradient(rgba(0,0,0,.045) 1px,transparent 1px);background-size:14px 14px}
     .phone .bar{color:var(--wa-muted);font-size:.78rem;margin-bottom:10px;text-align:center}
+    .item{display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0}
     .actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .btn{border:0;border-radius:10px;padding:10px 18px;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer}
+    .btn{border:0;border-radius:8px;padding:10px 18px;font-size:.95rem;font-weight:500;min-height:44px}
     .btn.primary{background:var(--accent);color:var(--accent-ink)}
-    .btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+    .btn.primary:hover{filter:brightness(.94)}
+    .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+    .btn.ghost:hover{background:var(--panel)}
     .btn.danger{background:transparent;color:var(--danger);border:1px solid rgba(197,34,31,.45)}
+    .btn.danger.solid{background:var(--danger);color:#fff;border:0}
     .btn:disabled{opacity:.5;cursor:default}
     .msg{font-size:.88rem;color:var(--muted)} .msg.err{color:var(--danger)}
     .proof{grid-column:1/-1;background:var(--warn-bg);border:1px solid #f0dfae;border-radius:12px;padding:12px 14px;font-size:.92rem}
@@ -294,7 +195,6 @@
     .proof.hrs.late{background:var(--danger-bg);border-color:#f3c5c2}
     .proof.hrs .hfoot{color:var(--faint);font-size:.82rem;margin-top:8px}
     .hrs-note{color:var(--warn);font-weight:600}
-    .fixsent{background:transparent;border:1px dashed rgba(232,160,20,.55);color:var(--accent-text);border-radius:999px;padding:2px 10px;font-family:inherit;font-size:.78rem;cursor:pointer}
     .spacer{flex:1}
     /* the editor's ⋯: test, send now, delete, away from the main button */
     .more-wrap{position:relative}
@@ -302,8 +202,8 @@
     .menu{position:absolute;bottom:calc(100% + 8px);left:0;z-index:6;min-width:270px;background:var(--panel);border:1px solid var(--line);
           border-radius:12px;padding:6px;box-shadow:0 12px 32px rgba(60,64,67,.22);display:flex;flex-direction:column}
     .menu[hidden],.menu button[hidden]{display:none}
-    .menu button{background:none;border:0;border-radius:8px;color:var(--ink);font-family:inherit;font-size:.94rem;font-weight:600;text-align:start;
-                 padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+    .menu button{background:none;border:0;border-radius:8px;color:var(--ink);font-size:.94rem;font-weight:600;text-align:start;
+                 padding:10px 12px;display:flex;flex-direction:column;gap:1px}
     .menu button small{font-weight:400;font-size:.78rem;color:var(--muted)}
     .menu button:hover,.menu button:focus-visible{background:rgba(0,0,0,.06);outline:none}
     .menu button:disabled{opacity:.5;cursor:default}
@@ -322,126 +222,9 @@
     .sh-note:empty{display:none}
     .sh-btns{display:flex;gap:8px;flex-wrap:wrap}
     .sh-btns .btn{flex:1 1 auto}
-    .btn.danger.solid{background:var(--danger);color:#fff;border:0}
-    /* the end of "today": all ready, or what is still missing */
-    .ready{display:flex;flex-direction:column;gap:6px;border-radius:var(--radius);padding:12px 16px;margin:0 0 10px;font-size:.92rem}
-    .ready.ok{background:var(--ok-bg);border:1px solid #b7dfc2}
-    .ready.ok b{color:var(--ok);font-size:1.05rem}
-    .ready.todo{background:var(--card);border:1px solid rgba(214,140,0,.4)}
-    .ready.todo b{color:var(--warn)}
-    .ready span{color:var(--muted)}
-    .ready ul{list-style:none;display:flex;flex-direction:column;gap:6px}
-    .ready li{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .ready li .add{margin:0;padding:4px 12px}
-    .empty-add{width:100%;background:transparent;border:1.5px dashed rgba(0,0,0,.14);color:var(--muted);border-radius:8px;padding:10px;
-               font-family:inherit;font-size:.9rem;cursor:pointer}
-    .empty-add:hover{border-color:rgba(232,160,20,.5);color:var(--accent-text)}
-    /* results */
-    .report{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;white-space:pre-wrap;line-height:1.7;font-size:.94rem}
-    .report a{color:var(--wa-link)}
-    table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.86rem;background:var(--card);border-radius:var(--radius);overflow:hidden}
-    th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
-    th{color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap;background:var(--panel)}
-    td.num{text-align:center;font-variant-numeric:tabular-nums}
-    .tablewrap{overflow-x:auto}
-    footer{margin-top:30px;text-align:center;color:var(--faint);font-size:.8rem}
-    footer a{color:var(--muted)}
-    /* drafts waiting for approval, at the top of the board */
-    .apv{background:var(--card);border:1px solid rgba(107,70,193,.45);border-radius:var(--radius);padding:4px 14px;margin-bottom:10px}
-    .apv-item{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid var(--line)}
-    .apv-item:first-child{border-top:0}
-    .apv-head{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-    .apv-when{font-size:.95rem;font-weight:700;color:var(--ink);margin-inline-end:4px}
-    .apv-head .chip{font-size:.74rem;padding:1px 9px}
-    .chip.bot{color:var(--muted)}
-    /* each draft as the bubble it will be (Omri chose this round, 2026-10-28); long ones folded */
-    .apv-chat{background:var(--wa-bg);border-radius:12px;padding:10px 14px 10px 10px;
-              background-image:radial-gradient(rgba(0,0,0,.025) 1px,transparent 1px);background-size:14px 14px}
-    .bubble.clamp .text{max-height:133px;overflow:hidden}
-    .bubble.clamp.cut .text{-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
-    .apv-more{align-self:flex-start;background:none;border:0;color:var(--draft);font-family:inherit;font-size:.84rem;cursor:pointer;padding:0}
-    .apv-btns{display:flex;gap:8px;flex-wrap:wrap}
-    .apv-btns[hidden]{display:none}
-    .apv-btns .btn{padding:8px 14px;font-size:.9rem}
-    .btn.reject{background:transparent;border:1px solid rgba(197,34,31,.45);color:var(--danger)}
-    .btn.reject:hover{background:rgba(197,34,31,.08)}
-    .apv-why{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid rgba(197,34,31,.35);border-radius:12px;padding:10px 12px}
-    .apv-why p{font-size:.86rem;color:var(--muted)}
-    .apv-why .reasons{display:flex;flex-wrap:wrap;gap:6px}
-    .reason{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px;font-family:inherit;font-size:.86rem;cursor:pointer}
-    .reason:hover{border-color:var(--danger);color:var(--danger)}
-    .reason.plain{color:var(--muted)} .reason.back{border:0;color:var(--faint)}
-    .apv-gone{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
-    .apv-gone:first-child{border-top:0}
-    .apv-gone .btn{padding:6px 12px;font-size:.86rem}
-    .apv-none{color:var(--faint);font-size:.86rem;margin:0 4px 8px}
-    #toast .undo{background:none;border:0;color:var(--accent-text);font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;margin-inline-start:12px;padding:0}
-    /* 🧠 what was learned from the drafts */
-    .lrn-intro{color:var(--muted);font-size:.9rem;margin:0 4px 12px;max-width:720px}
-    .lrn-kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-    .lrn{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-    .lrn.stopped{border-style:dashed;opacity:.75}
-    .lrn h4{font-size:.95rem;font-weight:700;line-height:1.35}
-    .lrn .bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:rgba(0,0,0,.06)}
-    .lrn .bar i{display:block;height:100%}
-    .lrn .bar .b-ok{background:var(--ok)} .lrn .bar .b-ed{background:var(--draft)} .lrn .bar .b-no{background:var(--danger)} .lrn .bar .b-ig{background:var(--faint)}
-    .lrn .nums{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;color:var(--muted)}
-    .lrn .nums b{color:var(--ink);font-variant-numeric:tabular-nums}
-    .lrn .why{font-size:.78rem;color:var(--faint)}
-    .lrn .state{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:auto}
-    .lrn .state .btn{padding:5px 12px;font-size:.82rem}
-    .lrn .warn{color:var(--warn);font-size:.8rem}
-    .lrn-empty{color:var(--faint);font-size:.84rem;margin:8px 4px}
-    .edits{display:flex;flex-direction:column;gap:10px}
-    .edit{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
-    .edit .ehead{font-size:.8rem;color:var(--muted);margin-bottom:8px}
-    .edit .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .edit .pair div{white-space:pre-line;overflow-wrap:anywhere;font-size:.84rem;line-height:1.5;background:var(--panel);border-radius:10px;padding:8px 10px;max-height:14em;overflow:auto}
-    .edit .pair .was{color:var(--faint)} .edit .pair .now{color:var(--ink);box-shadow:inset 0 0 0 1px rgba(107,70,193,.4)}
-    .edit .pair small{display:block;font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:4px}
-    /* the app on the phone: install, notifications, the new-post button */
-    .appbar{display:flex;flex-direction:column;gap:8px;max-width:640px;margin:0 auto 14px}
-    .appbar:empty{display:none}
-    .banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid #f0dfae;border-radius:12px;padding:10px 12px;font-size:.9rem}
-    .banner span{flex:1;min-width:180px}
-    .banner .btn{padding:8px 14px;font-size:.88rem}
-    .banner .x{background:none;border:0;color:var(--faint);font-size:1.1rem;cursor:pointer;padding:4px}
-    .fab{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:18px;z-index:15;width:58px;height:58px;border-radius:18px;border:0;
-         background:var(--accent);color:var(--accent-ink);font-size:1.5rem;box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer;display:none;
-         transition:transform .22s cubic-bezier(.16,1,.3,1),opacity .22s}
-    /* scrolling down it steps aside, so it never covers a button; scrolling up brings it back */
-    .fab.away{transform:translateY(calc(100% + 40px));opacity:0;pointer-events:none}
-    @media (prefers-reduced-motion:reduce){ .fab{transition:none} }
-    .setting .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    /* the other channels (⚙️) and a post's version for each (Omri, 2026-10-22) */
-    .chrow{display:grid;grid-template-columns:1.3fr 110px 1.4fr 36px;grid-template-areas:"n k u x" "g g g .";gap:6px;margin-top:8px}
-    .chrow .n{grid-area:n} .chrow .k{grid-area:k} .chrow .u{grid-area:u} .chrow .x{grid-area:x} .chrow .g{grid-area:g}
-    .chrow .g[hidden]{display:none}
-    @media (max-width:760px){ .chrow{grid-template-columns:110px 1fr 40px;grid-template-areas:"n n x" "k u u" "g g g";padding-bottom:8px;border-bottom:1px solid var(--line)}
-      .versions{border-radius:0;min-height:100vh;min-height:100dvh;border:0;padding:16px 12px 0} }
-    .chrow input,.chrow select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:inherit;font-size:.9rem;padding:7px 9px}
-    .chrow .x{background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--faint);cursor:pointer;font-size:1rem}
-    .versions{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(760px,100%);padding:20px}
+    /* the versions for the other channels: copy, or send from 052 */
+    .versions{background:var(--card);border:1px solid var(--line);border-radius:16px;width:min(760px,100%);padding:20px;box-shadow:var(--shadow)}
     .versions h3{font-size:1.15rem;margin-bottom:4px}
-    .vr-pic{margin-top:12px}
-    .vr-edit{margin-top:10px}
-    .vr-edit textarea{min-height:190px;margin-bottom:8px}
-    .vr-edit .vbtns{margin-top:8px}
-    .vr-pic .thumb img{width:110px;height:110px}
-    .vr-filter{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:3;background:var(--card);padding:10px 0 6px}
-    .vf{background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--ink);cursor:pointer;font-family:inherit;font-size:.86rem;min-height:36px;padding:4px 13px}
-    .vf small{color:var(--muted);font-size:.78rem}
-    .vf[aria-pressed=true]{background:rgba(232,160,20,.18);border-color:#e8a014;font-weight:700}
-    .vr-all{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:4px 0 2px}
-    .vr-filter[hidden],.vr-all[hidden]{display:none}
-    .vr-all .btn,.vsched .btn{padding:7px 12px;font-size:.86rem}
-    input.when-at{background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:16px;padding:6px 10px;max-width:100%}
-    .vr-note{color:var(--muted);font-size:.8rem;margin:0 0 8px}
-    .vsched{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:.84rem}
-    .vsched .when{color:var(--muted)}
-    .vsched .when.on{color:#a86f00;font-weight:600}
-    .vsched .when.bad{color:var(--fail,#c5221f)}
-    .vcard.timed{border-color:#e8a014}
     .vcard{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--panel)}
     .vcard.done{border-color:#9fd3ae}
     .vhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:700}
@@ -451,70 +234,19 @@
     .vtext{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.88rem;color:var(--muted);margin:8px 0;max-height:9em;overflow:auto;background:var(--bg);border-radius:8px;padding:8px 10px}
     .vbtns{display:flex;gap:8px;flex-wrap:wrap}
     .vbtns .btn{padding:8px 14px;font-size:.9rem}
-    .postbtns{display:flex;gap:6px;flex-wrap:wrap}
     .vnote{font-size:.86rem;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--ok-bg);color:var(--ok);display:none}
     .vnote.on{display:block}
     .vnote.err{background:var(--danger-bg);color:var(--danger)}
-    .vhead .posted{font-weight:600;font-size:.8rem;color:var(--ok)}
-    .vhead .claude{font-weight:600;font-size:.8rem;border-radius:999px;padding:0 8px;background:var(--warn-bg);color:var(--warn)}
-    .vhead .claude.ok{background:var(--ok-bg);color:var(--ok)}
-    .vhead .claude.skip{background:var(--danger-bg);color:var(--danger)}
-    .btn.marked{border-color:var(--ok);color:var(--ok)}
-    .vr-claude{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
-    .vr-claude[hidden]{display:none}
-    .pick{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto;margin:6px 0}
-    .pick label{display:flex;gap:8px;align-items:center;font-size:.92rem}
-    .pick small{color:var(--muted)}
-    /* 📊 who helps */
-    .st-intro{color:var(--muted);font-size:.92rem;margin:0 2px 10px}
-    .st-top{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
-    .st-top h3{font-size:1rem;margin-bottom:6px}
-    .st-top ol{margin:0;padding-inline-start:20px;font-size:.92rem}
-    .st-top li{margin:2px 0}
-    .st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-    .stc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;border-inline-start:5px solid var(--line)}
-    .stc.good{border-inline-start-color:var(--ok)} .stc.poor{border-inline-start-color:var(--danger)}
-    .stc h4{font-size:.98rem;margin:0 0 4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-    .stc h4 .kind{font-weight:400;font-size:.74rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 7px}
-    .stc .pill{display:inline-block;font-size:.8rem;font-weight:600;border-radius:999px;padding:1px 9px;margin-bottom:6px;background:var(--panel);color:var(--muted)}
-    .stc.good .pill{background:var(--ok-bg);color:var(--ok)} .stc.poor .pill{background:var(--danger-bg);color:var(--danger)}
-    .stc .big{font-size:1.5rem;font-weight:700;line-height:1.1}
-    .stc .big small{font-size:.8rem;font-weight:400;color:var(--muted)}
-    .stc .nums{display:flex;gap:10px;flex-wrap:wrap;font-size:.84rem;color:var(--muted);margin-top:4px}
-    .stc .nums b{color:var(--ink)}
-    .stc .meter{height:6px;background:var(--panel);border-radius:3px;margin-top:8px;overflow:hidden}
-    .stc .meter i{display:block;height:100%;background:var(--accent)}
-    .stc details{margin-top:8px;font-size:.84rem}
-    .stc summary{cursor:pointer;color:var(--accent-text)}
-    .stc ul{margin:6px 0 0;padding-inline-start:18px}
-    .stc li{margin:2px 0}
-    .stc li.no{color:var(--faint)}
-    .st-rules{color:var(--faint);font-size:.8rem;margin:12px 2px 0}
-    /* the page never moves sideways on a phone, whatever is too wide inside it (clip keeps the sticky tabs) */
-    html{overflow-x:clip}
-    .day>*,.apv-item>*,.ev,.item{min-width:0}
-    @media (hover:none){ .draghint{display:none} }
-    @media (display-mode:standalone){ .back{display:none} }
     @media (max-width:760px){
-      body{padding:12px 10px 96px}
-      .back{margin-bottom:6px}
-      .masthead{margin-bottom:4px}
-      .lede,.kicker,.statusbar .pill.info{display:none}
-      h1{font-size:1.3rem;margin-top:0}
-      /* the pills wrap: a sideways-scrolling row stuck out of the page on the left on Omri's phone (2026-10-22) */
-      .statusbar{margin:6px 0 8px;gap:6px;font-size:.8rem}
-      .pill{padding:4px 10px}
-      .tabs{position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -10px 12px;padding:8px 10px}
-      .tab{flex:1;padding:10px 4px}
-      h2{margin:18px 2px 8px}
-      .day{grid-template-columns:1fr;padding:12px;gap:10px}
-      .chat{padding:10px 8px}
-      .bubble,.sugpost{max-width:100%}
-      .events{grid-template-columns:1fr}
+      body{padding:12px 12px 96px}
+      .wrap{gap:16px}
+      .dcard{padding:18px}
+      .wrow{padding:12px 14px}
       .overlay{padding:0}
-      /* one column; the buttons at the bottom however short the page (the preview alone stretched a grid's rows) */
+      /* one column; the buttons at the bottom however short the page */
       .editor{display:flex;flex-direction:column;border-radius:0;min-height:100vh;min-height:100dvh;padding:14px 12px 0;gap:6px;border:0}
       .editor>.actions{margin-top:auto}
+      .versions{border-radius:0;min-height:100vh;min-height:100dvh;border:0;padding:16px 12px 0}
       input[type=date],input[type=time],textarea,select,.drivelink{font-size:16px}  /* no zoom on focus */
       textarea{min-height:38vh}
       .tb{min-width:44px;height:40px}
@@ -525,16 +257,9 @@
       .actions .msg{flex-basis:100%;order:-1}
       .actions .spacer{display:none}
       .actions .btn{padding:12px 14px;flex:1 1 auto}
-      .fab{display:block}
-      table{font-size:.8rem}
-      .tabs{gap:5px}
-      .tab{font-size:.8rem;white-space:nowrap;padding:10px 2px}
-      .apv-btns .btn{flex:1 1 0;padding:11px 8px;min-height:44px}
-      .reason{padding:9px 12px}
-      .edit .pair{grid-template-columns:1fr}
       .ed-views{display:flex;gap:6px;grid-column:1/-1;margin:2px 0 6px}
-      .ed-views button{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--muted);font-family:inherit;
-                       font-size:.9rem;font-weight:600;padding:9px 6px;cursor:pointer}
+      .ed-views button{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--muted);
+                       font-size:.9rem;font-weight:600;padding:9px 6px;min-height:44px}
       .ed-views button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
       .editor[data-view=preview] .ed-main,.editor:not([data-view=preview]) .ed-side{display:none}
       .sheet-ov{align-items:flex-end}
@@ -543,75 +268,37 @@
       .menu{min-width:min(290px,calc(100vw - 24px))}
       .menu button{padding:12px}
     }
-  
-    /* ---- the light look of Event Engine's admin (Omri, 2026-10-29: "like my other tools, like events") ---- */
-    .day,.ev,.wcol,.setting,.apv,.lrn,.edit,.report,.versions,.editor,.sheet,.banner,.ready.todo,table{box-shadow:var(--shadow)}
-    .mcell{box-shadow:0 1px 2px rgba(60,64,67,.08)} .mcell.closed,.mcell.out{box-shadow:none}
-    .mcell.past{background:#fafbfc}
-    .masthead{text-align:start;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-    .kicker{order:2;color:var(--muted);font-weight:500;letter-spacing:0}
-    h1{color:var(--navy);font-weight:700;font-size:clamp(1.5rem,4vw,1.9rem);margin-top:0}
-    h1 .em{color:var(--navy)}
-    .lede{order:3;flex-basis:100%;margin:2px 0 0;max-width:none}
-    .statusbar{justify-content:flex-start}
-    .pill{background:var(--card)}
-    .tabs{justify-content:flex-start;gap:2px;border-bottom:1px solid var(--line);margin-bottom:18px}
-    .tab{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;margin-bottom:-1px;padding:10px 14px;color:var(--muted);font-weight:500;font-size:1rem}
-    .tab:hover{color:var(--ink)}
-    .tab.active{background:none;color:var(--ink);border-color:transparent;border-bottom-color:var(--accent)}
-    h2{color:var(--ink);font-weight:600}
-    details.evs>summary{color:var(--ink);font-weight:600}
-    .btn{font-weight:500;border-radius:8px}
-    .btn.primary:hover{filter:brightness(.94)}
-    .btn.ghost{background:var(--card)}
-    .btn.ghost:hover,.navb:hover,.more:hover{background:var(--panel)}
-    .navb,.more{background:var(--card)}
-    .seg{background:var(--card)}
-    .add{border-color:#e6b04a;color:var(--accent-text)}
-    .add:hover{background:var(--warn-bg)}
-    input[type=date],input[type=time],textarea,select,.drivelink,.chrow input,.chrow select{background:var(--card)}
-    input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,194,80,.35)}
-    .chat,.phone,.apv-chat{background-color:var(--wa-bg);background-image:radial-gradient(rgba(0,0,0,.045) 1px,transparent 1px)}
-    .wpost{background:var(--card);border-color:var(--line)}
-    .sugpost{background:var(--draft-bg)}
-    .none{background:var(--card)}
-    #toast{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:0 4px 14px rgba(60,64,67,.3)}
-    #toast.err{background:var(--danger);color:#fff;border-color:var(--danger)}
-    #toast .undo{color:var(--accent)}
-    th{background:var(--panel)}
-    .fab{box-shadow:0 4px 14px rgba(60,64,67,.35)}
-    @media (max-width:760px){
-      .masthead{padding-bottom:8px}
-      .tabs{background:var(--bg);gap:0}
-      .tab{padding:10px 2px}
-    }
 </style>
 </head>
 <body>
   <div class="wrap">
     <a class="back" href="https://tools.omri-iram.co.il">→ לכל הכלים</a>
-    <header class="masthead">
-      <div class="kicker">הכלים של עומרי אירם</div>
-      <h1>פוסטים <span class="em">לוואטסאפ</span></h1>
-      <p class="lede">ערוץ העדכונים של קהילת „בינה בהוראה”. כותבים כאן, וההודעה יוצאת לבד ביום ובשעה שלה.</p>
+    <header class="top">
+      <h1 id="top-title">פוסטים לוואטסאפ</h1>
+      <button class="gear" id="gear" type="button" aria-label="הגדרות" title="הגדרות">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+      </button>
+      <button class="b-link" id="home-back" type="button" hidden>חזרה</button>
     </header>
-    <div class="statusbar" id="statusbar"></div>
+    <div class="statusbar" id="statusbar" role="status"></div>
     <div class="appbar" id="appbar"></div>
-    <nav class="tabs">
-      <button class="tab active" data-pane="board">📅 הלוח</button>
-      <button class="tab" data-pane="content">🎬 תוכן</button>
-      <button class="tab" data-pane="results">🏆 מה עבד</button>
-      <button class="tab" data-pane="stats">📊 מי עוזר לי</button>
-      <button class="tab" data-pane="learn">🧠 מה למדתי</button>
-      <button class="tab" data-pane="settings">⚙️ הגדרות</button>
-    </nav>
-    <section class="pane active" id="board"><div class="loading">טוען…</div></section>
     <div id="toast"></div>
-    <section class="pane" id="results"><div class="loading">טוען…</div></section>
-    <section class="pane" id="content"><div class="loading">טוען…</div></section>
-    <section class="pane" id="learn"><div class="loading">טוען…</div></section>
-    <section class="pane" id="stats"><div class="loading">טוען…</div></section>
-    <section class="pane" id="settings">
+    <main class="pane" id="home">
+      <div class="wrap" style="max-width:none">
+        <section id="day"><div class="loading">טוען…</div></section>
+        <button class="write" id="write" type="button">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
+          לכתוב פוסט משלי
+        </button>
+        <section class="week" aria-labelledby="week-title">
+          <h2 id="week-title">השבוע</h2>
+          <div class="wlist" id="week"></div>
+          <div class="wnav"><button class="b-link" id="week-prev" type="button">השבוע הקודם</button><button class="b-link" id="week-next" type="button">השבוע הבא</button></div>
+        </section>
+      </div>
+    </main>
+    <section class="pane" id="settings" hidden>
+      <div class="wrap" style="max-width:none">
       <div class="setting">
         <label class="check"><input type="checkbox" id="set-footer"> להוסיף בסוף כל הודעה את השורה „כל הפוסטים הקודמים מחכים כאן” והקישור לסקול</label>
         <p class="hint" id="set-footer-hint">רק בערוץ העדכונים. אפשר לוותר עליה גם בהודעה אחת, בעורך.</p>
@@ -619,7 +306,7 @@
       </div>
       <div class="setting" id="set-channels-box">
         <p><b>📣 ערוצים נוספים</b></p>
-        <p class="hint">קבוצות פייסבוק, קבוצות וואטסאפ אחרות וכל מקום אחר שמדביקים בו את אותה הודעה. אחרי שליחה או אישור של הודעה עם קישור נפתחת גרסה לכל ערוץ: אותו טקסט, עם קישור משלו, כדי לראות כמה לחצו ונרשמו מכל ערוץ. ההדבקה עצמה ידנית. קישור לקבוצה הוא לא חובה, והוא מוסיף כפתור שפותח אותה.</p>
+        <p class="hint">קבוצות פייסבוק, קבוצות וואטסאפ אחרות וכל מקום אחר שמדביקים בו את אותה הודעה. אחרי שליחה או אישור של הודעה עם קישור נפתחת גרסה לכל ערוץ: אותו טקסט, עם קישור משלו, כדי לראות כמה לחצו ונרשמו מכל ערוץ. ההדבקה עצמה ידנית.</p>
         <div id="set-channels"></div>
         <div class="row"><button class="btn ghost" id="set-ch-add" type="button">+ ערוץ</button><button class="btn primary" id="set-ch-save" type="button">שמירה</button></div>
         <span class="msg" id="set-ch-msg"></span>
@@ -634,11 +321,10 @@
         <p>📲 <b>להתקין כאפליקציה בטלפון:</b> פותחים את הדף הזה ב-Chrome באנדרואיד ← ⋮ למעלה ← „התקנת אפליקציה” (או „הוספה למסך הבית”). אחרי זה „פוסטים” מופיע במסך הבית וגם ברשימת השיתוף של כל אפליקציה.</p>
         <div class="row"><button class="btn primary" id="set-install" hidden>📲 להתקין עכשיו</button></div>
       </div>
+      </div>
     </section>
-    <footer><p>פרטי · נשמר בגיליון <a id="sheetlink" href="#" target="_blank" rel="noopener">„פוסטים לוואטסאפ”</a> ב-Drive. מבית <a href="https://tools.omri-iram.co.il">הכלים של עומרי אירם</a></p></footer>
+    <footer><p>פרטי · נשמר בגיליון <a id="sheetlink" href="#" target="_blank" rel="noopener">„פוסטים לוואטסאפ”</a> ב-Drive</p></footer>
   </div>
-
-  <button class="fab" id="fab" type="button" aria-label="הודעה חדשה" title="הודעה חדשה">✍️</button>
 
   <div class="overlay" id="overlay">
     <div class="editor" id="editor" role="dialog" aria-modal="true" aria-labelledby="ed-title">
@@ -660,7 +346,7 @@
             <button class="tb" type="button" id="ed-emoji-btn" title="אימוג'י" aria-haspopup="true" aria-expanded="false">😊</button>
             <div class="emojis" id="ed-emojis" hidden></div>
           </div>
-          <textarea id="ed-text" dir="auto" placeholder="הטיפ של היום…"></textarea>
+          <textarea id="ed-text" dir="rtl" placeholder="הטיפ של היום…"></textarea>
           <div class="count" id="ed-count"></div>
         </div>
         <div class="field">
@@ -680,7 +366,7 @@
       <div class="ed-side">
         <label id="ed-where">כך זה ייראה בערוץ העדכונים</label>
         <div class="phone"><div class="bar" id="ed-bar">בינה בהוראה 🧠</div><div class="item" id="ed-preview"></div></div>
-        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים; מכבים אותה כאן להודעה אחת, או ב„⚙️ הגדרות” לכולן). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
+        <p class="hint" style="margin-top:8px">וואטסאפ מציג תצוגה מקדימה רק לקישור הראשון, ולא כשיש תמונה. שורת „כל הפוסטים הקודמים” נוספת לבד בסוף (רק בערוץ העדכונים; מכבים אותה כאן להודעה אחת, או בהגדרות לכולן). כל קישור יוצא כקישור go.omri-iram.co.il משלו, כדי לספור כמה לחצו עליו בכל הודעה.</p>
       </div>
       <div class="proof hrs" id="hours" hidden></div>
       <div class="proof" id="proof" hidden></div>
@@ -717,28 +403,14 @@
   <div class="overlay" id="vr-overlay">
     <div class="versions" role="dialog" aria-modal="true" aria-labelledby="vr-title">
       <h3 id="vr-title">📣 גרסאות לערוצים נוספים</h3>
-      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק ובסקול בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. התמונה כאן היא של הגרסאות בלבד: מה שכבר נשלח לא משתנה. „⏰ לתזמן”: קבוצה של 052 מקבלת את הגרסה מעצמה בזמן שנבחר, ובערוצים האחרים מקבלים תזכורת ומדביקים. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” על ההודעה.</p>
-      <div class="vr-filter" id="vr-filter" role="group" aria-label="סינון לפי סוג ערוץ" hidden></div>
-      <div class="vr-all" id="vr-all" hidden></div>
-      <div class="vr-claude" id="vr-claude" hidden></div>
-      <div class="vr-pic" id="vr-pic"></div>
-      <div class="vr-edit" id="vr-edit"></div>
-      <input type="file" id="vr-file" accept="image/*" hidden>
+      <p class="hint">אותה הודעה, עם קישור משלה לכל ערוץ: ככה רואים כמה לחצו ונרשמו מכל מקום. בפייסבוק ובסקול בלי הסימנים של וואטסאפ (*מודגש*), ובלי שורת הסקול. אפשר לסגור ולחזור לזה בכל רגע: „📣 גרסאות לערוצים” בתפריט ⋯ של ההודעה.</p>
       <div id="vr-list"></div>
-      <div class="proof hrs" id="vr-hours" style="margin-top:14px" hidden></div>
       <div class="actions" style="margin-top:14px"><button class="btn ghost" id="vr-close" type="button">סגירה</button><span class="msg" id="vr-msg"></span></div>
     </div>
   </div>
-
   <script>
     const $=id=>document.getElementById(id);
     const API=(()=>{ try{ return localStorage.getItem('wa_api_base')||'https://go.omri-iram.co.il/wa/api'; }catch(_){ return 'https://go.omri-iram.co.il/wa/api'; } })();
-    function isAdmin(){ try{return localStorage.getItem('omri_admin')==='1';}catch(_){return false;} }
-    (function(){ const k=document.querySelector('.kicker'); if(!k)return; let c=0,t=null;
-      k.addEventListener('click',()=>{ c++; clearTimeout(t); t=setTimeout(()=>c=0,1200);
-        if(c>=3){ c=0; if(isAdmin())return; const v=prompt('קוד אדמין:');
-          if(v==='9464'){ try{localStorage.setItem('omri_admin','1');}catch(_){}; location.reload(); } else if(v!==null){ alert('קוד שגוי'); } } });
-    })();
 
     // ---- sign-in: the Tools Hub's shared Google session (see tools-hub CLAUDE.md) ----
     const SESS_KEY='omri_session', AUTH_BASE='https://go.omri-iram.co.il';
@@ -845,106 +517,26 @@
       return b;
     }
 
-    // ---- the board ----
-    let state=null, weeks=3, back=1;
-    const STATUS={sent:['sent','נשלח'],fail:['fail','נכשל'],skip:['skip','לא לשלוח'],wait:['wait','ממתין']};
-    function chipOf(p){
-      if(p.sent) return ['sent',p.status||'נשלח'];
-      if(p.failed) return ['fail',p.status];
-      if(p.skipped) return ['skip','לא לשלוח'];
-      if(p.draft) return ['draft','📝 טיוטה · מחכה לאישור'];
-      if(/^שולח עכשיו/.test(p.status||'')) return ['ok','📤 יוצאת עכשיו'];
-      return ['ok','✅ אושרה · יוצאת '+p.due];
-    }
-    function statsOf(r){
-      if(!r) return '';
-      const bits=[];
-      bits.push(r.read_pct!=null?('👁 '+r.read_pct+'%'):('👁 '+r.reads));
-      bits.push('❤️ '+r.reactions); bits.push('💬 '+r.replies);
-      if(r.clicks!=null) bits.push('🔗 '+r.clicks);
-      return '<div class="stats">'+bits.map(b=>'<span>'+esc(b)+'</span>').join('')+'</div>';
-    }
-    // Shabbat in Tel Aviv (from the server, content_machine/shabbat.py): when it comes in and goes out, and how long is left.
-    function leftWords(m){
-      const d=Math.floor(m/1440), h=Math.floor((m%1440)/60), mi=m%60;
-      if(d) return d+(d===1?' יום':' ימים')+(h?' ו-'+h+' שע׳':'');
-      if(h) return h+' שע׳'+(mi?' ו-'+mi+' דק׳':'');
-      return mi+' דק׳';
-    }
-    function shabbatPill(sh){
-      if(!sh) return '';
-      const hm=iso=>iso.slice(11,16), day=iso=>{ const x=new Date(iso.slice(0,10)+'T12:00:00'); return ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'][x.getDay()]+' '+x.getDate()+'.'+(x.getMonth()+1); };
-      const when=sh.now_shabbat
-        ? 'שבת עכשיו · יוצאת '+hm(sh.out)+' · עוד '+leftWords(sh.minutes_to_out)
-        : 'שבת נכנסת '+day(sh.in)+' ב-'+hm(sh.in)+', יוצאת ב-'+hm(sh.out)+' · עוד '+leftWords(sh.minutes_to_in);
-      const quiet=sh.now_quiet?' · עכשיו לא שולחים':'';
-      return '<span class="pill '+(sh.now_quiet?'bad':'info')+'" title="'+esc(sh.place)+'. לא שולחים הודעות מ-'+hm(sh.quiet_from)+' עד '+hm(sh.quiet_to)+' (שעה לפני הכניסה, חצי שעה אחרי היציאה)">🕯️ <b>'+esc(when)+'</b>'+esc(quiet)+' · '+esc(sh.place)+'</span>';
-    }
-    function shabbatNote(d){
-      const sh=d.shabbat; if(!sh) return '';
-      return '<div class="shnote">🕯️ '+(sh.until?'שבת נכנסת בערב: הודעות יוצאות עד '+esc(sh.until):'במוצאי שבת: הודעות יוצאות מ-'+esc(sh.from))+'</div>';
-    }
+    // ---- the one screen (Omri approved it, 2026-11-21): the day's post, my own post, the week ----
+    let state=null, weeks=2, back=1;
+    // the status line says something only when something needs Omri: a gateway down, events not read, Shabbat now
     function renderStatus(){
-      const s=state, wa=s.whatsapp||{};
-      const ok=wa.state==='open';
-      const waText={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק, צריך לקשר מחדש',down:'השירות לא עונה',connecting:'מתחבר…'}[wa.state]||wa.state;
-      $('statusbar').innerHTML=
-        '<span class="pill '+(ok?'ok':'bad')+'">וואטסאפ: <b>'+esc(waText)+'</b></span>'+
-        (sendable()||(s.whatsapp2||{}).state==='open'?(()=>{ const w2=s.whatsapp2||{}, t2={open:'מחובר',qr:'מחכה לסריקת QR',logged_out:'התנתק',down:'השירות לא עונה',connecting:'מתחבר…'}[w2.state]||w2.state;
-          return '<span class="pill '+(w2.state==='open'?'ok':'bad')+'">052: <b>'+esc(t2)+'</b></span>'; })():'')+
-        '<span class="pill info">הודעה בלי שעה יוצאת בסביבות <b>'+esc(s.settings.time)+'</b></span>'+
-        '<span class="pill info">ימים: <b>ראשון–חמישי</b>, ושישי ומוצ״ש</span>'+shabbatPill(s.shabbat);
+      const s=state, pills=[];
+      const words={qr:'מחכה לסריקת QR',logged_out:'התנתק, צריך לקשר מחדש',down:'השירות לא עונה',connecting:'מתחבר…'};
+      const wa=s.whatsapp||{}, w2=s.whatsapp2||{};
+      if(wa.state!=='open') pills.push('וואטסאפ: <b>'+esc(words[wa.state]||wa.state||'לא ידוע')+'</b>');
+      if(sendable()&&w2.state!=='open') pills.push('052: <b>'+esc(words[w2.state]||w2.state||'לא ידוע')+'</b>');
+      if(s.events_error) pills.push('האירועים לא נקראו: <b>'+esc(s.events_error)+'</b>');
+      const sh=s.shabbat;
+      if(sh&&sh.now_quiet) pills.push('שבת. לא שולחים עכשיו, עד <b>'+esc((sh.quiet_to||'').slice(11,16))+'</b>');
+      $('statusbar').innerHTML=pills.map(t=>'<span class="pill">'+t+'</span>').join('');
       $('sheetlink').href=s.sheet;
     }
     function findPost(row){
       for(const d of [...state.weeks.flatMap(w=>w.days),...(state.archive||[])]) for(const p of d.posts) if(p.row===row) return p;
       return null;
     }
-    function renderEvents(el){
-      const s=state;
-      if(!s.events_on) return;
-      if(s.events_error){ el.insertAdjacentHTML('beforeend','<h2>📅 אירועים קרובים</h2><p class="evnote">⚠️ האירועים לא נקראו: '+esc(s.events_error)+'</p>'); return; }
-      if(!s.events.length){ el.insertAdjacentHTML('beforeend','<h2>📅 אירועים קרובים</h2><p class="evnote">אין אירועים בשלושת השבועות הקרובים.</p>'); return; }
-      const box=document.createElement('details'); box.className='evs';
-      try{ box.open=localStorage.getItem('wa_events_open')==='1'; }catch(_){ }
-      box.ontoggle=()=>{ try{ localStorage.setItem('wa_events_open',box.open?'1':'0'); }catch(_){ } };
-      const hot=s.events.filter(e=>e.promote).length;
-      box.innerHTML='<summary>📅 אירועים קרובים ('+s.events.length+(hot?' · 📣 '+hot+' כדאי לקדם':'')+') · מה יצא ומתי</summary>'+
-        '<p class="evnote">כל אירוע מופיע גם בתוך היום המומלץ לפוסט עליו (בקו מקווקו סגול). לכל אירוע נכתבת לבד טיוטת תזכורת שבוע לפני היום שלה, והיא יוצאת רק אחרי שמאשרים אותה. 📣 = מעט נרשמים, כדאי לקדם.</p>';
-      el.appendChild(box); el=box;
-      const grid=document.createElement('div'); grid.className='events';
-      for(const e of s.events){
-        const card=document.createElement('div'); card.className='ev'+(e.promote?' promote':'');
-        const left=e.days_left===0?'היום':e.days_left===1?'מחר':'בעוד '+e.days_left+' ימים';
-        const nums=['<span>'+e.signed+' נרשמו</span>'];
-        if(e.from_whatsapp) nums.push('<span>'+e.from_whatsapp+' מוואטסאפ</span>');
-        if(e.waiting) nums.push('<span>'+e.waiting+' ברשימת המתנה</span>');
-        if(e.promote) nums.push('<span class="hot">📣 כדאי לקדם</span>');
-        const post=e.posts.find(p=>!p.sent&&!p.skipped)||e.posts.find(p=>!p.sent)||e.posts[0];
-        const hist=e.posts.length?'<div class="hist">'+e.posts.map(histLine).join('')+'</div>':'<div class="post">עוד אין פוסט עליו</div>';
-        card.innerHTML='<div class="when">יום '+esc(e.day)+' '+esc(e.label)+' · '+esc(e.time)+' · '+left+'</div>'+
-          '<a class="name" dir="auto" href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">'+esc(e.name)+'</a>'+
-          '<div class="nums">'+nums.join('')+'</div>'+
-          (e.seats_words?'<div class="seats'+(e.seats_left===0?' full':'')+'">🪑 '+esc(e.seats_words)+'</div>':'')+hist+
-          ((e.groups&&e.groups.topic)?'<div class="grp" dir="auto">👥 קבוצת הנושא: '+esc(e.groups.topic.name)+'</div>':'');
-        const b=document.createElement('button'); b.className='add';
-        if(post&&!post.sent){ b.textContent=post.draft?'📝 לטיוטה':'✏️ לפוסט'; b.onclick=()=>{ const p=findPost(post.row); if(p) openEditor(p,e); else { weeks=Math.max(weeks,6); load(); } }; }
-        else { b.textContent='✍️ פוסט על האירוע'; b.onclick=()=>openEditor({date:e.suggest.date,text:e.suggest.text},e); }
-        card.appendChild(b); grid.appendChild(card);
-      }
-      el.appendChild(grid);
-    }
     const dm=d=>d.slice(8,10)+'.'+String(+d.slice(5,7));
-    function histLine(h){
-      const to=h.group?' → '+esc(h.group_name):'';
-      if(h.sent) return '<span class="h-sent" dir="auto">✓ '+esc(h.status||'נשלח')+to+'</span>';
-      if(h.failed) return '<span class="h-fail" dir="auto">✗ '+esc(h.status)+to+'</span>';
-      if(h.skipped) return '<span class="h-skip" dir="auto">⏭ '+dm(h.date)+' · לא לשלוח'+to+'</span>';
-      if(h.draft) return '<span class="h-draft" dir="auto">📝 טיוטה ל-'+dm(h.date)+' '+esc(h.due)+' · מחכה לאישור'+to+'</span>';
-      return '<span dir="auto">⏳ ייצא '+dm(h.date)+' ב-'+esc(h.due)+to+'</span>';
-    }
-    // a suggestion appears in its day only while nothing was written about the event yet
-    function suggestionsFor(day){ return (state.events||[]).filter(e=>e.suggest&&e.suggest.date===day&&!e.posts.length); }
     function toast(t,err){ const el=$('toast'); el.textContent=t; el.className=err?'err':''; el.style.display='block';
       clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',err?6000:3500); }
     // a toast with "↩️ ביטול" for a few seconds (after an approve)
@@ -956,96 +548,6 @@
       clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',ms);
     }
 
-    // ---- drag a post or a suggestion to another day ----
-    let drag=null;
-    function dragEnd(){ drag=null; document.body.classList.remove('dragging-on');
-      document.querySelectorAll('.drop-on').forEach(c=>c.classList.remove('drop-on')); }
-    function draggable(node,what){
-      node.draggable=true; node.classList.add('movable');
-      node.addEventListener('dragstart',ev=>{ drag=what; node.classList.add('dragging'); document.body.classList.add('dragging-on');
-        ev.dataTransfer.effectAllowed='move'; try{ ev.dataTransfer.setData('text/plain','wa'); }catch(_){ } });
-      node.addEventListener('dragend',()=>{ node.classList.remove('dragging'); dragEnd(); });
-      touchDrag(node,what);
-    }
-    // on the phone (Omri, 2026-10-29: "easily drag from column to column"): a long press lifts the post,
-    // the finger carries it, letting go over a day puts it there
-    let touchMoving=null, swallowClick=false;
-    function touchDrag(node,what){
-      let timer=null, sx=0, sy=0;
-      node.addEventListener('pointerdown',e=>{
-        if(e.pointerType==='mouse') return;
-        sx=e.clientX; sy=e.clientY; clearTimeout(timer);
-        timer=setTimeout(()=>{
-          const r=node.getBoundingClientRect(), ghost=node.cloneNode(true);
-          ghost.className+=' drag-ghost'; ghost.style.width=Math.min(r.width,280)+'px';
-          document.body.appendChild(ghost);
-          touchMoving={what,node,ghost,over:null}; drag=what;
-          node.classList.add('dragging'); document.body.classList.add('dragging-on');
-          if(navigator.vibrate) try{ navigator.vibrate(15); }catch(_){ }
-          moveGhost(sx,sy);
-        },380);
-      });
-      const cancel=()=>clearTimeout(timer);
-      node.addEventListener('pointermove',e=>{ if(!touchMoving&&Math.hypot(e.clientX-sx,e.clientY-sy)>10) cancel(); });
-      node.addEventListener('pointerup',cancel); node.addEventListener('pointercancel',e=>{ if(!touchMoving) cancel(); });
-      node.addEventListener('contextmenu',e=>{ if(touchMoving||e.pointerType!=='mouse') e.preventDefault(); });
-    }
-    function targetAt(x,y){ const el=document.elementFromPoint(x,y); return el&&el.closest('[data-drop]'); }
-    function moveGhost(x,y){
-      const t=touchMoving; if(!t) return;
-      t.ghost.style.left=(x-20)+'px'; t.ghost.style.top=(y-24)+'px';
-      t.ghost.style.display='none'; const over=targetAt(x,y); t.ghost.style.display='';
-      if(over!==t.over){ if(t.over) t.over.classList.remove('drop-on'); t.over=over&&!over._shut()?over:null; if(t.over) t.over.classList.add('drop-on'); }
-      // near the top or bottom edge the page scrolls, so a day further away can be reached
-      if(y<70) scrollBy(0,-14); else if(y>innerHeight-70) scrollBy(0,14);
-    }
-    document.addEventListener('touchmove',e=>{ if(!touchMoving) return; e.preventDefault(); const p=e.touches[0]; moveGhost(p.clientX,p.clientY); },{passive:false});
-    document.addEventListener('touchend',()=>{
-      const t=touchMoving; if(!t) return; touchMoving=null; swallowClick=true; setTimeout(()=>swallowClick=false,400);
-      t.ghost.remove(); t.node.classList.remove('dragging');
-      const over=t.over, w=t.what; dragEnd();
-      if(over) moveTo(w,over._day);
-    });
-    document.addEventListener('click',e=>{ if(swallowClick){ e.stopPropagation(); e.preventDefault(); swallowClick=false; } },true);
-    function dropTarget(card,d){
-      const shut=()=>d.past||d.closed;
-      card.dataset.drop='1'; card._day=d; card._shut=shut;
-      if(shut()) card.classList.add('shut');
-      card.addEventListener('dragover',ev=>{ if(!drag||shut()) return; ev.preventDefault(); ev.dataTransfer.dropEffect='move'; card.classList.add('drop-on'); });
-      card.addEventListener('dragleave',ev=>{ if(!card.contains(ev.relatedTarget)) card.classList.remove('drop-on'); });
-      card.addEventListener('drop',ev=>{ ev.preventDefault(); const w=drag; dragEnd(); if(w&&!shut()) moveTo(w,d); });
-    }
-    async function moveTo(w,d){
-      if(w.card){ await kanbanMove(w.card,d.status); return; }
-      try{
-        if(w.post){
-          const p=w.post; if(p.date===d.date) return;
-          let text=p.text;
-          // an event's reminder says "מחר" / "היום": its first line is reworded for the new day
-          const ev=eventOf(p);
-          if(ev&&/^📅 /.test(text)&&d.date<=ev.date){
-            try{ const r=await apiJson('/event-text?id='+ev.id+'&date='+d.date); text=r.text.split('\n')[0]+text.slice(text.indexOf('\n')<0?text.length:text.indexOf('\n')); }catch(_){ }
-          }
-          toast('מעביר ל'+d.day+' '+d.label+'…');
-          await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:d.date,time:p.time||'',text,image:p.image||'',skip:!!p.skipped,group:p.group||'',approve:false,no_footer:p.footer===false}});
-          toast('✓ ההודעה עברה ל'+d.day+' '+d.label+(p.draft?' (עדיין טיוטה)':''));
-        }else if(w.event){
-          const e=w.event;
-          if(d.date>e.date){ toast('היום הזה אחרי האירוע',true); return; }
-          toast('כותב טיוטה ל'+d.day+' '+d.label+'…');
-          const r=await apiJson('/event-text?id='+e.id+'&date='+d.date);
-          await apiJson('/posts',{method:'POST',json:{date:d.date,time:'',text:r.text,image:'',skip:false,group:'',draft:true}});
-          toast('📝 טיוטה נכתבה ל'+d.day+' '+d.label+'. היא תצא רק אחרי שתאשרו אותה.');
-        }else if(w.idea){
-          toast('כותב טיוטה ל'+d.day+' '+d.label+'…');
-          const r=await apiJson('/idea-text?id='+encodeURIComponent(w.idea.id));
-          await apiJson('/posts',{method:'POST',json:{date:d.date,time:'',text:r.text,image:'',skip:false,group:'',draft:true}});
-          await ideaDone(w.idea.id,true);
-          toast('📝 טיוטה נכתבה ל'+d.day+' '+d.label+(r.ai?'':' (בלי AI, נוסח פשוט)')+'. היא תצא רק אחרי שתאשרו אותה.');
-        }
-        await load();
-      }catch(err){ toast(err.message,true); }
-    }
 
     // ---- the channel's videos and the workshops held (the last three weeks) ----
     function mediaOf(p){
@@ -1054,12 +556,6 @@
       for(const w of m.workshops||[]) if(w.posts.some(x=>x.row===p.row)) return {kind:'workshop',item:w,ev:{groups:{topic:w.suggest.group}}};
       return null;
     }
-    async function writeAbout(kind,item){
-      let text=item.suggest.text;
-      if(kind==='video'){ toast('מנסח פוסט עם AI…'); try{ text=(await apiJson('/video-text?id='+encodeURIComponent(item.id))).text; $('toast').style.display='none'; }catch(e){ toast('ה-AI לא ענה, הנה נוסח פשוט',true); } }
-      const g=item.suggest.group;
-      openEditor({date:item.suggest.date,text,group:kind==='workshop'&&g?g.jid:''},{groups:{topic:g}});
-    }
     // ---- 💡 ideas for posts (Omri, 2026-10-29): what worked, the Playbook, the idea bank (Live-work's too) ----
     let ideaInEditor=null;   // the idea the open editor was started from: a save marks it written
     const IDEA_FROM={worked:'מה שעבד',playbook:'Playbook',bank:'בנק הרעיונות'};
@@ -1067,509 +563,202 @@
       try{ await apiJson('/ideas/hide',{method:'POST',json:{id,used:!!used}}); }catch(_){ }
       if(state&&state.ideas) state.ideas=state.ideas.filter(i=>i.id!==id);
     }
-    async function writeIdea(i){
+    async function writeIdea(i,date){
       toast('מנסח פוסט עם AI…');
       let text='';
       try{ const r=await apiJson('/idea-text?id='+encodeURIComponent(i.id)); text=r.text; if(r.ai) $('toast').style.display='none'; else toast('ה-AI לא ענה, הנה נוסח פשוט',true); }
       catch(e){ toast(e.message,true); return; }
-      openEditor({date:nextPostDay(),text});
+      openEditor({date,text});
       ideaInEditor=i.id;
       opened='';   // never saved yet: closing keeps it as a draft
       $('ed-title').textContent='💡 מרעיון: הודעה חדשה';
     }
-    function renderIdeas(el){
-      const list=state.ideas||[];
-      const box=document.createElement('details'); box.className='evs';
-      try{ box.open=localStorage.getItem('wa_ideas_open')==='1'; }catch(_){ }
-      box.ontoggle=()=>{ try{ localStorage.setItem('wa_ideas_open',box.open?'1':'0'); }catch(_){ } };
-      const n=k=>list.filter(i=>i.source===k).length;
-      box.innerHTML='<summary>💡 רעיונות לפוסטים ('+list.length+(list.length?' · 🔗 '+n('worked')+' · 💭 '+n('bank')+' · 📘 '+n('playbook'):'')+')</summary>'+
-        '<p class="evnote">🔗 מה שעבד: ההודעות של ארבעת השבועות האחרונים שהכי הרבה לחצו, ענו או סימנו עליהן, להמשך. 💭 בנק הרעיונות: מה ששלחת מהטלפון ו-🎙 מ-Live-work (🎬). 📘 Playbook: רעיונות לתוכן מהסדנאות, מהסרטונים ומהשיחות שסימנת. „✍️ לכתוב” פותח את העורך עם נוסח מוכן; גרירה ליום בלוח כותבת לשם טיוטה. שום דבר לא יוצא בלי אישור.</p>';
-      if(!list.length){ box.insertAdjacentHTML('beforeend','<p class="evnote">אין רעיונות כרגע.</p>'); el.appendChild(box); return; }
-      const grid=document.createElement('div'); grid.className='events';
-      for(const i of list){
-        const c=document.createElement('div'); c.className='ev idea';
-        c.innerHTML='<div class="when">'+i.icon+' '+esc(IDEA_FROM[i.source]||'')+' · '+esc(i.kind)+'</div>'+
-          '<div class="name" dir="auto">'+esc(i.title)+'</div>'+
-          (i.why?'<div class="post" dir="auto">'+esc(i.why)+'</div>':'')+
-          (i.outline&&i.outline.length?'<ul class="outline" dir="auto">'+i.outline.slice(0,4).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'');
-        const btns=document.createElement('div'); btns.className='postbtns';
-        const w=document.createElement('button'); w.type='button'; w.className='add'; w.textContent='✍️ לכתוב'; w.onclick=()=>writeIdea(i);
-        const x=document.createElement('button'); x.type='button'; x.className='add later'; x.textContent='לא עכשיו';
-        x.onclick=async()=>{ c.remove(); await ideaDone(i.id,false); renderBoard(); toast('הרעיון הוסתר'); };
-        btns.append(w,x); c.appendChild(btns);
-        c.title='גרירה ליום בלוח כותבת לשם טיוטה';
-        draggable(c,{idea:i});
-        grid.appendChild(c);
-      }
-      box.appendChild(grid); el.appendChild(box);
-    }
-    function renderMedia(el){
-      const m=state.media||{}, vs=m.videos||[], ws=m.workshops||[];
-      if(!vs.length&&!ws.length) return;
-      const box=document.createElement('details'); box.className='evs';
-      try{ box.open=localStorage.getItem('wa_media_open')==='1'; }catch(_){ }
-      box.ontoggle=()=>{ try{ localStorage.setItem('wa_media_open',box.open?'1':'0'); }catch(_){ } };
-      const fresh=[...vs,...ws].filter(x=>!x.posts.length).length;
-      box.innerHTML='<summary>🎬 סרטונים וסדנאות משלושת השבועות האחרונים ('+(vs.length+ws.length)+(fresh?' · '+fresh+' בלי פוסט':'')+')</summary>'+
-        '<p class="evnote">כל סרטון ציבורי חדש בערוץ וכל סדנה שההקלטה והסיכום שלה מוכנים נכתבים לבד כטיוטה ליום הפוסט הבא, ויוצאים רק אחרי אישור. כאן אפשר לכתוב פוסט גם על מה שהיה לפני כן. 👥 = הקבוצה בקהילה שמתאימה לנושא.</p>';
-      const grid=document.createElement('div'); grid.className='events';
-      const card=(kind,x)=>{
-        const c=document.createElement('div'); c.className='ev';
-        const title=kind==='video'?x.title:x.name;
-        const links=kind==='video'?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">▶️ לסרטון</a>':
-          (x.recording?'<a href="'+esc(x.recording)+'" target="_blank" rel="noopener">▶️ ההקלטה</a>':'<span class="no">▶️ אין הקלטה עדיין</span>')+
-          (x.summary?'<a href="'+esc(x.summary)+'" target="_blank" rel="noopener">📄 הסיכום</a>':'<span class="no">📄 הסיכום עוד לא מוכן</span>');
-        const g=x.suggest.group;
-        c.innerHTML='<div class="when">'+(kind==='video'?'🎬 סרטון בערוץ · עלה ב-':'🎓 סדנה · ')+esc(x.label)+(x.time?' '+esc(x.time):'')+'</div>'+
-          '<div class="name" dir="auto">'+esc(title)+'</div><div class="links">'+links+'</div>'+
-          (g?'<div class="grp" dir="auto">👥 '+esc(g.name)+'</div>':'')+
-          (x.posts.length?'<div class="hist">'+x.posts.map(histLine).join('')+'</div>':'<div class="post">עוד אין פוסט עליו</div>');
-        const b=document.createElement('button'); b.className='add';
-        const open=x.posts.find(p=>!p.sent&&!p.skipped);
-        if(open){ b.textContent=open.draft?'📝 לטיוטה':'✏️ לפוסט'; b.onclick=()=>{ const p=findPost(open.row); if(p) openEditor(p,{groups:{topic:g}}); else { weeks=Math.max(weeks,6); load(); } }; }
-        else { b.textContent='✍️ פוסט'+(kind==='video'?' על הסרטון':' על הסדנה'); b.onclick=()=>writeAbout(kind,x); }
-        c.appendChild(b); return c;
-      };
-      for(const w of ws) grid.appendChild(card('workshop',w));
-      for(const v of vs) grid.appendChild(card('video',v));
-      box.appendChild(grid); el.appendChild(box);
-    }
-
-    function dayCard(d){
-      const s=state;
-      const card=document.createElement('div'); card.className='day'+(d.today?' today':'')+(d.past?' past':'');
-      const plan=d.plan.length?d.plan.map(p=>'<div class="plan" dir="auto">'+esc(p.title)+' <span class="st">'+esc(p.status)+'</span></div>').join(''):'<div class="plan empty">אין תוכן מתוכנן ב-Content Machine</div>';
-      const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' 📣':'')+'</div>').join('');
-      card.innerHTML='<aside><h3>'+esc(d.day)+' '+esc(d.label)+'</h3><div class="cat">'+esc(d.category||'')+'</div>'+evs+plan+'</aside><div class="chat"></div>';
-      const aside=card.querySelector('aside');
-      aside.insertAdjacentHTML('beforeend',shabbatNote(d));
-      const chat=card.querySelector('.chat');
-      dropTarget(card,d);
-      const ghosts=d.past?[]:suggestionsFor(d.date), empty=!d.posts.length&&!ghosts.length;
-      if(!d.past&&!empty){ const add=document.createElement('button'); add.className='add'; add.textContent='+ הודעה ליום הזה'; add.onclick=()=>openEditor({date:d.date}); aside.appendChild(add); }
-      if(empty&&d.past) chat.insertAdjacentHTML('beforeend','<div class="none past">לא נשלחה הודעה</div>');
-      else if(empty){ const n=document.createElement('button'); n.type='button'; n.className='empty-add'; n.textContent='+ הודעה ליום הזה'; n.onclick=()=>openEditor({date:d.date}); chat.appendChild(n); }
-      for(const p of d.posts){
-        const it=document.createElement('div'); it.className='item';
-        const [cls,label]=chipOf(p), ev=eventOf(p), md=ev?null:mediaOf(p);
-        it.innerHTML='<div class="meta">'+(!p.sent&&!d.past?'<span class="grip" title="גוררים ליום אחר">⠿</span>':'')+'<span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+
-          (p.kind==='קידום'?'<span class="chip bot" title="נספר בנפרד בלשונית „מה עבד”">📣 קידום</span>':'')+
-          (ev?'<span class="chip ev" dir="auto" title="'+esc(ev.name+(ev.seats_words?' · '+ev.seats_words:''))+'">📅 '+esc(ev.label)+' · '+ev.signed+' נרשמו'+(ev.seats_words?' · 🪑 '+esc(ev.seats_words):'')+'</span>':'')+
-          (md?'<span class="chip md" dir="auto" title="'+esc(md.item.title||md.item.name)+'">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>':'')+'</div>';
-        const b=bubble(p.text,{time:p.sent?(p.status.match(/\d\d?:\d\d$/)||[p.due])[0]:p.due,imageId:p.image_id,footer:boardFooter(p),clickable:!p.sent,skipped:p.skipped,draft:p.draft});
-        if(!p.sent){ b.onclick=()=>openEditor(p,ev||(md&&md.ev)); if(!d.past) draggable(it,{post:p}); }
-        it.appendChild(b);
-        // a typo in a post just sent: WhatsApp lets the sending device (the server) fix it for 15 minutes
-        if(p.sent&&p.edit_left>0){
-          p.deadline=Date.now()+p.edit_left*1000;
-          const until=new Date(p.deadline).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
-          const fx=document.createElement('button'); fx.type='button'; fx.className='fixsent'; fx.textContent='✏️ לתקן בוואטסאפ (עד '+until+')';
-          fx.onclick=()=>{ if(Date.now()>p.deadline){ toast('עברו 15 דקות מהשליחה: וואטסאפ כבר לא מאפשר לתקן',true); fx.remove(); return; } openEditor(p); };
-          it.appendChild(fx);
-        }
-        // the same post for the other channels (Facebook groups…): sent, or approved and waiting
-        if(hasVersions(p)) it.appendChild(versionsBtn(p));
-        if(p.can_repeat) it.appendChild(repeatBtn(p));
-        if(p.result) it.insertAdjacentHTML('beforeend',statsOf(p.result));
-        chat.appendChild(it);
-      }
-      for(const e of ghosts){
-        const g=document.createElement('div'); g.className='sugpost'; g.dir='auto';
-        g.innerHTML='<div>💡 <b>הצעה: פוסט על „'+esc(e.name)+'”</b></div><div>יום '+esc(e.day)+' '+esc(e.label)+' ב-'+esc(e.time)+' · '+e.signed+' נרשמו'+
-          (e.seats_words?' · 🪑 '+esc(e.seats_words):'')+(e.promote?' · 📣 כדאי לקדם':'')+'</div><div class="gtext">'+esc(e.suggest.text)+'</div>'+
-          '<div class="gbtns"><button type="button">✍️ לכתוב</button></div>';
-        g.title='לחיצה פותחת את הפוסט לעריכה. גרירה ליום אחר כותבת טיוטה לשם.';
-        g.onclick=()=>openEditor({date:d.date,text:e.suggest.text},e);
-        draggable(g,{event:e});
-        chat.appendChild(g);
-      }
-      return card;
-    }
-    // ---- the calendar: month / week / day, beside the list (Omri, 2026-10-29: "easy to zoom out and in") ----
-    const VIEWS=[['month','חודש'],['week','שבוע'],['day','יום'],['list','רשימה'],['sent','📜 נשלחו']];
-    const FLAT=v=>v==='list'||v==='sent';   // no calendar range, no arrows
-    let view=VIEWS.some(v=>v[0]===lsGet('wa_view'))?lsGet('wa_view'):'week', cursor=today();
-    const DAY_HE=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'], DAY_S=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+    const DAY_HE=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
     const dt=s=>new Date(s+'T12:00:00Z'), iso=d=>d.toISOString().slice(0,10);
     const addDays=(s,n)=>{ const d=dt(s); d.setUTCDate(d.getUTCDate()+n); return iso(d); };
     const wday=s=>dt(s).getUTCDay(), sunday=s=>addDays(s,-wday(s)), lab=s=>(+s.slice(8))+'.'+(+s.slice(5,7));
     // the API's weeks start at this Sunday (next Sunday on Friday / Saturday); it gives up to 12 weeks each way
     const MAXW=12;
     function firstWeek(){ if(state&&state.weeks.length) return state.weeks[0].start; const t=today(); return addDays(sunday(t),wday(t)>=5?7:0); }
-    function viewRange(){
-      if(view==='month'){
-        const f=cursor.slice(0,8)+'01', n=dt(f); n.setUTCMonth(n.getUTCMonth()+1);
-        return {from:sunday(f),to:addDays(sunday(addDays(iso(n),-1)),6)};
-      }
-      if(view==='week'){ const s=sunday(cursor); return {from:s,to:addDays(s,6)}; }
-      return {from:cursor,to:cursor};
-    }
-    // ask the API for enough weeks to cover what is shown; true = a new load is needed
-    function fitRange(){
-      if(FLAT(view)) return false;
-      const f=firstWeek(), {from,to}=viewRange();
-      const w=Math.min(MAXW,Math.max(weeks,Math.ceil((dt(to)-dt(f))/864e5/7+1/7)));
-      const b=Math.min(MAXW,Math.max(back,Math.ceil((dt(f)-dt(from))/864e5/7)));
-      const more=w!==weeks||b!==back; weeks=w; back=b; return more;
-    }
-    function loaded(s){ const f=firstWeek(); return !!state&&s>=addDays(f,-7*(state.back||0))&&s<addDays(f,7*state.weeks.length); }
     function dayMap(){ const m={}; for(const d of [...(state.archive||[]),...state.weeks.flatMap(w=>w.days)]) m[d.date]=d; return m; }
-    // a day the API leaves out (Friday, Saturday, a day with no posting): shown, but nothing goes out on it
-    function dayAt(m,s){
-      if(m[s]) return m[s];
-      const t=today();
-      return {date:s,day:DAY_HE[wday(s)],label:lab(s),past:s<t,today:s===t,post_day:false,closed:true,unloaded:!loaded(s),category:'',plan:[],events:[],posts:[]};
+    // T, the day the screen is about: today when it is a posting day, else the next posting day
+    function targetDay(){
+      const t=state.today||today();
+      const d=state.weeks.flatMap(w=>w.days).find(d=>d.post_day&&d.date>=t);
+      return d||{date:t,day:DAY_HE[wday(t)],label:lab(t),today:true,past:false,post_day:false,posts:[]};
     }
-    function go(v,c){
-      view=v; if(c) cursor=c; lsSet('wa_view',view); toCal=true;
-      if(fitRange()){ const cal=$('cal'); if(cal) cal.innerHTML='<div class="loading">טוען…</div>'; load(); }
-      else renderBoard();
-    }
-    // after a move, the toolbar stays in sight (a longer load can push it down)
-    let toCal=false;
-    function keepCalInSight(){
-      if(!toCal) return; toCal=false;
-      const bar=$('calbar'); if(!bar) return;
-      const top=bar.getBoundingClientRect().top;
-      if(top<0||top>innerHeight-120) bar.scrollIntoView({block:'start'});
-    }
-    function nextDay(s,dir,m){
-      for(let i=0;i<21;i++){ s=addDays(s,dir); if(m[s]||(!loaded(s)&&wday(s)<5)) return s; }
-      return s;
-    }
-    function step(dir){
-      if(view==='month'){
-        const d=dt(cursor.slice(0,8)+'01'); d.setUTCMonth(d.getUTCMonth()+dir);
-        const s=iso(d); go('month',s.slice(0,7)===today().slice(0,7)?today():s);
-      }else if(view==='week') go('week',addDays(cursor,7*dir));
-      else go('day',nextDay(cursor,dir,dayMap()));
-    }
-    function calTitle(){
-      if(view==='month') return dt(cursor).toLocaleDateString('he-IL',{month:'long',year:'numeric',timeZone:'UTC'});
-      if(view==='week'){ const s=sunday(cursor); return lab(s)+' – '+lab(addDays(s,4)); }
-      return 'יום '+DAY_HE[wday(cursor)]+' '+lab(cursor)+(cursor===today()?' · היום':'');
-    }
-    function calBar(){
-      const bar=document.createElement('div'); bar.className='calbar'; bar.id='calbar';
-      const seg=document.createElement('div'); seg.className='seg';
-      for(const [k,n] of VIEWS){ const b=document.createElement('button'); b.type='button'; b.textContent=n; if(k===view) b.className='on'; b.onclick=()=>go(k); seg.appendChild(b); }
-      bar.appendChild(seg);
-      if(FLAT(view)) return bar;
-      const nav=document.createElement('div'); nav.className='calnav';
-      const btn=(t,title,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='navb'; b.textContent=t; b.title=title; b.onclick=fn; return b; };
-      const {from,to}=viewRange(), f=firstWeek();
-      const prev=btn('→','הקודם (חץ ימינה)',()=>step(-1)), next=btn('←','הבא (חץ שמאלה)',()=>step(1));
-      prev.disabled=from<=addDays(f,-7*MAXW); next.disabled=to>=addDays(f,7*MAXW-1);
-      const h=document.createElement('h2'); h.textContent=calTitle();
-      nav.append(btn('היום','חזרה להיום',()=>go(view,today())),prev,h,next);
-      bar.appendChild(nav);
-      return bar;
-    }
-    const plain=t=>(t||'').replace(/https?:\/\/\S+/g,'🔗').replace(/[*_~`]/g,'').replace(/\s+/g,' ').trim();
-    function postIcon(p){ return p.sent?'✓':p.failed?'✗':p.skipped?'⏭':p.draft?'📝':/^שולח עכשיו/.test(p.status||'')?'📤':'✅'; }
+    const dayName=d=>d.day+' '+d.label;
+    const firstLine=t=>((t||'').split('\n').find(l=>l.trim())||'').replace(/\*/g,'').trim();
+    const waiting=p=>!p.sent&&!p.draft&&!p.skipped&&!p.failed;
     function postTime(p){ return p.sent?((p.status||'').match(/\d\d?:\d\d$/)||[p.due])[0]:p.due; }
-    function monthCell(d,inMonth){
-      const shut=d.closed&&!d.posts.length;
-      const c=document.createElement('div');
-      c.className='mcell'+(inMonth&&!d.unloaded?'':' out')+(d.past?' past':'')+(d.today?' today':'')+(shut?' closed':'');
-      c.innerHTML='<div class="num"><span>'+(+d.date.slice(8))+'</span><small dir="auto">'+esc(d.category||'')+'</small></div><div class="es"></div>';
-      const es=c.querySelector('.es'), rows=[];
-      for(const e of d.events||[]) rows.push({cls:'evt',icon:'📅',text:e.time+' '+e.name});
-      for(const p of d.posts) rows.push({cls:chipOf(p)[0],icon:postIcon(p),text:postTime(p)+' '+(p.group?'→ '+p.group_name+' · ':'')+plain(p.text),drag:!p.sent&&!d.past?{post:p}:null});
-      if(!d.past) for(const e of suggestionsFor(d.date)) rows.push({cls:'sug',icon:'💡',text:'הצעה: '+e.name,drag:{event:e}});
-      if(!rows.some(r=>r.cls!=='evt')&&!d.closed&&!d.past) rows.push({cls:'none',icon:'○',text:'אין הודעה'});
-      rows.forEach((r,i)=>{
-        const n=document.createElement('div'); n.className='ce '+r.cls+(i>=4&&rows.length>5?' x':''); n.title=r.text;   // rtl: a line that starts "16:02 → Gemini…" stays right-aligned
-        n.innerHTML='<span class="ci">'+r.icon+'</span> <span class="ct">'+esc(r.text)+'</span>';
-        if(r.drag) draggable(n,r.drag);
-        es.appendChild(n);
-      });
-      if(rows.length>5) es.insertAdjacentHTML('beforeend','<div class="ce more">+ עוד '+(rows.length-4)+'</div>');
-      if(!shut){ c.onclick=()=>go('day',d.date); c.title='לחיצה פותחת את היום'; }
-      dropTarget(c,d);
-      return c;
-    }
-    function renderMonth(box,m){
-      const mon=cursor.slice(0,7), {from,to}=viewRange();
-      const grid=document.createElement('div'); grid.className='mgrid';
-      grid.innerHTML=DAY_HE.map((n,i)=>'<div class="mhead"><span class="l">'+n+'</span><span class="s">'+DAY_S[i]+'</span></div>').join('');
-      for(let s=from;s<=to;s=addDays(s,1)) grid.appendChild(monthCell(dayAt(m,s),s.slice(0,7)===mon));
-      box.appendChild(grid);
-      box.insertAdjacentHTML('beforeend','<div class="legend"><span>✓ נשלחה</span><span>✅ אושרה, מחכה לצאת</span><span>📝 טיוטה, מחכה לאישור</span><span>💡 הצעה שעוד לא נכתבה</span><span>📅 אירוע</span><span>✗ נכשלה</span><span>○ אין הודעה</span></div>'+
-        '<p class="calnote" style="margin-top:6px">הצעות לאירועים מופיעות כשהאירוע בשלושת השבועות הקרובים.</p>');
-    }
-    function weekCol(d){
-      const c=document.createElement('div'); c.className='wcol'+(d.today?' today':'')+(d.past?' past':'')+(d.closed?' closed':'');
-      const evs=(d.events||[]).map(e=>'<div class="evday" dir="auto">📅 '+esc(e.time)+' '+esc(e.name)+' · '+e.signed+' נרשמו'+(e.promote?' 📣':'')+'</div>').join('');
-      const plan=d.plan.map(p=>'<div class="plan" dir="auto">🎬 '+esc(p.title)+'</div>').join('');
-      c.innerHTML='<div class="wh" title="לחיצה פותחת את היום"><h3>'+esc(d.day)+' '+esc(d.label)+'</h3>'+(d.category?'<div class="cat">'+esc(d.category)+'</div>':'')+evs+plan+'</div>';
-      c.querySelector('.wh').onclick=()=>go('day',d.date);
-      c.querySelector('.wh').insertAdjacentHTML('beforeend',shabbatNote(d));
-      dropTarget(c,d);
-      if(d.closed&&!d.posts.length){ c.insertAdjacentHTML('beforeend','<div class="closednote">'+(d.unloaded?'רחוק מדי לתצוגה':'לא יום פוסטים')+'</div>'); return c; }
-      for(const p of d.posts){
-        const ev=eventOf(p), md=ev?null:mediaOf(p), [cls,label]=chipOf(p);
-        const it=document.createElement('div'); it.className='wpost '+cls+(p.draft?' draft':'')+(p.skipped?' skipped':'');
-        it.innerHTML='<div class="meta">'+(!p.sent&&!d.past?'<span class="grip" title="גוררים ליום אחר">⠿</span>':'')+'<span class="chip '+cls+'">'+esc(label)+'</span>'+(p.group?'<span class="chip to" dir="auto">→ '+esc(p.group_name)+'</span>':'')+(p.image?'<span title="עם תמונה">🖼</span>':'')+'</div>'+
-          '<div class="wt" dir="auto">'+waHtml(p.text)+'</div>'+
-          (ev?'<div class="evday" dir="auto">📅 '+esc(ev.name)+'</div>':md?'<div class="evday" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</div>':'')+
-          (p.result?statsOf(p.result):'');
-        if(hasVersions(p)) it.appendChild(versionsBtn(p));
-        if(p.can_repeat) it.appendChild(repeatBtn(p));
-        it.title=p.sent?'לחיצה פותחת את היום':'לחיצה פותחת את ההודעה לעריכה';
-        it.onclick=()=>{ if(p.sent) go('day',d.date); else openEditor(p,ev||(md&&md.ev)); };
-        if(!p.sent&&!d.past) draggable(it,{post:p});
-        c.appendChild(it);
+    function ctxOf(p){ const ev=eventOf(p), md=ev?null:mediaOf(p); return ev||(md&&md.ev)||null; }
+    // a post's line in the week: [class, words]
+    function statusOf(p){
+      if(p.failed) return ['fail','נכשל'];
+      if(p.draft&&!p.sent) return ['draft','טיוטה מחכה'];
+      if(p.skipped) return ['skip','דילגת'];
+      if(p.sent){
+        const r=p.result||{}, bits=['נשלח ב-'+postTime(p)];
+        if(r.reads!=null) bits.push('קראו '+r.reads);
+        if(r.clicks!=null) bits.push('לחצו '+r.clicks);
+        return ['sent',bits.join(' · ')];
       }
-      const ghosts=d.past?[]:suggestionsFor(d.date);
-      for(const e of ghosts){
-        const g=document.createElement('div'); g.className='sugpost'; g.dir='auto';
-        g.innerHTML='<div>💡 <b>הצעה: פוסט על „'+esc(e.name)+'”</b></div><div class="gtext">'+esc(e.suggest.text)+'</div>';
-        g.title='לחיצה פותחת את הפוסט לעריכה. גרירה ליום אחר כותבת טיוטה לשם.';
-        g.onclick=()=>openEditor({date:d.date,text:e.suggest.text},e);
-        draggable(g,{event:e}); c.appendChild(g);
+      return ['wait',/^שולח עכשיו/.test(p.status||'')?'יוצא עכשיו':'מתוזמן ל-'+p.due];
+    }
+    const URGENT={fail:0,draft:1,wait:2,sent:3,skip:4};
+    function mk(tag,cls,text,fn){ const b=document.createElement(tag); if(tag==='button') b.type='button'; b.className=cls; b.textContent=text; if(fn) b.onclick=fn; return b; }
+    const CHECK_SVG='<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+    // a post opens in the editor; a sent one only while WhatsApp still lets it be fixed, else its versions
+    function openPost(p){
+      if(p.sent){
+        if(!(p.edit_left>0)){ if(hasVersions(p)&&channels().length) openVersions(p.text,p.image); else toast('ההודעה כבר יצאה. אפשר לתקן אותה רק ב-15 הדקות הראשונות.'); return; }
+        p.deadline=Date.now()+p.edit_left*1000;
       }
-      if(!d.posts.length&&!ghosts.length) c.insertAdjacentHTML('beforeend','<div class="none'+(d.past?' past':'')+'">'+(d.past?'לא נשלחה הודעה':'אין הודעה')+'</div>');
-      if(!d.past&&!d.closed){ const add=document.createElement('button'); add.type='button'; add.className='add'; add.textContent='+ הודעה'; add.onclick=()=>openEditor({date:d.date}); c.appendChild(add); }
-      return c;
+      openEditor(p,ctxOf(p));
     }
-    function renderWeek(box,m){
-      const s=sunday(cursor), ds=[];
-      for(let i=0;i<7;i++){ const k=addDays(s,i); if(i<5||m[k]) ds.push(dayAt(m,k)); }
-      const grid=document.createElement('div'); grid.className='wgrid'; grid.style.setProperty('--n',ds.length);
-      for(const d of ds) grid.appendChild(weekCol(d));
-      box.appendChild(grid);
+    // what could go out on T, one at a time: his own drafts, the system's (events and promotions first), the ideas
+    function candidates(T,isToday){
+      const open=T.posts.filter(p=>p.draft&&!p.sent);
+      const promo=p=>(p.kind==='קידום'||!!eventOf(p))?1:0;
+      const sys=open.filter(p=>p.made_by).sort((a,b)=>promo(b)-promo(a));
+      return [...open.filter(p=>!p.made_by).map(p=>({p,tag:'הטיוטה שלך'})),
+              ...sys.map(p=>({p,tag:isToday?'ההצעה להיום':'ההצעה ליום '+T.day,kind:p.made_by})),
+              ...(state.ideas||[]).map(i=>({idea:i,tag:'רעיון',kind:[IDEA_FROM[i.source],i.kind].filter(Boolean).join(' · ')}))];
     }
-    function renderDay(box,m){
-      const d=dayAt(m,cursor);
-      if(d.closed&&!d.posts.length){ box.insertAdjacentHTML('beforeend','<div class="closednote">'+(d.unloaded?'היום הזה רחוק מדי לתצוגה.':'ביום '+esc(d.day)+' לא יוצאות הודעות. החצים עוברים ליום הפוסטים הבא.')+'</div>'); return; }
-      box.appendChild(dayCard(d));
-    }
-    function renderCalendar(el){
-      el.appendChild(calBar());
-      if(view!=='day') el.insertAdjacentHTML('beforeend','<p class="draghint">✋ לחיצה על יום פותחת אותו. אפשר לגרור הודעה שעוד לא יצאה, או הצעה 💡, ליום אחר.</p>');
-      const box=document.createElement('div'); box.id='cal';
-      const m=dayMap();
-      if(view==='month') renderMonth(box,m); else if(view==='week') renderWeek(box,m); else renderDay(box,m);
-      // on the phone, a swipe moves: finger to the right = the next one (the page reads right to left)
-      let sx=null, sy=0;
-      box.addEventListener('touchstart',e=>{ sx=e.touches[0].clientX; sy=e.touches[0].clientY; },{passive:true});
-      box.addEventListener('touchend',e=>{ if(sx===null) return; const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy; sx=null;
-        if(Math.abs(dx)>70&&Math.abs(dy)<45) step(dx>0?1:-1); },{passive:true});
-      el.appendChild(box);
-      keepCalInSight();
-    }
-    document.addEventListener('keydown',e=>{
-      if(FLAT(view)||!state||!$('board').classList.contains('active')||document.querySelector('.overlay.open')) return;
-      if(e.ctrlKey||e.metaKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||'')) return;
-      if(e.key==='ArrowRight') step(-1); else if(e.key==='ArrowLeft') step(1); else return;
-      e.preventDefault();
-    });
-
-    // ---- 📜 what was sent (Omri, 2026-10-29: "to see a record of what was sent") ----
-    let sentLog=null, histAt=0, histDays=90, histQ='';
-    async function renderHistory(el){
-      const box=document.createElement('div'); box.id='hist'; el.appendChild(box);
-      if(!sentLog||Date.now()-histAt>60000||sentLog.days!==histDays){
-        box.innerHTML='<div class="loading">טוען…</div>';
-        try{ sentLog=await apiJson('/history?days='+histDays); histAt=Date.now(); }
-        catch(e){ box.innerHTML='<div class="error">'+esc(e.message)+'</div>'; return; }
-      }
-      drawHistory(box);
-    }
-    function drawHistory(box){
-      box.innerHTML='';
-      const tools=document.createElement('div'); tools.className='hist-tools';
-      const q=document.createElement('input'); q.type='search'; q.placeholder='חיפוש בהודעות שנשלחו…'; q.value=histQ; q.dir='auto';
-      const n=document.createElement('span'); n.className='calnote'; n.style.margin='0';
-      tools.append(q,n); box.appendChild(tools);
-      const list=document.createElement('div'); box.appendChild(list);
-      const draw=()=>{
-        const words=histQ.trim().toLowerCase().split(/\s+/).filter(Boolean);
-        const rows=sentLog.sent.filter(h=>words.every(w=>(h.text+' '+h.group_name).toLowerCase().includes(w)));
-        n.textContent=rows.length+' הודעות נשלחו מאז '+lab(sentLog.since)+(words.length?' (מתוך '+sentLog.sent.length+')':'');
-        list.innerHTML='';
-        if(!rows.length){ list.innerHTML='<p class="evnote">'+(words.length?'לא נמצאה הודעה כזאת.':'עוד לא נשלחו הודעות בתקופה הזאת.')+'</p>'; return; }
-        let day='';
-        for(const h of rows){
-          if(h.date!==day){ day=h.date; const c=rows.filter(x=>x.date===day).length;
-            list.insertAdjacentHTML('beforeend','<div class="hist-day">יום '+DAY_HE[wday(day)]+' '+lab(day)+' · '+c+(c===1?' הודעה':' הודעות')+'</div>'); }
-          const it=document.createElement('div'); it.className='hist-item';
-          it.innerHTML='<div class="hmeta"><b>✓ נשלחה '+esc(h.time||'')+'</b><span dir="auto">'+(h.group?'👥 '+esc(h.group_name):'📢 ערוץ העדכונים')+'</span>'+
-            (h.edited?'<span>✏️ תוקנה אחרי השליחה</span>':'')+(h.result?statsOf(h.result):'<span>עוד אין מספרים</span>')+'</div><div class="chat"></div>';
-          it.querySelector('.chat').appendChild(bubble(h.text,{time:h.time,imageId:h.image_id,footer:h.footer_sent?state.settings.footer:'',clickable:false}));
-          list.appendChild(it);
+    let candAt=0;
+    function renderDay(T){
+      const box=$('day'); box.innerHTML='';
+      const isToday=T.date===(state.today||today());
+      const card=document.createElement('div'); card.className='dcard'; box.appendChild(card);
+      // a. sent, or approved and waiting (a failed one is listed with them, so it is never hidden)
+      const shown=T.posts.filter(p=>p.sent||waiting(p)||p.failed);
+      if(shown.length){
+        const of=isToday?'של היום':'של יום '+dayName(T);
+        if(shown.length===1&&!shown[0].failed){
+          const p=shown[0]; card.classList.add('done');
+          card.innerHTML='<div class="done-l"><span class="okicon">'+CHECK_SVG+'</span><div><div class="done-big"></div><div class="done-sub">אין עוד מה לעשות היום.</div></div></div>';
+          card.querySelector('.done-big').textContent=p.sent?'הפוסט '+of+' נשלח ב-'+postTime(p)+'.':'הפוסט '+of+' מתוזמן ל-'+p.due+'.';
+          const btns=document.createElement('div'); btns.className='dbtns';
+          if(!p.sent||p.edit_left>0) btns.appendChild(mk('button','b-sec','לערוך',()=>openPost(p)));
+          if(hasVersions(p)&&channels().length) btns.appendChild(mk('button','b-sec','לשלוח לערוצים נוספים',()=>openVersions(p.text,p.image)));
+          if(btns.children.length) card.appendChild(btns);
+          return 'done';
         }
-      };
-      let t=null; q.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ histQ=q.value; draw(); },200); };
-      draw();
-      if(histDays<365){ const more=document.createElement('button'); more.className='more'; more.textContent='עוד חודשיים אחורה';
-        more.onclick=()=>{ histDays=Math.min(365,histDays+60); renderBoard(); }; box.appendChild(more); }
-    }
-    // ---- 🎬 the content kanban (Omri, 2026-10-29: "the kanban with my content ideas here too") ----
-    // Content Machine's items; a move or an edit goes to the bot as an inbox event, so the laptop picks it up
-    const KCOLS=[['idea','💭 רעיון'],['draft','✍️ טיוטה'],['approved','✅ מאושר'],['published','📢 פורסם']];
-    const VIA={'live-work':'🎙','telegram':'📱'};
-    let kanban=null, kMore=false;
-    async function loadContent(){
-      try{ kanban=await apiJson('/content'); renderKanban(); }
-      catch(e){ $('content').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
-    }
-    const kCat=k=>((kanban.categories||[]).find(c=>c.key===k)||{}).he||'';
-    const kFmt=k=>(kanban.formats||[]).find(f=>f.key===k)||{he:k,hook:'hook',visual:'visual'};
-    function kNeeds(c,s){
-      const out=[];
-      if(s!=='idea'){ if(!(c.title||'').trim()) out.push('כותרת'); if(!(c.hook||'').trim()) out.push('hook'); if(!c.category) out.push('קטגוריה'); }
-      if((s==='approved'||s==='published')&&!c.date) out.push('יום');
-      return out;
-    }
-    function renderKanban(){
-      const el=$('content'); el.innerHTML='';
-      el.insertAdjacentHTML('beforeend','<p class="evnote">הרעיונות של Content Machine: מהטלפון, מ-Live-work ומהמחשב. גוררים כרטיס לעמודה אחרת (בטלפון: לחיצה ארוכה); לחיצה פותחת אותו. רעיון יוצא מ„רעיון” רק עם כותרת ו-hook, ו„מאושר” צריך יום. השינוי נקלט ב-Content Machine במחשב בפקודת cm הבאה.</p>');
-      const grid=document.createElement('div'); grid.className='kgrid';
-      for(const [st,name] of KCOLS){
-        const cards=kanban.items.filter(c=>c.status===st);
-        cards.sort((a,b)=>st==='idea'?(b.created||'').localeCompare(a.created||''):(b.date||b.updated||'').localeCompare(a.date||a.updated||''));
-        const col=document.createElement('div'); col.className='kcol';
-        col.innerHTML='<h3>'+name+'<small>'+cards.length+'</small></h3>';
-        dropTarget(col,{status:st});
-        const limit=st==='published'&&!kMore?12:cards.length;
-        for(const c of cards.slice(0,limit)) col.appendChild(kCard(c));
-        if(cards.length>limit){ const m=document.createElement('button'); m.className='kmore'; m.textContent='עוד '+(cards.length-limit)+'…'; m.onclick=()=>{ kMore=true; renderKanban(); }; col.appendChild(m); }
-        if(!cards.length) col.insertAdjacentHTML('beforeend','<p class="calnote" style="text-align:center">ריק</p>');
-        grid.appendChild(col);
+        card.appendChild(mk('h2','dtitle',(shown.length>1?'הפוסטים ':'הפוסט ')+of));
+        const list=document.createElement('div'); list.className='dlist';
+        for(const p of shown) list.appendChild(postLine(p));
+        card.appendChild(list);
+        return 'done';
       }
-      el.appendChild(grid);
-    }
-    function kCard(c){
-      const card=document.createElement('div'); card.className='kcard';
-      const f=kFmt(c.format), next=c.status==='idea'?kNeeds(c,'draft'):[];
-      card.innerHTML='<div class="kt" dir="auto">'+(VIA[c.via]?VIA[c.via]+' ':'')+esc(c.title||c.idea)+'</div>'+
-        (c.hook?'<div class="kh" dir="auto">'+esc(c.hook)+'</div>':(c.title&&c.idea!==c.title?'<div class="kh" dir="auto">'+esc(c.idea)+'</div>':''))+
-        '<div class="kchips"><span>'+esc(f.he)+'</span>'+(c.category?'<span>'+esc(kCat(c.category))+'</span>':'')+(c.date?'<span>📅 '+lab(c.date)+'</span>':'')+
-        (next.length&&next.length<4?'<span class="miss">חסר: '+esc(next.join(', '))+'</span>':'')+'</div>';
-      card.onclick=()=>openCard(c);
-      draggable(card,{card:c});
-      return card;
-    }
-    async function kSend(c,ev){ return apiJson('/content/event',{method:'POST',json:Object.assign({ref:c.ref},ev)}); }
-    async function kanbanMove(c,st){
-      if(c.status===st) return;
-      const name=(KCOLS.find(k=>k[0]===st)||['',st])[1];
-      const need=kNeeds(c,st);
-      if(need.length){ await openCard(c,{status:st,name,note:'כדי להעביר ל„'+name+'” חסרים: '+need.join(', ')}); return; }
-      try{ await kSend(c,{kind:'status',status:st}); toast('✓ עבר ל„'+name+'”'); }
-      catch(e){ toast(e.message,true); }
-      loadContent();
-    }
-    async function openCard(c,move){
-      const f=kFmt(c.format), form=document.createElement('div'); form.className='kform';
-      const field=(label,el)=>{ const w=document.createElement('div'); const l=document.createElement('label'); l.textContent=label; w.append(l,el); return w; };
-      const inp=(v,tag)=>{ const e=document.createElement(tag||'input'); if(!tag) e.type='text'; e.value=v||''; e.dir='auto'; return e; };
-      const idea=document.createElement('div'); idea.className='idea'; idea.dir='auto'; idea.textContent=c.idea+(c.notes?'\n\n'+c.notes:'');
-      const title=inp(c.title), hook=inp(c.hook,'textarea'), visual=inp(c.visual);
-      const cat=document.createElement('select'); cat.innerHTML='<option value="">קטגוריה</option>'+kanban.categories.map(k=>'<option value="'+esc(k.key)+'">'+esc(k.he)+'</option>').join(''); cat.value=c.category||'';
-      const day=document.createElement('input'); day.type='date'; day.value=c.date||'';
-      const two=document.createElement('div'); two.className='row2'; two.append(field('קטגוריה',cat),field('יום',day));
-      const wa=document.createElement('button'); wa.type='button'; wa.className='btn ghost'; wa.textContent='💬 לפוסט בוואטסאפ';
-      wa.onclick=()=>{ if(sheetDone) sheetDone(false);
-        const text=['*'+(title.value||c.idea).replace(/\*/g,'')+'*',hook.value,title.value?c.idea:''].filter(Boolean).join('\n\n');
-        openEditor({date:day.value&&day.value>=today()?day.value:nextPostDay(),text}); opened=''; };
-      form.append(field('הרעיון',idea),field('כותרת',title),field(f.hook||'hook',hook),field(f.visual||'visual',visual),two,wa);
-      const ok=await sheet({title:'🎬 '+(c.title||c.idea).slice(0,70),body:form,note:move?move.note:'',go:move?'שמירה והעברה ל„'+move.name+'”':'שמירה'});
-      if(!ok) return;
-      const now={...c,title:title.value.trim(),hook:hook.value.trim(),visual:visual.value.trim(),category:cat.value,date:day.value};
-      try{
-        if(now.title!==c.title||now.hook!==c.hook||now.visual!==c.visual) await kSend(c,{kind:'tth',title:now.title,hook:now.hook,visual:now.visual});
-        if(now.category&&now.category!==c.category) await kSend(c,{kind:'category',category:now.category});
-        if(now.date&&now.date!==c.date) await kSend(c,{kind:'schedule',date:now.date});
-        if(move){
-          const need=kNeeds(now,move.status);
-          if(need.length) toast('נשמר, אבל עדיין חסרים: '+need.join(', '),true);
-          else { await kSend(c,{kind:'status',status:move.status}); toast('✓ נשמר ועבר ל„'+move.name+'”'); }
-        } else toast('✓ נשמר');
-      }catch(e){ toast(e.message,true); }
-      loadContent();
-    }
-    function renderBoard(){
-      const s=state; let el=$('board'); el.innerHTML='';
-      renderApprovals(el);
-      if(view==='sent'){ el.appendChild(calBar()); renderHistory(el); return; }
-      if(view!=='list'){ renderEvents(el); renderMedia(el); renderIdeas(el); renderCalendar(el); return; }
-      el.appendChild(calBar()); keepCalInSight();
-      // the list: today first; the days still ahead after it, week by week; the days gone by in the archive
-      const ahead=s.weeks.map(w=>w.days.filter(d=>!d.past)).filter(ds=>ds.length);
-      const gone=[...s.weeks.flatMap(w=>w.days.filter(d=>d.past)).reverse(),...(s.archive||[])];
-      const first=ahead.length?ahead[0].shift():null;
-      if(first){
-        el.insertAdjacentHTML('beforeend','<h2>'+(first.today?'היום':'הבא בתור')+'</h2>');
-        el.appendChild(dayCard(first));
-      }
-      renderReady(el,first);
-      renderEvents(el);
-      renderMedia(el);
-      renderIdeas(el);
-      el.insertAdjacentHTML('beforeend','<p class="draghint">✋ אפשר לגרור הודעה שעוד לא יצאה, הצעה לאירוע או רעיון 💡, ליום אחר.</p>');
-      for(const ds of ahead){
-        if(!ds.length) continue;
-        const h=document.createElement('h2'); h.textContent=ds.length>1?ds[0].label+' – '+ds[ds.length-1].label:'יום '+ds[0].day+' '+ds[0].label; el.appendChild(h);
-        for(const d of ds) el.appendChild(dayCard(d));
-      }
-      const more=document.createElement('button'); more.className='more';
-      more.textContent=s.more?('עוד שבועות ('+s.more+' ימים עם הודעות בהמשך)'):'עוד שבועות';
-      more.onclick=()=>{ weeks+=3; load(); };
-      el.appendChild(more);
-      renderArchive(el,gone);
-    }
-    // the end of "today" (Omri chose a simple "today" screen, 2026-10-28): "✓ הכול מוכן", or what is still missing
-    function renderReady(el,first){
-      const waiting=draftsAhead().filter(({p})=>!rejecting.has(p.row)).length;
-      const live=d=>d.posts.filter(p=>!p.skipped&&!p.draft&&!p.failed);
-      const name=d=>d.today?'היום':'יום '+d.day+' '+d.label;
-      const next=state.weeks.flatMap(w=>w.days).find(d=>!d.past&&d.post_day&&d!==first&&(!first||d.date>first.date));
-      const todo=[];
-      if(waiting) todo.push([waiting===1?'טיוטה אחת מחכה לאישור, למעלה':waiting+' טיוטות מחכות לאישור, למעלה']);
-      const failed=first?first.posts.filter(p=>p.failed).length:0;
-      if(failed) todo.push([(failed===1?'הודעה אחת לא יצאה':failed+' הודעות לא יצאו')+' '+(first.today?'היום':'ב'+name(first))]);
-      for(const d of [first,next]) if(d&&d.post_day&&!live(d).length&&!(d===first&&failed)) todo.push(['ל'+(d.today?'היום':name(d))+' עוד אין הודעה',d]);
-      const box=document.createElement('div');
-      if(!todo.length){
-        box.className='ready ok';
-        // whole sentences: "29.10: 2" read backwards right to left
-        const bits=[first,next].filter(d=>d&&d.post_day).map(d=>{ const ps=live(d), wait=ps.filter(p=>!p.sent).length, at=d.today?'היום':'ביום '+d.day+' '+d.label;
-          if(!wait) return ps.length===1?at+' יצאה הודעה אחת ✓':at+' יצאו '+ps.length+' הודעות ✓';
-          return wait===1?at+' מחכה הודעה אחת לשעה שלה':at+' מחכות '+wait+' הודעות לשעה שלהן'; });
-        box.innerHTML='<b>✓ הכול מוכן</b>'+(bits.length?'<span></span>':'');
-        if(bits.length) box.lastChild.textContent=bits.join(' · ');
+      // b. a candidate
+      const list=candidates(T,isToday);
+      if(!list.length){ card.appendChild(mk('p','empty','אין עדיין פוסט ל'+(isToday?'היום':'יום '+dayName(T))+'.')); return 'empty'; }
+      const n=candAt%list.length, c=list[n];
+      const head=document.createElement('div'); head.className='dhead';
+      head.append(mk('span','tag',c.tag),mk('span','dwhen',(isToday?'היום':dayName(T))+(c.kind?' · '+c.kind:'')));
+      card.appendChild(head);
+      const btns=document.createElement('div'); btns.className='dbtns';
+      if(c.p){
+        const p=c.p, ctx=ctxOf(p);
+        const h=mk('h2','dtitle',firstLine(p.text)); h.dir='auto'; card.appendChild(h);
+        const wa=document.createElement('div'); wa.className='wa';
+        const b=bubble(p.text,{time:p.due,imageId:p.image_id,footer:boardFooter(p)}); b.title='לחיצה פותחת לעריכה'; b.onclick=()=>openEditor(p,ctx);
+        wa.appendChild(b); card.appendChild(wa);
+        const clip=()=>b.classList.toggle('clip',b.scrollHeight>b.clientHeight+2);   // the picture or link card may load later
+        requestAnimationFrame(clip); setTimeout(clip,1500);
+        const go=mk('button','b-main','לשלוח '+(isToday?'היום':'ביום '+T.day)+' ב-'+p.due);
+        go.onclick=()=>quickApprove(p,ctx,go);
+        btns.append(go,mk('button','b-sec','לערוך',()=>openEditor(p,ctx)));
       }else{
-        box.className='ready todo'; box.innerHTML='<b>⏳ עוד לא הכול מוכן</b><ul></ul>';
-        for(const [t,d] of todo){ const li=document.createElement('li'); li.append(t);
-          if(d){ const a=document.createElement('button'); a.type='button'; a.className='add'; a.textContent='+ הודעה'; a.onclick=()=>openEditor({date:d.date}); li.appendChild(a); }
-          box.lastChild.appendChild(li); }
+        const i=c.idea;
+        const h=mk('h2','dtitle',i.title); h.dir='auto'; card.appendChild(h);
+        if(i.why){ const w=mk('p','dwhy',i.why); w.dir='auto'; card.appendChild(w); }
+        btns.appendChild(mk('button','b-main','לכתוב את הפוסט',()=>writeIdea(i,T.date)));
       }
-      el.appendChild(box);
+      if(list.length>1){
+        btns.appendChild(mk('button','b-link','הצעה אחרת',()=>{ candAt=n+1; renderHome(); }));
+        btns.appendChild(mk('span','counter',(n+1)+' מתוך '+list.length));
+      }
+      card.appendChild(btns);
+      return 'candidate';
     }
-    function renderArchive(el,gone){
-      const box=document.createElement('details'); box.className='evs archive';
-      try{ box.open=localStorage.getItem('wa_archive_open')==='1'; }catch(_){ }
-      box.ontoggle=()=>{ try{ localStorage.setItem('wa_archive_open',box.open?'1':'0'); }catch(_){ } };
-      const n=gone.reduce((k,d)=>k+d.posts.filter(p=>p.sent).length,0);
-      box.innerHTML='<summary>🗄️ ארכיון · ימים שעברו ('+gone.length+' ימים · '+n+' הודעות יצאו)</summary>';
-      for(const d of gone) box.appendChild(dayCard(d));
-      if(!gone.length) box.insertAdjacentHTML('beforeend','<p class="evnote">עוד אין ימים שעברו.</p>');
-      const older=document.createElement('button'); older.className='more'; older.textContent='עוד שבועות אחורה';
-      older.onclick=()=>{ back+=2; try{ localStorage.setItem('wa_archive_open','1'); }catch(_){ } load(); };
-      box.appendChild(older);
-      el.appendChild(box);
+    // one post as a line: its first words and its status; a click opens it
+    function postLine(p){
+      const [cls,words]=statusOf(p);
+      const b=mk('button','dline','');
+      const t=mk('span','',firstLine(p.text)||'(בלי טקסט)'); t.dir='auto';
+      b.append(t,mk('span','s-'+cls,words));
+      b.onclick=()=>{ if(sheetDone) sheetDone(false); openPost(p); };
+      return b;
     }
+    // ---- the week of T: one row a day, its status at the other end ----
+    let weekShift=0;
+    function weekStart(T){ return addDays(sunday(T.date),7*weekShift); }
+    function renderWeek(T){
+      const start=weekStart(T), m=dayMap(), t=state.today||today(), box=$('week'); box.innerHTML='';
+      $('week-title').textContent=weekShift===0?'השבוע':weekShift===-1?'השבוע הקודם':weekShift===1?'השבוע הבא':lab(start)+' עד '+lab(addDays(start,4));
+      for(let i=0;i<7;i++){
+        const date=addDays(start,i), d=m[date], posts=d?d.posts:[];
+        if(i>=5&&!posts.length) continue;   // Friday and Saturday only with a post
+        const name=DAY_HE[i]+' '+lab(date), now=date===t;
+        let status=['none','ריק'];
+        // a day with a post that went out or will go out shows that post; drafts left beside it are not "waiting"
+        const real=posts.filter(p=>p.sent||waiting(p)||p.failed), open=posts.filter(p=>p.draft&&!p.sent);
+        if(real.length){
+          const all=real.map(statusOf).sort((a,b)=>URGENT[a[0]]-URGENT[b[0]]);
+          status=[all[0][0],(real.length>1?real.length+' פוסטים · ':'')+all[0][1]];
+        }else if(open.length) status=date>=t?['draft',open.length>1?open.length+' טיוטות מחכות':'טיוטה מחכה']:['none','לא נשלח'];
+        else if(posts.length) status=['skip','דילגת'];
+        const click=posts.length===1?()=>openPost(posts[0]):posts.length>1?()=>daySheet(date,name,posts,date>=t):date>=t?()=>openEditor({date}):null;
+        const row=mk(click?'button':'div','wrow'+(now?' now':''),'',click);
+        row.append(mk('span','wd',name+(now?', היום':'')),mk('span','ws s-'+status[0],status[1]));
+        box.appendChild(row);
+      }
+      const f=firstWeek();
+      $('week-prev').disabled=addDays(start,-7)<addDays(f,-7*MAXW);
+      $('week-next').disabled=addDays(start,7)>addDays(f,7*(MAXW-1));
+    }
+    async function daySheet(date,name,posts,ahead){
+      const list=document.createElement('div'); list.className='dlist';
+      for(const p of posts) list.appendChild(postLine(p));
+      const more=await sheet({title:'הפוסטים של יום '+name,body:list,go:ahead?'לכתוב עוד פוסט ליום הזה':'סגירה'});
+      if(more&&ahead) openEditor({date});
+    }
+    // another week: from what /state already gave, or a load that reaches it (12 weeks each way at most)
+    async function moveWeek(dir){
+      const T=targetDay(), f=firstWeek(), start=addDays(weekStart(T),7*dir);
+      const behind=Math.max(0,Math.ceil((dt(f)-dt(start))/864e5/7)), ahead=Math.floor((dt(start)-dt(f))/864e5/7)+1;
+      if(behind>MAXW||ahead>MAXW) return;
+      weekShift+=dir;
+      if(behind>(state.back||0)||ahead>state.weeks.length){
+        back=Math.max(back,behind); weeks=Math.max(weeks,ahead);
+        $('week').innerHTML='<div class="loading">טוען…</div>'; await load();
+      }else renderHome();
+    }
+    $('week-prev').onclick=()=>moveWeek(-1);
+    $('week-next').onclick=()=>moveWeek(1);
+    function renderHome(){
+      if(!state) return;
+      const T=targetDay();
+      $('write').classList.toggle('main',renderDay(T)==='empty');
+      renderWeek(T);
+    }
+    // the gear: the settings in place of the home screen, and back
+    function showPane(name){
+      $('home').hidden=name!=='home'; $('settings').hidden=name!=='settings';
+      $('gear').hidden=name==='settings'; $('home-back').hidden=name!=='settings';
+      $('top-title').textContent=name==='settings'?'הגדרות':'פוסטים לוואטסאפ';
+      scrollTo(0,0);
+    }
+    $('gear').onclick=()=>showPane('settings');
+    $('home-back').onclick=()=>showPane('home');
     async function load(){
       try{
         state=await apiJson('/state?weeks='+weeks+'&back='+back);
-        renderStatus(); renderSettings(); renderBoard();
+        renderStatus(); renderSettings(); renderHome();
         if(started||!/[?&](share|new)\b/.test(location.search)) restoreBackup();
         afterFirstLoad();
-      }catch(e){ $('board').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
+      }catch(e){ $('day').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
     }
 
     // ---- ⚙️ settings (kept on the server: they count from the next send) ----
@@ -1587,7 +776,7 @@
         const r=await apiJson('/settings',{method:'PUT',json:{footer_on:on}});
         Object.assign(state.settings,r.settings);
         $('set-msg').textContent=on?'✓ השורה חוזרת להודעות':'✓ מעכשיו ההודעות יוצאות בלי השורה';
-        renderSettings(); renderBoard();
+        renderSettings(); renderHome();
       }catch(e){ box.checked=!on; $('set-msg').textContent=e.message; $('set-msg').className='msg err'; }
       finally{ box.disabled=false; }
     });
@@ -1633,567 +822,102 @@
       $('set-ch-msg').textContent='שומר…'; $('set-ch-msg').className='msg'; $('set-ch-save').disabled=true;
       try{
         const r=await apiJson('/channels',{method:'PUT',json:{channels:list}});
-        Object.assign(state.settings,r.settings); chDirty=false; renderChannels(); renderBoard();
+        Object.assign(state.settings,r.settings); chDirty=false; renderChannels(); renderHome();
         $('set-ch-msg').textContent='✓ נשמר ('+channels().length+' ערוצים)';
       }catch(e){ $('set-ch-msg').textContent=e.message; $('set-ch-msg').className='msg err'; }
       finally{ $('set-ch-save').disabled=false; }
     };
 
-    function showSettings(){ document.querySelector('.tab[data-pane="settings"]').click(); $('set-channels-box').scrollIntoView({block:'start'}); }
+    function showSettings(){ showPane('settings'); $('set-channels-box').scrollIntoView({block:'start'}); }
     async function copyText(t){
       try{ await navigator.clipboard.writeText(t); return true; }
       catch(_){ const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
         ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(_){ } ta.remove(); return ok; }
     }
-    let vrTimedChanged=false;
-    function closeVersions(){ $('vr-overlay').classList.remove('open'); if(vrTimedChanged){ vrTimedChanged=false; load(); } }
+    function closeVersions(){ $('vr-overlay').classList.remove('open'); }
     $('vr-close').onclick=closeVersions;
     $('vr-overlay').addEventListener('click',e=>{ if(e.target===$('vr-overlay')) closeVersions(); });
-    document.addEventListener('keydown',e=>{ if(e.key!=='Escape'||!$('vr-overlay').classList.contains('open')) return;
-      const em=$('vr-edit').querySelector('.emojis');
-      if(em&&!em.hidden) em.hidden=true; else closeVersions(); });
-    $('vr-overlay').addEventListener('click',e=>{ const em=$('vr-edit').querySelector('.emojis');
-      if(em&&!em.hidden&&!e.target.closest('#vr-edit .toolbar')) em.hidden=true; });
-    // the versions' own picture (Omri, 2026-11-03: a post already sent can't get one, but it still goes on to
-    // other places). Kept per post on the server; the post itself, and the board, stay as it went out.
-    let vr={text:'',image:'',busy:false};
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$('vr-overlay').classList.contains('open')&&!sheetDone) closeVersions(); });
+    // the picture the versions go out with: the post's own (or one kept for them on the server earlier)
+    let vr={text:'',image:''};
     function vrSay(t,err){ $('vr-msg').textContent=t; $('vr-msg').className='msg'+(err?' err':''); }
     function vrSendLabel(){ return '📤 לשלוח מ-052'+(vr.image?' (עם התמונה)':''); }
-    async function vrSetImage(link){
-      vr.busy=true;
-      try{ const r=await apiJson('/versions/image',{method:'PUT',json:{text:vr.text,image:link}}); vr.image=r.image; renderVrPic(); return true; }
-      catch(e){ vrSay(e.message,true); return false; }
-      finally{ vr.busy=false; }
-    }
-    async function vrUpload(f){
-      if(!f.type.startsWith('image/')){ vrSay('רק תמונות',true); return; }
-      vrSay('מעלה את התמונה ל-Drive…'); vr.busy=true;
-      try{
-        const r=await api('/image',{method:'POST',body:f,headers:{'Content-Type':f.type,'X-Filename':encodeURIComponent(f.name||'image')}});
-        const data=await r.json(); if(!r.ok) throw new Error(data.error||'ההעלאה נכשלה');
-        if(await vrSetImage(data.link)) vrSay('התמונה עלתה ✓');
-      }catch(e){ vr.busy=false; vrSay(e.message,true); }
-    }
-    // the versions' own text (Omri, 2026-11-03: spaces and more, after WhatsApp's 15 minutes for the post are over):
-    // every version not sent yet is made again from it, each keeps its own links
-    function renderVrEdit(open){
-      const box=$('vr-edit'); box.innerHTML='';
-      const base=()=>vr.edited!=null?vr.edited:vr.text;
-      const mk=(t,cls,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=t; b.onclick=fn; return b; };
-      if(!open){
-        const row=document.createElement('div'); row.className='vbtns';
-        row.appendChild(mk(vr.edited!=null?'✏️ לערוך שוב את הנוסח (נערך)':'✏️ לערוך את הנוסח לגרסאות','ghost',()=>renderVrEdit(true)));
-        if(vr.edited!=null) row.appendChild(mk('↩️ לנוסח המקורי','ghost',()=>vrSaveText('')));
-        box.appendChild(row); return;
-      }
-      const ta=document.createElement('textarea'); ta.dir='auto'; ta.value=base();
-      const note=document.createElement('p'); note.className='vr-note';
-      note.textContent="הדגשה ונטוי נראים רק בוואטסאפ: בפייסבוק ובסקול הסימנים יורדים והטקסט נשאר רגיל. אימוג'ים נשארים בכולם.";
-      const proof=document.createElement('div'); proof.className='proof'; proof.hidden=true;
-      const row=document.createElement('div'); row.className='vbtns';
-      const save=mk('שמירה','primary',async()=>{
-        const t=ta.value.trim();
-        if(!t){ vrSay('ההודעה ריקה',true); return; }
-        if(t===base().trim()){ renderVrEdit(false); return; }
-        save.disabled=true; vrSay('🔎 בודק טעויות…');
-        const r=await proofread(t,today());
-        if(r.ok&&!r.issues.length){ vrSaveText(t); return; }
-        vrSay(''); row.hidden=true;
-        showProof(r,'לשמור',v=>{ row.hidden=false; save.disabled=false; if(v) vrSaveText(ta.value.trim()); },ta,proof);
-      });
-      row.appendChild(save); row.appendChild(mk('ביטול','ghost',()=>renderVrEdit(false)));
-      box.append(textToolbar(ta),note,ta,proof,row); ta.focus();
-    }
-    async function vrSaveText(t){
-      try{
-        await apiJson('/versions/text',{method:'PUT',json:{text:vr.text,edited:t}});
-        await openVersions(vr.text,vr.postImage);
-        vrSay(t?'✓ הנוסח נשמר. גרסה שכבר נשלחה נשארת כמו שנשלחה':'↩️ חזרה לנוסח המקורי');
-      }catch(e){ vrSay(e.message,true); }
-    }
-    // ---- a quick filter by kind, and ⏰ a time per version or for all those showing (Omri, 2026-11-03). A channel
-    // tied to a group of 052 goes out by itself; the others can't, so their time is a reminder ----
-    function vrCards(){ return [...$('vr-list').querySelectorAll('.vcard')]; }
-    // ---- ✓ posted here, and 🚀 Claude posts it (Content Machine bot/posting.py, 2026-11-15) ----
-    const CLAUDE_STATE={queued:['🚀 בתור ל-Claude',''],posted:['🚀 Claude פרסם','ok'],pending:['⏳ פורסם, מחכה לאישור מנהל','ok'],
-                        skipped:['⏭ Claude דילג','skip'],failed:['✗ Claude לא הצליח','skip']};
-    function paintPosted(card){
-      const v=card._v, c=v.channel, p=v.posted, st=(vr.posting||{})[c.id];
-      const by=p&&p.by==='claude'?'Claude':'ידנית';
-      card.querySelector('.vhead .posted').textContent=p?'✓ פורסם '+vrWhen(p.at)+' · '+by:'';
-      if(p) card.classList.add('done');
-      const b=card.querySelector('.vposted');
-      if(b){ b.textContent=p?'✓ פורסם כאן (לבטל)':'✓ פרסמתי כאן'; b.classList.toggle('marked',!!p); }
-      const cl=card.querySelector('.vhead .claude');
-      const look=st&&!(p&&st.status==='posted')?CLAUDE_STATE[st.status]:null;
-      cl.hidden=!look;
-      if(look){ cl.textContent=look[0]+(st.note&&st.status!=='posted'?': '+st.note:''); cl.className='claude '+look[1]; }
-    }
-    function vrClaudeOpen(){
-      return vrCards().filter(card=>{ const v=card._v, c=v.channel, st=(vr.posting||{})[c.id];
-        return c.kind==='facebook'&&c.url&&!v.posted&&!(st&&['queued','posted','pending'].includes(st.status)); });
-    }
-    function renderVrClaude(){
-      const box=$('vr-claude'); box.innerHTML='';
-      const open=vrClaudeOpen(), runs=[...new Set(Object.values(vr.posting||{}).filter(s=>s.status==='queued').map(s=>s.run))];
-      box.hidden=!vr.postingOn||(!open.length&&!runs.length);
-      if(box.hidden) return;
-      if(open.length){
-        const b=document.createElement('button'); b.type='button'; b.className='btn primary';
-        b.textContent='🚀 Claude יפרסם בשבילי בפייסבוק ('+open.length+')';
-        b.onclick=()=>askClaude(open); box.appendChild(b);
-      }
-      for(const run of runs){
-        const n=Object.values(vr.posting).filter(s=>s.run===run&&s.status==='queued').length;
-        const x=document.createElement('button'); x.type='button'; x.className='btn ghost';
-        x.textContent='⏹ לעצור את Claude ('+n+' בתור)';
-        x.onclick=async()=>{ x.disabled=true;
-          try{ const r=await apiJson('/posting/stop',{method:'POST',json:{run}}); vr.posting=r.posting; vrRepaint(); vrSay('⏹ Claude לא ימשיך בבקשה הזאת'); }
-          catch(e){ vrSay(e.message,true); x.disabled=false; } };
-        box.appendChild(x);
-      }
-    }
-    function vrRepaint(){ vrCards().forEach(paintPosted); renderVrClaude(); }
-    const CLAUDE_DAY_MAX=8;
-    async function askClaude(cards){
-      const pick=document.createElement('div'); pick.className='pick';
-      cards.forEach((card,i)=>{ const c=card._v.channel, l=document.createElement('label');
-        const cb=document.createElement('input'); cb.type='checkbox'; cb.value=c.id; cb.checked=i<CLAUDE_DAY_MAX;
-        const t=document.createElement('span'); t.textContent=c.name; l.append(cb,t); pick.appendChild(l); });
-      const intro=document.createElement('p'); intro.className='hint';
-      intro.textContent='Claude מפרסם מהמחשב בבית, ב-Chrome שלך שמחובר לפייסבוק: קבוצה אחרי קבוצה, כמה דקות בין קבוצות, עם הקישור והתמונה של כל קבוצה. '+
-        'המחשב בבית צריך להיות דלוק. בסוף מגיעה הודעה בטלגרם, וכל קבוצה מסומנת כאן.';
-      const ok=await sheet({title:'🚀 Claude יפרסם בפייסבוק',body:[intro,pick],
-        note:'⚠️ לפני ששולחים: לפי הכללים של פייסבוק, פרסום אוטומטי אסור. כדי לא להיחסם: עד '+CLAUDE_DAY_MAX+' קבוצות ביום. קבוצה שהכללים שלה אוסרים פרסום עסקי, Claude מדלג עליה.',
-        go:'🚀 לשלוח ל-Claude'});
-      if(!ok) return;
-      const ids=[...pick.querySelectorAll('input:checked')].map(i=>i.value);
-      if(!ids.length){ vrSay('לא נבחרה אף קבוצה',true); return; }
-      try{
-        const r=await apiJson('/versions/queue',{method:'POST',json:{text:vr.text,channels:ids,image:vr.image||''}});
-        vr.posting=r.posting; vrRepaint();
-        vrSay('🚀 '+r.queued+' קבוצות בתור ל-Claude'+(r.skipped.length?' (דילגתי על: '+r.skipped.join(', ')+')':'')+'. הוא מתחיל תוך כמה דקות.');
-        toast('🚀 '+r.queued+' קבוצות בתור ל-Claude');
-      }catch(e){ vrSay(e.message,true); }
-    }
-    function vrWhen(at){ return at.slice(11,16)+(at.slice(0,10)!==today()?' ('+at.slice(8,10)+'.'+at.slice(5,7)+')':''); }
-    function vrWaits(v){ return v.schedule&&!v.schedule.told&&!v.schedule.gave_up; }
-    function vrDefaultAt(){
-      const d=new Date(Date.now()+36e5); d.setMinutes(0,0,0);
-      if(d.getHours()<6) d.setHours(9);
-      const two=n=>String(n).padStart(2,'0');
-      return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate())+'T'+two(d.getHours())+':00';
-    }
-    function whenInput(value){
-      const i=document.createElement('input'); i.type='datetime-local'; i.className='when-at'; i.step='300'; i.value=value||vrDefaultAt();
-      i.setAttribute('aria-label','מתי'); return i;
-    }
-    function renderVrFilter(){
-      const box=$('vr-filter'), cards=vrCards(), count={};
-      cards.forEach(c=>{ count[c.dataset.kind]=(count[c.dataset.kind]||0)+1; });
-      const kinds=Object.keys(CH_KINDS).filter(k=>count[k]);
-      if(vr.filter!=='all'&&!count[vr.filter]) vr.filter='all';
-      box.innerHTML=''; box.hidden=kinds.length<2;
-      for(const [k,label,n] of [['all','הכול',cards.length]].concat(kinds.map(k=>[k,CH_KINDS[k],count[k]]))){
-        const b=document.createElement('button'); b.type='button'; b.className='vf'; b.setAttribute('aria-pressed',String(vr.filter===k));
-        b.textContent=label+' '; const m=document.createElement('small'); m.textContent='('+n+')'; b.appendChild(m);
-        b.onclick=()=>{ vr.filter=k; lsSet('wa_vr_filter',k); renderVrFilter(); };
-        box.appendChild(b);
-      }
-      cards.forEach(c=>{ c.hidden=vr.filter!=='all'&&c.dataset.kind!==vr.filter; });
-      renderVrAll();
-    }
-    function renderVrAll(){
-      const box=$('vr-all'), shown=vrCards().filter(c=>!c.hidden);
-      const open=shown.filter(c=>!c._v.sent), waits=shown.filter(c=>vrWaits(c._v));
-      const old=box.querySelector('input'); if(old) vr.allAt=old.value;
-      box.innerHTML=''; box.hidden=open.length<2;
-      if(box.hidden) return;
-      const at=whenInput(vr.allAt);
-      const go=document.createElement('button'); go.type='button'; go.className='btn ghost'; go.textContent='⏰ לתזמן את כל המוצגים ('+open.length+')';
-      go.onclick=async()=>{
-        if(!at.value){ vrSay('בוחרים מתי',true); return; }
-        const send=open.filter(c=>c._v.channel.jid).length;
-        if(send&&!confirm(send+' קבוצות של 052 יקבלו את הגרסה מעצמן ב-'+vrWhen(at.value.slice(0,16))+', זו אחרי זו.\nאפשר לבטל עד אז.')) return;
-        const r=await vrSchedule(open.map(c=>c.dataset.id),at.value);
-        if(r) vrSay('⏰ '+open.length+' גרסאות תוזמנו ל-'+vrWhen(r.at.slice(0,16)));
-      };
-      box.append(at,go);
-      if(waits.length){
-        const off=document.createElement('button'); off.type='button'; off.className='btn ghost'; off.textContent='✕ לבטל '+waits.length+' תזמונים';
-        off.onclick=async()=>{ if(await vrSchedule(waits.map(c=>c.dataset.id),'')) vrSay('התזמונים בוטלו'); };
-        box.appendChild(off);
-      }
-    }
-    async function vrSchedule(ids,at){
-      if(vr.busy){ vrSay('רגע, התמונה עוד עולה'); return null; }
-      let lateOk=false;
-      if(at){   // a late or borderline hour: asked first (a warning, the choice stays Omri's)
-        const h=await askHours(at.slice(0,10),at.slice(11,16));
-        if(h){
-          const g=await new Promise(res=>showHours(h,'לתזמן',res,$('vr-hours'),'חזרה'));
-          if(!g) return null;
-          if(g.later) at=g.later; else lateOk=true;
-        }
-      }
-      try{
-        const r=await apiJson('/versions/schedule',{method:'PUT',json:{text:vr.text,channels:ids,at,image:vr.image||'',late_ok:lateOk}});
-        r.at=at;
-        vrTimedChanged=true;
-        vrCards().forEach(c=>{ c._v.schedule=r.schedule[c.dataset.id]||null; paintSched(c); });
-        renderVrAll();
-        if(r.skipped.length) vrSay('כבר נשלחו, ולא תוזמנו: '+r.skipped.join(', '));
-        return r;
-      }catch(e){ vrSay(e.message,true); return null; }
-    }
-    function paintSched(card,editing){
-      const v=card._v, s=v.schedule, slot=card.querySelector('.vsched'), jid=v.channel.jid;
-      slot.innerHTML=''; card.classList.toggle('timed',vrWaits(v)&&!v.sent);
-      if(v.sent) return;
-      const btn=(t,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn ghost'; b.textContent=t; b.onclick=fn; return b; };
-      if(editing){
-        const at=whenInput(vrWaits(v)?s.at:'');
-        slot.append(at,btn('שמירה',async()=>{ if(!at.value){ vrSay('בוחרים מתי',true); return; }
-          const r=await vrSchedule([card.dataset.id],at.value); if(r) vrSay((jid?'⏰ תצא מ-052 ב-':'🔔 תזכורת ב-')+vrWhen(r.at.slice(0,16))); }),btn('ביטול',()=>paintSched(card)));
-        at.focus(); return;
-      }
-      if(s){
-        const w=document.createElement('span'); w.className='when';
-        if(s.gave_up){ w.classList.add('bad'); w.textContent='⚠️ לא נשלח: '+(s.failed||''); }
-        else if(s.told) w.textContent='🔔 הזכרתי ב-'+vrWhen(s.told);
-        else if(s.failed){ w.classList.add('bad'); w.textContent='⚠️ ב-'+vrWhen(s.at)+' עוד לא יצא, מנסה שוב: '+s.failed; }
-        else{ w.classList.add('on'); w.textContent=(jid?'⏰ תצא מ-052 ב-':'🔔 תזכורת ב-')+vrWhen(s.at); }
-        slot.appendChild(w);
-      }
-      slot.appendChild(btn(vrWaits(v)?'⏰ לשנות':'⏰ לתזמן',()=>paintSched(card,true)));
-      if(vrWaits(v)) slot.appendChild(btn('✕ בלי תזמון',()=>vrSchedule([card.dataset.id],'')));
-    }
-    async function openFromReminder(key){
-      try{ const r=await apiJson('/versions/post?key='+encodeURIComponent(key)); openVersions(r.text,r.image); }
-      catch(e){ toast(e.message,true); }
-    }
-    function renderVrPic(){
-      const box=$('vr-pic'), id=driveId(vr.image);
-      document.querySelectorAll('#vr-list .vpic-btn').forEach(b=>{ b.hidden=!id; });
-      document.querySelectorAll('#vr-list [data-send052]').forEach(b=>{ if(!b.disabled) b.textContent=vrSendLabel(); });
-      if(!id){
-        box.innerHTML='<div class="drop" id="vr-drop">📷 תמונה לגרסאות: מדביקים (Ctrl+V), גוררים לכאן, או לוחצים לבחירה</div>'+
-          '<button type="button" class="btn ghost img-paste" id="vr-paste">📋 להדביק תמונה שהעתקתי</button>'+
-          '<input class="drivelink" id="vr-link" dir="auto" placeholder="או מדביקים כאן קישור לתמונה ב-Drive">';
-        const l=$('vr-link'); l.oninput=()=>{ if(driveId(l.value.trim())) vrSetImage(l.value.trim()); };
-        $('vr-paste').onclick=()=>pasteImage(vrUpload,vrSay);
-        const d=$('vr-drop'); d.onclick=()=>$('vr-file').click();
-        d.ondragover=e=>{e.preventDefault(); d.classList.add('over');}; d.ondragleave=()=>d.classList.remove('over');
-        d.ondrop=e=>{e.preventDefault(); d.classList.remove('over'); const f=e.dataTransfer.files[0]; if(f) vrUpload(f);};
-        return;
-      }
-      box.innerHTML='<div class="thumb"><img alt=""><button class="btn ghost" id="vr-pic-x" type="button">הסרת התמונה</button></div>';
-      imageUrl(id).then(u=>{ if(u){ const i=box.querySelector('img'); if(i) i.src=u; return; }
-        delete imgCache[id]; if(driveId(vr.image)===id) vrSay('התמונה לא נפתחה מ-Drive: בודקים שזה קובץ תמונה ושהחשבון hello@ יכול לראות אותו',true); });
-      $('vr-pic-x').onclick=()=>vrSetImage('');
-    }
-    $('vr-file').onchange=e=>{ const f=e.target.files[0]; if(f) vrUpload(f); e.target.value=''; };
-    document.addEventListener('paste',e=>{ if(!$('vr-overlay').classList.contains('open')||!$('vr-pic').firstChild) return;
-      const f=[...(e.clipboardData||{}).files||[]].find(f=>f.type.startsWith('image/')); if(f){ e.preventDefault(); vrUpload(f); return; }
-      const t=((e.clipboardData&&e.clipboardData.getData('text'))||'').trim();
-      if(/drive\.google\.com\/(file\/d\/|open\?id=)/.test(t)&&driveId(t)){ e.preventDefault(); vrSetImage(t); } });
-    // for the places that are pasted into by hand. The clipboard holds one thing: the text, then the picture.
-    async function copyVrImage(c){
-      const url=await imageUrl(driveId(vr.image));
-      if(!url){ vrSay('התמונה לא נפתחה',true); return; }
-      const png=new Promise((ok,no)=>{ const i=new Image(); i.onerror=no;
-        i.onload=()=>{ const cv=document.createElement('canvas'); cv.width=i.naturalWidth; cv.height=i.naturalHeight;
-          cv.getContext('2d').drawImage(i,0,0); cv.toBlob(b=>b?ok(b):no(new Error('no blob')),'image/png'); };
-        i.src=url; });
-      try{
-        await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
-        vrSay('🖼️ התמונה הועתקה ל„'+c.name+'”. מדביקים אותה שם');
-      }catch(_){  // no way to the clipboard here: the file instead
-        try{
-          const a=document.createElement('a'); a.href=URL.createObjectURL(await png); a.download='picture.png'; a.click();
-          vrSay('הדפדפן לא העתיק תמונה, אז היא ירדה כקובץ: מצרפים אותו בקבוצה');
-        }catch(_e){ vrSay('התמונה לא הועתקה',true); }
-      }
-    }
     async function openVersions(text,image){
-      vr={text,image:image||'',postImage:image||'',edited:null,busy:false,filter:lsGet('wa_vr_filter')||'all',allAt:''}; $('vr-pic').innerHTML=''; $('vr-edit').innerHTML='';
-      $('vr-filter').hidden=true; $('vr-all').hidden=true;
-      const list=$('vr-list'); list.innerHTML=''; $('vr-msg').textContent=''; $('vr-msg').className='msg';
+      vr={text,image:image||''};
+      const list=$('vr-list'); list.innerHTML=''; vrSay('');
       $('vr-overlay').classList.add('open');
       if(!channels().length){
-        list.innerHTML='<p class="evnote" style="margin-top:12px">עוד אין ערוצים ברשימה. מוסיפים אותם פעם אחת ב„⚙️ הגדרות”, ומאז כל הודעה מקבלת גרסה לכל אחד.</p>';
+        list.innerHTML='<p class="hint" style="margin-top:12px">עוד אין ערוצים ברשימה. מוסיפים אותם פעם אחת בהגדרות, ומאז כל הודעה מקבלת גרסה לכל אחד.</p>';
         const b=document.createElement('button'); b.className='btn primary'; b.type='button'; b.textContent='⚙️ להוסיף ערוצים';
         b.onclick=()=>{ closeVersions(); showSettings(); }; list.appendChild(b); return;
       }
-      $('vr-msg').textContent='מכין קישור לכל ערוץ…';
+      vrSay('מכין קישור לכל ערוץ…');
       try{
         const r=await apiJson('/versions',{method:'POST',json:{text}});
-        $('vr-msg').textContent='';
-        if(r.image!=null) vr.image=r.image;  // null = none chosen here: the post's own
-        vr.edited=r.edited; vr.posting=r.posting||{}; vr.postingOn=!!r.posting_on; renderVrEdit(false);
+        vrSay('');
+        if(r.image!=null) vr.image=r.image;  // null = none chosen for the versions: the post's own
         for(const v of r.versions){
           const c=v.channel, card=document.createElement('div'); card.className='vcard';
-          card.dataset.id=c.id; card.dataset.kind=c.kind; card._v=v;
           const sentLine=s=>'<span class="sent2">✓ נשלח מ-052 ב-'+esc(s.at.slice(11,16))+(s.at.slice(0,10)!==today()?' ('+esc(s.at.slice(8,10)+'.'+s.at.slice(5,7))+')':'')+
             (v.reactions?' · ❤️ '+v.reactions:'')+(v.replies?' · 💬 '+v.replies:'')+'</span>';
           card.innerHTML='<div class="vhead"><span dir="auto">'+esc(c.name)+'</span><span class="kind">'+esc(CH_KINDS[c.kind]||c.kind)+(c.jid?' · 052':'')+'</span>'+
             (v.sent?sentLine(v.sent):'')+
-            '<span class="posted"></span><span class="claude" hidden></span>'+
-            (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vsched"></div><div class="vbtns"></div>'+
+            (v.clicks!=null?'<span class="clicks">👆 '+v.clicks+' לחצו</span>':'')+'</div><div class="vtext" dir="auto"></div><div class="vbtns"></div>'+
             '<div class="vnote" role="status" aria-live="polite"></div>';
           card.querySelector('.vtext').textContent=v.text;
           if(v.sent) card.classList.add('done');
           const btns=card.querySelector('.vbtns');
           // straight to the group from Omri's second number, once
           if(c.jid&&!v.sent){
-            const s=document.createElement('button'); s.type='button'; s.className='btn primary';
-            s.dataset.send052='1'; s.textContent=vrSendLabel();
+            const s=document.createElement('button'); s.type='button'; s.className='btn primary'; s.textContent=vrSendLabel();
             s.onclick=async()=>{
-              if(vr.busy){ vrSay('רגע, התמונה עוד עולה'); return; }
               if(!confirm('לשלוח את הגרסה הזאת מהמספר 052 לקבוצה „'+c.name+'”?\nהיא יוצאת מיד, ואי אפשר להחזיר אותה.')) return;
-              s.disabled=true; s.textContent='שולח…'; $('vr-msg').className='msg'; $('vr-msg').textContent='';
+              s.disabled=true; s.textContent='שולח…'; vrSay('');
               try{
                 const r=await apiJson('/versions/send',{method:'POST',json:{text,channel:c.id,image:vr.image||''}});
-                card.classList.add('done'); s.remove(); [...btns.children].forEach(b=>{ if(b.textContent.startsWith('🧪')) b.remove(); });
+                card.classList.add('done'); s.remove(); if(test) test.remove();
                 card.querySelector('.vhead .kind').insertAdjacentHTML('afterend',sentLine(r.sent));
-                v.sent=r.sent; v.schedule=null; vrTimedChanged=true; paintSched(card); renderVrAll();
-                $('vr-msg').textContent='📤 נשלח מ-052 ל„'+c.name+'”';
-              }catch(e){ s.disabled=false; s.textContent=vrSendLabel(); $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
+                v.sent=r.sent;
+                vrSay('📤 נשלח מ-052 ל„'+c.name+'”');
+              }catch(e){ s.disabled=false; s.textContent=vrSendLabel(); vrSay(e.message,true); }
             };
             btns.appendChild(s);
           }
           // the answer shows under the button pressed, not at the window's bottom (Omri, 2026-11-15: "nothing happens")
           const note=(t,err)=>{ const n=card.querySelector('.vnote'); n.textContent=t; n.className='vnote on'+(err?' err':''); };
-          const copied=async(open)=>{
+          const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.jid?'ghost':'primary'); b.textContent='📋 להעתיק';
+          b.onclick=async()=>{
             if(!await copyText(v.text)){ note('ההעתקה לא הצליחה: מסמנים את הטקסט שלמעלה ומעתיקים ידנית (Ctrl+C)',true); return; }
-            const fb=c.kind==='facebook';
-            note('✓ הטקסט הועתק'+(open?' והקבוצה נפתחה בלשונית חדשה. שם':'. בקבוצה')+
-              (fb?': ללחוץ על „כתוב משהו” ואז Ctrl+V (בטלפון: לחיצה ארוכה ← הדבקה).':': להדביק עם Ctrl+V.')+
-              (vr.image?' התמונה לא עוברת עם הטקסט: „🖼️ להעתיק את התמונה” ומדביקים שוב.':'')+
-              (c.jid?'':' אחרי הפרסום: „✓ פרסמתי כאן”, כדי שהסטטיסטיקה תדע.'));
+            note('✓ הטקסט הועתק. בקבוצה'+(c.kind==='facebook'?': ללחוץ על „כתוב משהו” ואז Ctrl+V (בטלפון: לחיצה ארוכה ← הדבקה).':': להדביק עם Ctrl+V.')+
+              (vr.image?' התמונה לא עוברת עם הטקסט: מצרפים אותה בנפרד.':''));
             toast('📋 הועתק ל„'+c.name+'”');
-            if(open) window.open(c.url,'_blank','noopener');
           };
-          const lead=!c.jid;  // with "send from 052" the copy buttons are the second way
-          if(c.url){ const a=document.createElement('button'); a.type='button'; a.className='btn '+(lead?'primary':'ghost'); a.textContent='📋 להעתיק ולפתוח את הקבוצה'; a.onclick=()=>copied(true); btns.appendChild(a); }
-          const b=document.createElement('button'); b.type='button'; b.className='btn '+(c.url||!lead?'ghost':'primary'); b.textContent='📋 להעתיק'; b.onclick=()=>copied(false); btns.appendChild(b);
+          btns.appendChild(b);
           // the version as it would go out, picture included, to 052's own chat: nothing marked, the real send stays open
+          let test=null;
           if(!v.sent){
-            const t=document.createElement('button'); t.type='button'; t.className='btn ghost'; t.textContent='🧪 לשלוח לי לבדיקה';
-            t.onclick=async()=>{
-              if(vr.busy){ vrSay('רגע, התמונה עוד עולה'); return; }
-              t.disabled=true; vrSay('שולח בדיקה…');
+            test=document.createElement('button'); test.type='button'; test.className='btn ghost'; test.textContent='🧪 לשלוח לי לבדיקה';
+            test.onclick=async()=>{
+              test.disabled=true; vrSay('שולח בדיקה…');
               try{
                 const r=await apiJson('/versions/test',{method:'POST',json:{text,channel:c.id,image:vr.image||''}});
                 vrSay("🧪 נשלחה מ-052 לצ'אט של 052 עם עצמו"+(r.image?', עם התמונה':'')+'. הגרסה עוד לא נשלחה לקבוצה');
               }catch(e){ vrSay(e.message,true); }
-              finally{ t.disabled=false; }
+              finally{ test.disabled=false; }
             };
-            btns.appendChild(t);
+            btns.appendChild(test);
           }
-          const pb=document.createElement('button'); pb.type='button'; pb.className='btn ghost vpic-btn'; pb.textContent='🖼️ להעתיק את התמונה'; pb.onclick=()=>copyVrImage(c); btns.appendChild(pb);
-          // "✓ posted here": a copy-only version Omri pasted himself, so 📊 knows where the post really went
-          if(!c.jid&&!v.sent){
-            const pm=document.createElement('button'); pm.type='button'; pm.className='btn ghost vposted';
-            pm.onclick=async()=>{
-              pm.disabled=true;
-              try{
-                const r=await apiJson('/versions/posted',{method:'POST',json:{text,channel:c.id,posted:!v.posted}});
-                v.posted=r.posted; paintPosted(card); renderVrClaude();
-                note(v.posted?'✓ סומן: פורסם ב„'+c.name+'”. הקליקים מכאן ייספרו ב„📊 מי עוזר לי”.':'הסימון הוסר.');
-              }catch(e){ note(e.message,true); }
-              finally{ pm.disabled=false; }
-            };
-            btns.appendChild(pm);
-          }
-          paintPosted(card);
-          paintSched(card);
           list.appendChild(card);
         }
-        renderVrFilter();
-        renderVrClaude();
-        renderVrPic();
-      }catch(e){ $('vr-msg').textContent=e.message; $('vr-msg').className='msg err'; }
+      }catch(e){ vrSay(e.message,true); }
     }
     // after a send or an approve: pops up by itself for a post with a link once channels are listed, and for
     // every post once a channel sends from 052 (Omri, 2026-10-28)
     // closed it for now (a post that goes out in a few days)? It comes back from the post itself: same text, same links
     // (Omri, 2026-11-02: "if I close it, I cannot see it again")
     function hasVersions(p){ return !!(firstUrl(p.text)||sendable())&&!p.draft&&!p.skipped; }
-    function versionsBtn(p){
-      const b=document.createElement('button'); b.type='button'; b.className='fixsent'; b.textContent=p.vr_timed?'⏰ '+(p.vr_timed===1?'גרסה מתוזמנת':p.vr_timed+' גרסאות מתוזמנות'):'📣 גרסאות לערוצים';
-      b.onclick=e=>{ e.stopPropagation(); openVersions(p.text,p.image); }; return b;
-    }
-    // "🔁 לשלוח שוב בנוסח אחר" (Omri, 2026-11-14): the same message once more, the next day, in the other half of
-    // the day, as a DRAFT in a shorter wording (content-machine bot/repeat.py). It goes out only once approved.
-    const REPEAT='🔁 לשלוח שוב בנוסח אחר';
-    function repeatBtn(p){
-      const b=document.createElement('button'); b.type='button'; b.className='fixsent';
-      if(p.repeated){
-        b.textContent='🔁 חוזרת ב-'+dm(p.repeated.date)+' · '+p.repeated.time;
-        b.title='לפתוח את הטיוטה של השליחה החוזרת';
-        b.onclick=e=>{ e.stopPropagation(); const d=findPost(p.repeated.row); d?openEditor(d):toast('הטיוטה של השליחה החוזרת לא בטווח שמוצג כאן',true); };
-        return b;
-      }
-      b.textContent=REPEAT;
-      b.title='נכתבת טיוטה של אותה הודעה בנוסח קצר ושונה, ליום הבא בחלק האחר של היום. היא יוצאת רק אחרי שמאשרים אותה.';
-      b.onclick=async e=>{
-        e.stopPropagation(); b.disabled=true; b.textContent='🔁 כותב נוסח חדש…';
-        try{
-          const r=await apiJson('/repeat',{method:'POST',json:{row:p.row,key:p.key}});
-          await load();
-          toast('🔁 טיוטה ל-'+dm(r.date)+' ב-'+r.time+(r.ai?'':' (בלי נוסח חדש: Gemini לא ענה)')+'. היא לא תצא עד שתאשרו אותה.');
-          const d=findPost(r.row); if(d) openEditor(d);
-        }catch(err){ toast(err.message,true); b.disabled=false; b.textContent=REPEAT; }
-      };
-      return b;
-    }
     function offerVersions(text,image){ if((firstUrl(text)||sendable())&&channels().length) openVersions(text,image); }
 
-    // ---- results ----
-    let results=null, sortKey='at', sortDir=-1;
-    const COLS=[['at','מתי'],['category','קטגוריה'],['head','ההודעה'],['read_pct','% קראו'],['reads_1h','בשעה הראשונה'],['reactions','ריאקציות'],['replies','תגובות'],['clicks','קליקים'],['score','ציון']];
-    function safeReport(html){ // Telegram's small HTML: keep b / i / a only
-      const doc=new DOMParser().parseFromString('<div>'+html+'</div>','text/html');
-      const walk=n=>{ for(const c of [...n.childNodes]){ if(c.nodeType===1){ const tag=c.tagName.toLowerCase();
-        if(!['b','i','a'].includes(tag)){ walk(c); c.replaceWith(...c.childNodes); continue; }
-        for(const a of [...c.attributes]) if(!(tag==='a'&&a.name==='href'&&/^https:\/\//.test(a.value))) c.removeAttribute(a.name);
-        if(tag==='a'){ c.target='_blank'; c.rel='noopener'; } walk(c); } } };
-      walk(doc.body.firstChild); return doc.body.firstChild.innerHTML;
-    }
-    function renderResults(){
-      const el=$('results');
-      const rows=[...results.results].sort((a,b)=>{ const x=a[sortKey],y=b[sortKey]; return (x==null)-(y==null)||(x>y?1:x<y?-1:0)*sortDir; });
-      el.innerHTML=(results.report?'<div class="report">'+safeReport(results.report)+'</div>':'<div class="report">עוד אין הודעות שנשלחו. אחרי ההודעה הראשונה יופיעו כאן כמה קראו, ריאקציות, תגובות וקליקים.</div>')+
-        '<p class="hint" style="margin-top:8px">ציון = (ריאקציות + 3×תגובות + 2×קליקים) לכל 100 חברים. הלשונית „תוצאות” בגיליון מתעדכנת כל ערב.</p>';
-      if(!rows.length) return;
-      const wrap=document.createElement('div'); wrap.className='tablewrap';
-      wrap.innerHTML='<table><thead><tr>'+COLS.map(([k,l])=>'<th data-k="'+k+'">'+l+(k===sortKey?(sortDir<0?' ▼':' ▲'):'')+'</th>').join('')+'</tr></thead><tbody>'+
-        rows.map(r=>'<tr><td>'+esc((r.at||'').replace('T',' '))+'</td><td>'+esc(r.category||'')+'</td><td dir="auto">'+esc(r.head||'')+'</td>'+
-          ['read_pct','reads_1h','reactions','replies','clicks','score'].map(k=>'<td class="num">'+(r[k]==null?'-':esc(r[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
-      wrap.querySelectorAll('th').forEach(th=>th.onclick=()=>{ const k=th.dataset.k; sortDir=(k===sortKey)?-sortDir:-1; sortKey=k; renderResults(); });
-      el.appendChild(wrap);
-    }
-    async function loadResults(){
-      try{ results=await apiJson('/results'); renderResults(); }
-      catch(e){ $('results').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
-    }
-    // ---- 🧠 what the system learned from the drafts (bot/learn.py) ----
-    function renderLearn(L){
-      const el=$('learn'), R=L.reasons||{};
-      el.innerHTML='<p class="lrn-intro">כל טיוטה שהמערכת כותבת נרשמת כאן: אושרה כמו שהיא, אושרה אחרי עריכה, או נדחתה ולמה. '+
-        'העריכות שלך הופכות לדוגמאות ל-Gemini כשהוא כותב פוסט על סרטון או סדנה, וסוג טיוטה שנדחה '+L.stop_after+' פעמים ברציפות '+
-        '(„לא רלוונטי”, „כבר פרסמתי” או בלי סיבה) מגיע אליך בטלגרם עם שאלה: להפסיק להציע אותו?</p>';
-      const used=L.kinds.filter(k=>k.made||k.stopped), unused=L.kinds.filter(k=>!k.made&&!k.stopped);
-      const grid=document.createElement('div'); grid.className='lrn-kinds';
-      for(const k of used){
-        const decided=k.as_is+k.edited+k.rejected+k.ignored, pct=n=>decided?(100*n/decided).toFixed(1):0;
-        const c=document.createElement('div'); c.className='lrn'+(k.stopped?' stopped':'');
-        const why=Object.entries(k.reasons).sort((a,b)=>b[1]-a[1]).map(([r,n])=>(R[r]||'בלי סיבה')+' ×'+n).join(' · ');
-        c.innerHTML='<h4>'+esc(k.label)+'</h4>'+
-          '<div class="bar" title="ירוק = כמו שהיא · סגול = אחרי עריכה · אדום = נדחתה · אפור = לא טופלה">'+
-            '<i class="b-ok" style="width:'+pct(k.as_is)+'%"></i><i class="b-ed" style="width:'+pct(k.edited)+'%"></i>'+
-            '<i class="b-no" style="width:'+pct(k.rejected)+'%"></i><i class="b-ig" style="width:'+pct(k.ignored)+'%"></i></div>'+
-          '<div class="nums"><span>✅ כמו שהיא <b>'+k.as_is+'</b></span><span>✏️ אחרי עריכה <b>'+k.edited+'</b></span>'+
-            '<span>🗑 נדחו <b>'+k.rejected+'</b></span>'+(k.ignored?'<span>⏭ לא טופלו <b>'+k.ignored+'</b></span>':'')+
-            (k.pending?'<span>📝 מחכות <b>'+k.pending+'</b></span>':'')+'</div>'+
-          (why?'<div class="why">למה נדחו: '+esc(why)+'</div>':'')+
-          (k.streak>=2&&!k.stopped?'<div class="warn">נדחתה '+k.streak+' פעמים ברציפות</div>':'')+
-          '<div class="state"></div>';
-        const st=c.querySelector('.state'), b=document.createElement('button'); b.type='button';
-        st.insertAdjacentHTML('afterbegin','<span>'+(k.stopped?'🛑 לא מוצעת יותר':'✓ המערכת מציעה אותה')+'</span>');
-        b.className='btn ghost'; b.textContent=k.stopped?'להחזיר':'להפסיק להציע';
-        b.onclick=async()=>{ b.disabled=true;
-          try{ renderLearn(await apiJson('/learn',{method:'PUT',json:{kind:k.kind,stopped:!k.stopped}}));
-            toast(k.stopped?'✓ חוזרת להציע: '+k.label:'🛑 לא תוצע יותר: '+k.label); }
-          catch(e){ toast(e.message,true); b.disabled=false; } };
-        st.appendChild(b); grid.appendChild(c);
-      }
-      if(used.length) el.appendChild(grid);
-      else el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין טיוטות רשומות. מהטיוטה הבאה שהמערכת כותבת (אירוע, סדנה או סרטון), מה שיקרה איתה יופיע כאן.</p>');
-      if(unused.length) el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד לא נכתבו: '+unused.map(k=>esc(k.label)).join(' · ')+'</p>');
-      el.insertAdjacentHTML('beforeend','<h2>✍️ העריכות שלך לפני אישור</h2>');
-      if(!L.edits.length){ el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין. טיוטה שנערכה ואז אושרה תופיע כאן: הנוסח של המערכת מול הנוסח שלך.</p>'); return; }
-      const list=document.createElement('div'); list.className='edits';
-      for(const e of L.edits){
-        const c=document.createElement('div'); c.className='edit';
-        c.innerHTML='<div class="ehead">'+esc(e.label)+(e.day?' · '+dm(e.day):'')+'</div><div class="pair">'+
-          '<div class="was" dir="auto"><small>מה שהמערכת כתבה</small></div><div class="now" dir="auto"><small>מה שיצא</small></div></div>';
-        c.querySelector('.was').append(e.draft); c.querySelector('.now').append(e.final);
-        list.appendChild(c);
-      }
-      el.appendChild(list);
-    }
-    async function loadLearn(){
-      try{ renderLearn(await apiJson('/learn')); }
-      catch(e){ $('learn').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
-    }
-    document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
-      document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
-      document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id===t.dataset.pane));
-      if(t.dataset.pane==='results') loadResults();
-      if(t.dataset.pane==='learn') loadLearn();
-      if(t.dataset.pane==='stats') loadStats();
-      if(t.dataset.pane==='content') loadContent();
-    });
-
-    // ---- 📊 who helps (Content Machine bot/channel_stats.py, 2026-11-15) ----
-    const VERDICT={good:'🟢 כדאי להמשיך',mid:'בינוני',few:'עוד מעט נתונים',poor:'🔴 לא שווה את המאמץ',none:'עוד לא פרסמת כאן'};
-    const BY={'052':'מ-052',omri:'ידנית',claude:'Claude',clicks:'לפי הקליקים'};
-    function renderStats(S){
-      const el=$('stats'); el.innerHTML='';
-      const rows=S.rows, live=rows.filter(r=>r.posted);
-      el.insertAdjacentHTML('beforeend','<p class="st-intro">כל ערוץ מהרשימה ב„⚙️ הגדרות”: כמה פעמים פרסמת שם, כמה לחצו על הקישור בכל פוסט, וכמה נרשמו לסדנה דרכו. '+
-        'קליק הוא לא הרשמה: הוא אומר שמישהו ראה ורצה לדעת עוד.'+(S.clicks_read?'':' ⚠️ הקליקים לא נקראו עכשיו.')+
-        (S.signups_read?'':' ⚠️ ההרשמות לא נקראו עכשיו.')+'</p>');
-      if(live.length){
-        const best=live.filter(r=>r.verdict==='good').slice(0,4), poor=rows.filter(r=>r.verdict==='poor');
-        const wa=live.filter(r=>r.channel.kind==='whatsapp'), fb=live.filter(r=>r.channel.kind==='facebook');
-        const avg=a=>a.length?Math.round(a.reduce((s,r)=>s+(r.per_post||0),0)/a.length):0;
-        const lines=[];
-        const iso=t=>'⁨'+t+'⁩';  // a name in its own direction: "GEG 2" never swaps with the Hebrew around it
-        if(best.length) lines.push('להשקיע כאן: '+best.map(r=>iso(r.channel.name)).join(', ')+'. המספרים בכרטיסים למטה.');
-        if(wa.length&&fb.length) lines.push('קבוצת וואטסאפ מביאה בממוצע '+avg(wa)+' קליקים לפוסט, וקבוצת פייסבוק '+avg(fb)+'.');
-        if(poor.length) lines.push('אפשר לוותר: '+poor.map(r=>iso(r.channel.name)).join(', ')+'.');
-        if(S.average!=null) lines.push('הממוצע של כל הערוצים: '+S.average+' קליקים לפוסט. ירוק = לפחות הממוצע, אדום = פחות מחציו.');
-        if(S.announcements_signups!=null) lines.push('לשם השוואה: מערוץ העדכונים של הקהילה נרשמו '+S.announcements_signups+' לסדנאות.');
-        const top=document.createElement('div'); top.className='st-top';
-        top.innerHTML='<h3>איפה להשקיע</h3><ol></ol>';
-        lines.forEach(t=>{ const li=document.createElement('li'); li.textContent=t; top.querySelector('ol').appendChild(li); });
-        el.appendChild(top);
-      }
-      const max=Math.max(1,...rows.map(r=>r.per_post||0));
-      const grid=document.createElement('div'); grid.className='st-grid';
-      for(const r of rows){
-        const c=document.createElement('div'); c.className='stc '+r.verdict;
-        c.innerHTML='<h4><span dir="auto"></span><span class="kind"></span></h4><span class="pill"></span>'+
-          '<div class="big"></div><div class="nums"></div><div class="meter"><i></i></div>';
-        c.querySelector('h4 span').textContent=r.channel.name;
-        c.querySelector('h4 .kind').textContent=CH_KINDS[r.channel.kind]||r.channel.kind;
-        c.querySelector('.pill').textContent=VERDICT[r.verdict];
-        c.querySelector('.big').innerHTML=r.posted?esc(String(r.per_post))+' <small>קליקים לפוסט</small>':'<small>אין פוסטים שפורסמו</small>';
-        c.querySelector('.nums').innerHTML='<span>פורסם <b>'+(r.posted===1?'פעם אחת':r.posted===2?'פעמיים':r.posted+' פעמים')+'</b></span><span>קליקים <b>'+r.clicks+'</b></span>'+
-          '<span>נרשמו <b>'+(r.signups==null?'?':r.signups)+'</b></span>'+(r.last?'<span>לאחרונה '+esc(dm(r.last.slice(0,10)))+'</span>':'');
-        c.querySelector('.meter i').style.width=Math.round(100*(r.per_post||0)/max)+'%';
-        if(r.posts.length){
-          const d=document.createElement('details'); d.innerHTML='<summary>הפוסטים ('+r.posts.length+')</summary><ul></ul>';
-          for(const p of r.posts){ const li=document.createElement('li'); li.className=p.posted?'':'no';
-            li.textContent=dm(p.at.slice(0,10))+' · '+p.title+' · 👆 '+p.clicks+(p.posted?' · '+(BY[p.by]||p.by):' · לא פורסם');
-            d.querySelector('ul').appendChild(li); }
-          c.appendChild(d);
-        }
-        grid.appendChild(c);
-      }
-      if(rows.length) el.appendChild(grid);
-      else el.insertAdjacentHTML('beforeend','<p class="lrn-empty">עוד אין ערוצים ברשימה. מוסיפים אותם ב„⚙️ הגדרות”.</p>');
-      const rules=document.createElement('p'); rules.className='st-rules';
-      rules.textContent='איך נקבע הצבע: '+S.rules+' מ-15.11 לא נספרת הפתיחה של וואטסאפ ופייסבוק לתצוגה המקדימה; לפני כן יש בכל פוסט 1 עד 2 פתיחות כאלה.';
-      el.appendChild(rules);
-    }
-    async function loadStats(){
-      try{ renderStats(await apiJson('/channels/stats')); }
-      catch(e){ $('stats').innerHTML='<div class="error">'+esc(e.message)+'</div>'; }
-    }
 
     // ---- the editor ----
     let editing=null, image='', busy=false;
@@ -2348,7 +1072,7 @@
       try{ return (await apiJson('/hours'+(date?'?date='+encodeURIComponent(date)+'&time='+encodeURIComponent(time||''):''))).hours||null; }
       catch(_){ return null; }   // the check could not run: the server still refuses a late "send now" without a yes
     }
-    function hideHours(){ for(const id of ['hours','vr-hours']){ $(id).hidden=true; $(id).innerHTML=''; } }
+    function hideHours(){ $('hours').hidden=true; $('hours').innerHTML=''; }
     // resolve: {later:'YYYY-MM-DDTHH:MM'} = move it to the offered time · {late_ok:true} = as it is · false = back
     function showHours(h,verb,resolve,box=$('hours'),back='חזרה לעריכה'){
       box.hidden=false; box.innerHTML=''; box.classList.toggle('late',h.level==='late');
@@ -2498,12 +1222,12 @@
     }
     ['ed-text','ed-time','ed-skip','ed-nofooter'].forEach(id=>$(id).addEventListener('input',preview));
     $('ed-nofooter').addEventListener('change',preview);
-    // "סוג הפוסט" (2026-11-14): a promotion post is scored apart in "🏆 מה עבד", not as the day's category
+    // "סוג הפוסט" (2026-11-14): a promotion post is scored apart in the weekly report, not as the day's category
     function kindUi(){
       const d=[...state.weeks.flatMap(w=>w.days),...(state.archive||[])].find(x=>x.date===$('ed-date').value);
       const cat=d&&d.category;
       $('ed-kind-day').textContent=cat?'תוכן רגיל: נספר כ„'+cat+'”, הקטגוריה של היום':'תוכן רגיל: נספר לפי הקטגוריה של היום';
-      $('ed-kind-hint').textContent=$('ed-kind').value?'פוסט קידום נספר בנפרד בלשונית „מה עבד”, ולא כתוכן של היום.':'';
+      $('ed-kind-hint').textContent=$('ed-kind').value?'פוסט קידום נספר בנפרד בדוח השבועי, ולא כתוכן של היום.':'';
     }
     ['ed-date','ed-kind'].forEach(id=>$(id).addEventListener('change',kindUi));
     ['ed-text','ed-date','ed-time','ed-skip','ed-group','ed-nofooter','ed-kind'].forEach(id=>{ $(id).addEventListener('input',backup); $(id).addEventListener('change',backup); });
@@ -2537,22 +1261,6 @@
       ta=ta||$('ed-text'); const v=ta.value; let a=v.lastIndexOf('\n',ta.selectionStart-1)+1, b=ta.selectionEnd;
       const block=v.slice(a,b).split('\n').map(l=>l.startsWith(p)?l:p+l).join('\n');
       ta.value=v.slice(0,a)+block+v.slice(b); ta.focus(); if(ta===$('ed-text')) preview();
-    }
-    // the editor's buttons, for another text box (the versions' text)
-    function textToolbar(ta){
-      const bar=document.createElement('div'); bar.className='toolbar';
-      const add=(html,title,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='tb'; b.innerHTML=html; b.title=title; b.onclick=fn; bar.appendChild(b); return b; };
-      add('<b>B</b>','מודגש (Ctrl+B)',()=>wrapSel('*',ta));
-      add('<i>I</i>','נטוי (Ctrl+I)',()=>wrapSel('_',ta));
-      add('<s>S</s>','קו חוצה',()=>wrapSel('~',ta));
-      add('{ }','מונו',()=>wrapSel('```',ta));
-      add('• רשימה','רשימה',()=>prefixLines('- ',ta));
-      const box=document.createElement('div'); box.className='emojis'; box.hidden=true;
-      add('😊',"אימוג'י",()=>{ box.hidden=!box.hidden; if(!box.hidden) renderEmojis(box,ta); });
-      bar.appendChild(box);
-      ta.addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey){ const k=e.key.toLowerCase();
-        if(k==='b'){ e.preventDefault(); wrapSel('*',ta); } else if(k==='i'){ e.preventDefault(); wrapSel('_',ta); } } });
-      return bar;
     }
     document.querySelectorAll('.tb[data-wrap],.tb[data-line]').forEach(b=>b.onclick=()=>b.dataset.wrap?wrapSel(b.dataset.wrap):prefixLines(b.dataset.line));
 
@@ -2740,100 +1448,23 @@
       const d=days.find(d=>!(d.today&&state.now>=state.settings.time));
       return (d||days[0]||{date:today()}).date;
     }
-    function newPost(){ if(state) openEditor({date:nextPostDay()}); }
-    $('fab').onclick=newPost;
-    // it steps aside while scrolling down, so it never sits on a button (the next draft's "לא לשלוח" was under it)
-    let lastY=scrollY;
-    addEventListener('scroll',()=>{ const y=scrollY; if(Math.abs(y-lastY)<8) return; $('fab').classList.toggle('away',y>lastY&&y>60); lastY=y; },{passive:true});
+    function newPost(){ if(state) openEditor({date:targetDay().date}); }
+    $('write').onclick=newPost;
 
-    // drafts waiting for approval, first thing on the board (from the notification: ?view=approve)
-    // the coming three weeks only, however far the calendar has loaded (the rest wait in their days)
-    function draftsAhead(){
-      const end=addDays(firstWeek(),21);
-      return state.weeks.flatMap(w=>w.days).filter(d=>!d.past&&d.date<end)
-        .flatMap(d=>d.posts.filter(p=>p.draft&&!p.sent).map(p=>({p,d})));
-    }
-    // "🗑 לא לשלוח" (Omri, 2026-10-28): why, in one tap, so the system learns what to suggest (bot/learn.py)
-    const REASONS=[['not_relevant','לא רלוונטי'],['wrong_group','קבוצה לא נכונה'],['wrong_time','יום או שעה לא מתאימים'],
-                   ['bad_text','הנוסח לא טוב'],['already_posted','כבר פרסמתי על זה']];
-    const UNDO_MS=5000;
-    const rejecting=new Map();   // row → the delete waiting UNDO_MS, so "↩️ ביטול" can still stop it
-    function reject(p,reason){
-      const go=()=>{ if(!rejecting.has(p.row)) return; rejecting.delete(p.row);
-        return apiJson('/posts/'+p.row+'?key='+encodeURIComponent(p.key)+'&reason='+encodeURIComponent(reason),{method:'DELETE',keepalive:true})
-          .then(load).catch(e=>{ toast(e.message,true); load(); }); };
-      rejecting.set(p.row,{timer:setTimeout(go,UNDO_MS),go,p});
-      renderBoard();
-    }
-    function unreject(row){ const r=rejecting.get(row); if(!r) return; clearTimeout(r.timer); rejecting.delete(row); renderBoard(); }
-    window.addEventListener('pagehide',()=>{ for(const r of [...rejecting.values()]){ clearTimeout(r.timer); r.go(); } });
-    function renderApprovals(el){
-      const all=draftsAhead(), list=all.filter(({p})=>!rejecting.has(p.row)), gone=all.filter(({p})=>rejecting.has(p.row));
-      if(!all.length){ if(startView==='approve') el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור</h2><p class="apv-none">✓ אין טיוטות שמחכות לאישור.</p>'); return; }
-      el.insertAdjacentHTML('beforeend','<h2 id="approve">📝 מחכות לאישור ('+list.length+')</h2>');
-      const box=document.createElement('div'); box.className='apv';
-      for(const {p} of gone){
-        const g=document.createElement('div'); g.className='apv-gone';
-        g.innerHTML='<span dir="auto">🗑 לא תצא: '+esc(p.text.split('\n')[0].slice(0,60))+'</span>';
-        const u=document.createElement('button'); u.type='button'; u.className='btn ghost'; u.textContent='↩️ ביטול';
-        u.onclick=()=>unreject(p.row); g.appendChild(u); box.appendChild(g);
-      }
-      for(const {p,d} of list){
-        const it=document.createElement('div'); it.className='apv-item';
-        const ev=eventOf(p), md=ev?null:mediaOf(p), ctx=ev||(md&&md.ev);
-        const chips=['<span class="chip to" dir="auto">→ '+esc(p.group?p.group_name:'ערוץ העדכונים')+'</span>'];
-        if(ev) chips.push('<span class="chip ev" dir="auto">📅 '+esc(ev.name)+'</span>');
-        else if(md) chips.push('<span class="chip md" dir="auto">'+(md.kind==='video'?'🎬 ':'🎓 ')+esc(md.item.title||md.item.name)+'</span>');
-        if(p.image) chips.push('<span class="chip bot">🖼 עם תמונה</span>');
-        if(p.kind==='קידום') chips.push('<span class="chip bot" title="נספר בנפרד בלשונית „מה עבד”">📣 קידום</span>');
-        if(p.made_by) chips.push('<span class="chip bot" title="טיוטה שהמערכת כתבה">🤖 '+esc(p.made_by)+'</span>');
-        it.innerHTML='<div class="apv-head"><span class="apv-when" dir="auto">'+esc(d.day)+' '+esc(d.label)+' · '+esc(p.due)+'</span>'+chips.join('')+'</div>'+
-          '<div class="apv-chat"></div><button class="apv-more" type="button" hidden>עוד ▾</button><div class="apv-btns"></div>';
-        // the draft as the bubble it will be: *bold* bold, the footer, the picture or link card
-        const b=bubble(p.text,{time:p.due,imageId:p.image_id,footer:boardFooter(p)}), more=it.querySelector('.apv-more');
-        b.classList.add('clamp'); b.title='לחיצה פותחת לעריכה'; b.onclick=()=>openEditor(p,ctx);
-        it.querySelector('.apv-chat').appendChild(b);
-        more.onclick=()=>{ const open=!b.classList.toggle('clamp'); more.textContent=open?'פחות ▴':'עוד ▾'; };
-        const btns=it.querySelector('.apv-btns');
-        const ok=document.createElement('button'); ok.type='button'; ok.className='btn primary'; ok.textContent='✅ לאשר';
-        ok.onclick=()=>quickApprove(p,ctx,ok);
-        const ed=document.createElement('button'); ed.type='button'; ed.className='btn ghost'; ed.textContent='✏️ לעריכה';
-        ed.onclick=()=>openEditor(p,ctx);
-        const no=document.createElement('button'); no.type='button'; no.className='btn reject'; no.textContent='🗑 לא לשלוח';
-        no.onclick=()=>{ btns.hidden=true; it.appendChild(whyBox(p,()=>{ btns.hidden=false; })); };
-        btns.append(ok,ed,no); box.appendChild(it);
-      }
-      el.appendChild(box);
-      requestAnimationFrame(()=>box.querySelectorAll('.apv-item').forEach(it=>{
-        const b=it.querySelector('.bubble'), t=b.querySelector('.text'), cut=t.scrollHeight>t.clientHeight+2;
-        b.classList.toggle('cut',cut); it.querySelector('.apv-more').hidden=!cut; }));
-    }
-    function whyBox(p,back){
-      const w=document.createElement('div'); w.className='apv-why';
-      w.innerHTML='<p>למה לא? לחיצה אחת, והמערכת לומדת מה להציע (אפשר לבטל עוד 5 שניות).</p><div class="reasons"></div>';
-      const rs=w.querySelector('.reasons');
-      for(const [code,label] of [...REASONS,['','בלי סיבה']]){
-        const b=document.createElement('button'); b.type='button'; b.className='reason'+(code?'':' plain'); b.textContent=label;
-        b.onclick=()=>reject(p,code); rs.appendChild(b);
-      }
-      const c=document.createElement('button'); c.type='button'; c.className='reason back'; c.textContent='חזרה';
-      c.onclick=()=>{ w.remove(); back(); }; rs.appendChild(c);
-      return w;
-    }
     // approve right here (Omri chose this round, 2026-10-28): the typo check runs in place; only when it finds
     // something (or can't run) does the editor open, with what it found
     async function quickApprove(p,ctx,btn){
-      const it=btn.closest('.apv-item'); it.querySelectorAll('button').forEach(b=>b.disabled=true);
+      btn.closest('.dcard').querySelectorAll('button').forEach(b=>b.disabled=true);
       btn.textContent='🕒 בודק את השעה…';
       if(await askHours(p.date,p.time||'')){   // late or borderline: the editor opens with the three choices
-        renderBoard(); openEditor(p,ctx); await save(true);
+        renderHome(); openEditor(p,ctx); await save(true);
         if(!$('overlay').classList.contains('open')) approvedToast(findPost(p.row)||p);
         return;
       }
       btn.textContent='🔎 בודק טעויות…';
       const r=await proofread(p.text,p.date);
       if(!r.ok||r.issues.length){
-        renderBoard(); openEditor(p,ctx); await save(true,false,r);
+        renderHome(); openEditor(p,ctx); await save(true,false,r);
         if(!$('overlay').classList.contains('open')) approvedToast(p);
         return;
       }
@@ -2842,7 +1473,7 @@
         await apiJson('/posts/'+p.row,{method:'PUT',json:{key:p.key,date:p.date,time:p.time||'',text:p.text,image:p.image||'',skip:false,
           approve:true,group:p.group||'',no_footer:p.footer===false}});
         await load(); approvedToast(p); offerVersions(p.text,p.image);
-      }catch(e){ toast(e.message,true); renderBoard(); }
+      }catch(e){ toast(e.message,true); renderHome(); }
     }
     function approvedToast(p){ undoToast('✅ אושרה. יוצאת '+(p.date===today()?'היום':dm(p.date))+' ב-'+p.due+'.',()=>unapprove(p.row)); }
     // "↩️ ביטול" right after an approve: the post waits for approval again
@@ -2879,19 +1510,18 @@
       if(blob) upload(new File([blob],meta.name||'shared.jpg',{type:meta.type||blob.type||'image/jpeg'}));
     }
 
-    // what the app was opened for: ?share=1 (a share), ?new=1 (the icon's shortcut), ?view=approve (a notification), ?vr=<key> (a timed version's reminder)
+    // what the app was opened for: ?share=1 (a share), ?new=1 (the icon's shortcut), ?view=approve (a notification: the day's card)
     const startParams=new URLSearchParams(location.search);
     const startView=startParams.get('view')||'';
     let started=false;
     function afterFirstLoad(){
       if(started) return; started=true;
-      if(startParams.has('share')||startParams.has('new')||startParams.has('view')||startParams.has('vr')){
+      if(location.search){
         try{ history.replaceState(null,'',location.pathname); }catch(_){ }
       }
       if(startParams.has('share')) openShare();
       else if(startParams.has('new')) newPost();
-      else if(startParams.has('vr')) openFromReminder(startParams.get('vr'));
-      else if(startView==='approve'){ const h=$('approve'); if(h) h.scrollIntoView({block:'start'}); }
+      else if(startView==='approve') $('day').scrollIntoView({block:'start'});
       renderAppbar(); refreshPush();
     }
 
@@ -2972,7 +1602,7 @@
       navigator.serviceWorker.register('sw.js').then(r=>{ swReg=r; if(started) refreshPush(); }).catch(()=>{});
     }
 
-    fitRange(); load();
+    load();
   </script>
 </body>
 </html>
