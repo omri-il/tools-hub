@@ -178,6 +178,9 @@ card texts fixed in the live config and `hub_seed.py`). Only exception: the emai
 - A change to `whatsapp/sw.js` → bump `SHELL`.
 - `localStorage.wa_api_base` overrides the API base for a local test.
 - Confirmations use `sheet()`, not `confirm()`. The late-hour check is a warning, never a block ("בכל זאת" sends `late_ok`).
+- The day cap (2026-11-22): a 3rd post to one group on one day asks first (`capGate`, `GET /day-cap`, after the hour
+  check, before the typo check): "לשלוח בכל זאת" sends `cap_ok`, "להעביר למחר" moves it to the next send day at the
+  same hour, "ביטול" goes back. A 409 with `day_cap` from the server opens the same panel and retries.
 - Ochre `#ffc250` is unreadable as text on white: text uses `--accent-text` `#7D5700` (the brand file's `ochre_text`).
 - The API's `/state` range limit is 12 weeks each way.
 
