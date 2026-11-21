@@ -88,8 +88,9 @@ folders and backends, so it has no visibility column (it disagreed with live con
 
 **`whatsapp/` in short:** the API is content-machine's `bot/wa_web.py` (systemd `content-machine-wa-web`), which checks
 `X-Session` with go-shortener; posts live in the Google Sheet "פוסטים לוואטסאפ". **One screen, no tabs** (2026-11-21,
-Omri approved the mockup; the tabs, calendar, kanban, panels and the Facebook queue were deleted after 14 days of use
-showed he only writes, sends, and sends versions to 052): the day card for T (today if a posting day, else the next
+Omri approved the mockup; the tabs, calendar, kanban, panels and the 🚀 Facebook-queue button were deleted after 14 days
+of use showed he only writes, sends, and sends versions to 052; the server's Facebook queue and the home PC's skill
+stay): the day card for T (today if a posting day, else the next
 one: its post done, or one candidate at a time: his draft, a system draft, an idea), "לכתוב פוסט משלי", and the week
 list (`/state` `weeks` + `archive`, more weeks by `weeks` / `back`). The gear swaps in the settings. The status line
 shows only a problem (a gateway down, events not read, Shabbat quiet hours now). Kept as they were: the editor with

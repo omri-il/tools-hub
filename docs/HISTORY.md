@@ -63,6 +63,19 @@ The private tools log in with **"התחבר עם Google"** (only **hello@omri-ir
 - Note the `omri_admin` visibility flag (triple-click + PIN `9464`, below) is **separate** — it only reveals the admin *cards/features*; the Google `omri_session` token is what actually authorizes the API calls.
 
 
+### `whatsapp/` one screen (2026-11-21)
+
+Omri asked to simplify the app by 90%. Measured first: the old page had 6 tabs, the first one 7,334 px tall with
+127 visible buttons. 14 days of nginx logs (7-21.11): write/edit 6, send now 5, 052 versions 15, typo check 7,
+test send 4, picture upload 3; the kanban, "מי עוזר לי", the ideas panel, send again, the Facebook-queue button,
+the posted mark and per-version timing 0. He approved a clickable mockup, then the build. Now: one screen, no tabs,
+2,978 → about 1,610 lines in `whatsapp/index.html`, 12 visible buttons, page about 1,300 px tall. The rollback point
+before the swap is the tag `wa-before-onescreen`. Tested on the real data through a copy (`whatsapp/new.html`, deleted
+at the swap); the send buttons were not clicked. Two fixes found in that test: a week row showed "טיוטה מחכה" for a
+day whose post had gone out (a draft left beside it), and a long post pushed the send button off the phone's first
+screen (the day card's bubble is now cut at 300 px with a fade). The server routes that lost their caller were
+deleted in content-machine the same day. The feature log below describes the old page.
+
 ### `whatsapp/` (פוסטים לוואטסאפ): the full feature log (old CLAUDE.md lines 66-127)
 
 **`whatsapp/` — פוסטים לוואטסאפ** (2026-10-17, admin card `whatsapp-posts` in "אימייל ודיוור"): Content Machine's
