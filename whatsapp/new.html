@@ -50,6 +50,9 @@
     .dwhy{font-size:16px;color:var(--muted);overflow-wrap:anywhere}
     .wa{background:var(--wa-bg);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;
         background-image:radial-gradient(rgba(0,0,0,.045) 1px,transparent 1px);background-size:14px 14px}
+    /* a long post stays short in the day card, so the send button is on the first screen; a click opens all of it */
+    .dcard .wa .bubble{max-height:300px;overflow:hidden;cursor:pointer}
+    .dcard .wa .bubble.clip{-webkit-mask-image:linear-gradient(#000 75%,transparent);mask-image:linear-gradient(#000 75%,transparent)}
     .dbtns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .b-main,.b-sec,.b-link{min-height:48px;border-radius:12px;font-size:17px}
     .b-main{padding:0 22px;background:var(--navy);color:#fff;border:0;font-weight:700}
@@ -661,6 +664,8 @@
         const wa=document.createElement('div'); wa.className='wa';
         const b=bubble(p.text,{time:p.due,imageId:p.image_id,footer:boardFooter(p)}); b.title='לחיצה פותחת לעריכה'; b.onclick=()=>openEditor(p,ctx);
         wa.appendChild(b); card.appendChild(wa);
+        const clip=()=>b.classList.toggle('clip',b.scrollHeight>b.clientHeight+2);   // the picture or link card may load later
+        requestAnimationFrame(clip); setTimeout(clip,1500);
         const go=mk('button','b-main','לשלוח '+(isToday?'היום':'ביום '+T.day)+' ב-'+p.due);
         go.onclick=()=>quickApprove(p,ctx,go);
         btns.append(go,mk('button','b-sec','לערוך',()=>openEditor(p,ctx)));
