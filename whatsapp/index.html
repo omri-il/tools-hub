@@ -1190,7 +1190,7 @@
       $('ed-kind').value=p.kind==='קידום'?'קידום':''; kindUi();
       $('ed-time-hint').textContent='הרגיל יוצא ב-'+state.settings.time+' או עד רבע שעה אחרי. בוקר, צהריים וערב יוצאים בדיוק בשעה.';
       $('ed-msg').textContent=''; $('ed-msg').className='msg';
-      proofed=''; hideProof(); hoursOk=''; hideHours(); $('ed-hours-note').hidden=true;
+      proofed=''; hideProof(); hoursOk=''; capOk=''; hideHours(); $('ed-hours-note').hidden=true;
       // one main button by the post's state: a draft → approve, a sent post → fix in WhatsApp, else save.
       // A sent post: only its text can change, and only the "fix in WhatsApp" button sends it.
       const fix=!!(editing&&editing.sent), draft=!!(editing&&editing.draft);
@@ -1307,6 +1307,44 @@
       setBusy(false);
       if(g&&g.later){ setWhen(g.later); hoursOk=g.later.slice(0,10)+'|'+g.later.slice(11,16); }
       else if(g) hoursOk=key;
+      return g;
+    }
+    // ---- more than 2 posts to one group on one day? (Omri, 2026-11-22: people mute a group that posts too much)
+    // The server counts (GET /day-cap): sent and waiting posts on that day to that group, never drafts. A warning,
+    // never a block: "לשלוח בכל זאת" goes on with cap_ok, "להעביר ל…" moves it to the next send day, same hour.
+    let capOk='';
+    async function askCap(date,groups,row){
+      const q='?date='+encodeURIComponent(date||'')+(groups||['']).map(g=>'&group='+encodeURIComponent(g||'')).join('')+(row?'&row='+row:'');
+      try{ return (await apiJson('/day-cap'+q)).day_cap||null; }
+      catch(_){ return null; }   // the check could not run: the server still asks with a 409
+    }
+    function showCap(c,resolve,box=$('hours')){
+      box.hidden=false; box.innerHTML=''; box.classList.remove('late');
+      const done=v=>{ box.hidden=true; box.innerHTML=''; resolve(v); };
+      const where=c.group?' ('+c.group_name+')':'';
+      box.insertAdjacentHTML('beforeend','<b>📵 הרבה הודעות היום לאותה קבוצה'+esc(where)+'</b><div class="hmsg" dir="auto">'+esc(c.message)+'</div>');
+      const btns=document.createElement('div'); btns.className='pbtns';
+      const mk=(t,cls,fn)=>{ const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=t; b.onclick=fn; btns.appendChild(b); };
+      const next=new Date(c.date+'T12:00:00'); next.setDate(next.getDate()+1);
+      const tomorrow=next.toISOString().slice(0,10)===c.suggest;
+      mk('לשלוח בכל זאת','ghost',()=>done({cap_ok:true}));
+      mk(tomorrow?'להעביר למחר':'להעביר ל'+c.suggest_label,'primary',()=>done({later:c.suggest}));
+      mk('ביטול','ghost',()=>done(false));
+      box.appendChild(btns);
+      box.scrollIntoView({block:'center'});
+    }
+    // when: {date,row}; groups: the post's group and its copies. → {} fine · {cap_ok} · {later:'YYYY-MM-DD'} · false
+    async function capGate(when,groups){
+      const key=when.date+'|'+groups.join(',');
+      if(capOk===key) return {cap_ok:true};
+      setBusy(true); say('📵 סופר את ההודעות של היום…');
+      const c=await askCap(when.date,groups,when.row);
+      say('');
+      if(!c){ setBusy(false); return {}; }
+      const g=await new Promise(res=>showCap(c,res));
+      setBusy(false);
+      if(g&&g.later){ $('ed-date').value=g.later; hoursNote(); preview(); }
+      else if(g) capOk=key;
       return g;
     }
     function setWhen(at){ $('ed-date').value=at.slice(0,10); fillTimes(at.slice(11,16)); hoursNote(); preview(); }
@@ -1553,10 +1591,18 @@
       const goesOut=!auto&&!$('ed-skip').checked&&(approve===true||!(editing&&editing.draft));
       // … and, before that, for a late or borderline hour ("⏰ לתזמן ל…" moves it and the save goes on)
       if(goesOut&&$('ed-text').value.trim()&&!await hoursGate({date:$('ed-date').value,time:$('ed-time').value},approve===true?'לאשר':'לשמור')) return;
+      // … then for a 3rd post to that group that day (a moved post is checked again on its new day)
+      let cg={};
+      if(goesOut&&$('ed-text').value.trim()){
+        cg=await capGate({date:$('ed-date').value,row:editing?editing.row:0},[$('ed-group').value,...also]);
+        if(!cg) return;
+        if(cg.later) return save(approve,auto,pre);
+      }
       if(goesOut&&$('ed-text').value.trim()&&!await proofGate($('ed-date').value,approve===true?'לאשר':'לשמור',pre)) return;
       const body={date:$('ed-date').value,time:$('ed-time').value,text:$('ed-text').value,image,skip:$('ed-skip').checked,approve:approve===true,group:$('ed-group').value,no_footer:$('ed-nofooter').checked,kind:$('ed-kind').value};
       if(!body.text.trim()){ say('ההודעה ריקה',true); return; }
       if(auto) body.draft=true;
+      if(cg.cap_ok) body.cap_ok=true;
       const wasQueued=!!(editing&&!editing.draft&&!editing.skipped), fromIdea=ideaInEditor;
       setBusy(true); say(auto?'שומר כטיוטה…':'שומר…');
       try{
@@ -1570,7 +1616,14 @@
           await apiJson('/posts',{method:'POST',json:Object.assign({},body,{group:jid,approve:false,draft:asDraft})}); }
         closeEditor(); await load();
         if(approve===true&&!auto&&!body.skip) offerVersions(body.text,body.image);
-      }catch(e){ say((auto?'לא נשמר כטיוטה: ':'')+e.message,true); }
+      }catch(e){
+        // the count changed since it was asked (or the check could not run): ask now, then try again
+        if(e.data&&e.data.day_cap&&!auto){ setBusy(false); say('');
+          const g=await new Promise(res=>showCap(e.data.day_cap,res));
+          if(g&&g.later){ $('ed-date').value=g.later; hoursNote(); preview(); return await save(approve,auto,pre); }
+          if(g){ capOk=$('ed-date').value+'|'+[$('ed-group').value,...also].join(','); return await save(approve,auto,pre); }
+          return; }
+        say((auto?'לא נשמר כטיוטה: ':'')+e.message,true); }
       finally{ setBusy(false); }
     }
     $('ed-save').onclick=()=>save(false);
@@ -1609,6 +1662,10 @@
       if(!hg) return;
       // "⏰ לתזמן ל…": not sent now. It is saved for that time as a post that will go out (a draft is approved)
       if(hg.later) return save(!!(editing&&editing.draft));
+      // a 3rd post to that group today? "להעביר ל…" saves it for that day at the editor's hour instead
+      const cg=await capGate({date:today(),row:editing?editing.row:0},[$('ed-group').value,...also]);
+      if(!cg) return;
+      if(cg.later) return save(!!(editing&&editing.draft));
       if(!await proofGate(today(),'לשלוח')) return;
       const text=$('ed-text').value;
       const group=$('ed-group').value, where=[group,...also];
@@ -1621,7 +1678,7 @@
       setBusy(true); say('שולח…');
       const fromIdea=ideaInEditor;
       try{
-        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked,kind:$('ed-kind').value,late_ok:!!hg.late_ok})});
+        await apiJson('/send-now',{method:'POST',json:Object.assign(editing?{row:editing.row,key:editing.key}:{},{text,image,group,also:[...also],no_footer:$('ed-nofooter').checked,kind:$('ed-kind').value,late_ok:!!hg.late_ok,cap_ok:!!cg.cap_ok})});
         if(fromIdea) await ideaDone(fromIdea,true);
         closeEditor(); toast('📤 יוצאת עכשיו. בעוד רגע היא תופיע כאן כ„נשלח”, ואישור יגיע בטלגרם.');
         await load(); setTimeout(load,20000);
@@ -1665,6 +1722,11 @@
       btn.closest('.dcard').querySelectorAll('button').forEach(b=>b.disabled=true);
       btn.textContent='🕒 בודק את השעה…';
       if(await askHours(p.date,p.time||'')){   // late or borderline: the editor opens with the three choices
+        renderHome(); openEditor(p,ctx); await save(true);
+        if(!$('overlay').classList.contains('open')) approvedToast(findPost(p.row)||p);
+        return;
+      }
+      if(await askCap(p.date,[p.group||''],p.row)){   // a 3rd post to that group that day: the editor asks
         renderHome(); openEditor(p,ctx); await save(true);
         if(!$('overlay').classList.contains('open')) approvedToast(findPost(p.row)||p);
         return;
