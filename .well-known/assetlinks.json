@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "il.co.omri_iram.tools.whatsapp",
+    "sha256_cert_fingerprints": ["E0:04:1D:A5:83:45:9B:51:4A:9B:7D:42:4C:9D:21:E4:DE:DD:FC:1F:57:25:34:CC:30:EA:69:B8:E7:FF:90:D1"]
+  }
+}]
