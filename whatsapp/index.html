@@ -534,7 +534,9 @@
     function footerPage(){ const u=firstUrl((state&&state.settings&&state.settings.footer)||''); return u.toLowerCase().replace(/\/+$/,'').replace(/^https?:\/\//,''); }
     function linksToFooter(t){ const page=footerPage(); if(!page) return false; const has=u=>(u||'').toLowerCase().includes(page);
       return has(t)||goLinks(t).some(u=>has(shortMap[u])); }
-    function footerShown(footer){ return (footer||'').replace(URLS,u=>KEEP.test(u)?u:'https://go.omri-iram.co.il/•••••'); }
+    // the preview shows the footer's real page, so its link opens; the short link is made only when the post is sent
+    // (it showed go.omri-iram.co.il/••••• until 2026-11-22: a link that opened nothing)
+    function footerShown(footer){ return footer||''; }
     function driveId(link){ const m=(link||'').match(/\/d\/([A-Za-z0-9_-]{20,})/)||(link||'').match(/[?&]id=([A-Za-z0-9_-]{20,})/); return m?m[1]:(/^[A-Za-z0-9_-]{20,}$/.test(link||'')?link:''); }
 
     // images come through the API (they need the session header), kept as blob URLs
