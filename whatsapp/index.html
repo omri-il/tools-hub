@@ -1571,10 +1571,10 @@
       }catch(e){ tell('הדפדפן לא נתן לקרוא את הלוח: לוחצים Ctrl+V, או מאשרים לאתר גישה ללוח',true); }
     }
     // the thumbnail of the YouTube video the post links to, as YouTube shows it now
-    async function youtubeImage(){
+    async function youtubeImage(text){
       say('מביא את התמונה מיוטיוב…');
       try{
-        const r=await apiJson('/youtube-image',{method:'POST',json:{text:$('ed-text').value}});
+        const r=await apiJson('/youtube-image',{method:'POST',json:{text:typeof text==='string'?text:$('ed-text').value}});
         image=r.link; renderImage(); preview(); backup(); say('התמונה מיוטיוב נוספה ✓');
       }catch(e){ say(e.message,true); }
     }
@@ -1637,7 +1637,11 @@
       finally{ shortening=false; preview(); }
     }
     $('ed-text').addEventListener('input',()=>scheduleShorten(1500));
-    $('ed-text').addEventListener('paste',()=>scheduleShorten(300));
+    $('ed-text').addEventListener('paste',e=>{ scheduleShorten(300);
+      // a YouTube link pasted into a post with no picture yet = its thumbnail comes by itself (Omri, 2026-11-22);
+      // a picture already there stays, "לעדכן מיוטיוב" replaces it
+      const t=(e.clipboardData&&e.clipboardData.getData('text'))||'';
+      if(!image&&!(editing&&editing.sent)&&/(youtu\.be\/|youtube\.com\/(watch|shorts\/|live\/))/i.test(t)) youtubeImage(t); });
     $('ed-text').addEventListener('blur',()=>scheduleShorten(0));
     function wrapSel(mark,ta){
       ta=ta||$('ed-text'); const a=ta.selectionStart, b=ta.selectionEnd, v=ta.value, sel=v.slice(a,b)||'טקסט';
