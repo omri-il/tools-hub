@@ -1371,7 +1371,7 @@
       }
       const same=r.text.trim()===mine.trim();
       box.insertAdjacentHTML('beforeend','<b>✨ '+(same?name+' לא מצא מה לשפר':'הגרסה של '+name)+'</b>');
-      if(!same) box.insertAdjacentHTML('beforeend','<div class="icols"><div class="icol"><h4>שלך</h4><div class="itext" dir="rtl">'+esc(mine)+'</div></div><div class="icol new"><h4>החדשה</h4><div class="itext" dir="rtl">'+esc(r.text)+'</div></div></div>');
+      if(!same) box.insertAdjacentHTML('beforeend','<div class="icols"><div class="icol"><h4>שלך</h4><div class="itext" dir="rtl">'+inline(mine)+'</div></div><div class="icol new"><h4>החדשה</h4><div class="itext" dir="rtl">'+inline(r.text)+'</div></div></div>');
       box.insertAdjacentHTML('beforeend','<div class="itests"><div><b>בדיקת הרמוזי.</b> '+esc(r.hormozi||'')+'</div><div><b>מבחן איש המערות.</b> '+esc(r.caveman||'')+'</div>'
         +(r.warnings||[]).map(w=>'<div class="iwarn">⚠️ '+esc(w)+'</div>').join('')+'</div>');
       if((r.changes||[]).length) box.insertAdjacentHTML('beforeend','<ul class="ichg">'+r.changes.map(c=>'<li>'+esc(c)+'</li>').join('')+'</ul>');
