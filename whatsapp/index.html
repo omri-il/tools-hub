@@ -224,6 +224,20 @@
     .proof .pitem s{color:var(--danger)} .proof .pitem b{color:var(--ok)} .proof .why{color:var(--faint);font-size:.82rem}
     .proof .pitem.fixed{opacity:.55} .proof .pitem.fixed::after{content:'✓ תוקן';color:var(--ok);font-size:.8rem}
     .proof .pbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+    /* ✨ לשפר (2026-11-22): the improved text beside his own, the 2 tests under it */
+    .tb.imp-btn{margin-inline-start:auto;font-weight:600;color:var(--navy)}
+    .proof.imp{background:var(--panel);border-color:var(--line)}
+    .proof.imp .ihint{color:var(--muted);margin:4px 0 10px}
+    .proof.imp .icols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+    .proof.imp .icol{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+    .proof.imp .icol.new{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+    .proof.imp .icol h4{font-size:.8rem;color:var(--faint);margin:0 0 6px;font-weight:600}
+    .proof.imp .itext{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+    .proof.imp .itests{display:flex;flex-direction:column;gap:4px;margin:4px 0 8px}
+    .proof.imp .itests b{color:var(--navy)}
+    .proof.imp .iwarn{color:var(--danger);font-weight:600}
+    .proof.imp .ichg{color:var(--muted);font-size:.85rem;margin:0 0 8px;padding-inline-start:18px}
+    @media (max-width:760px){ .proof.imp .icols{grid-template-columns:1fr} }
     /* a late or borderline hour (content-machine hours.py): the same panel as the typo check, a warning, never a block */
     .proof.hrs .hmsg{margin:6px 0 10px;line-height:1.5}
     .proof.hrs.late{background:var(--danger-bg);border-color:#f3c5c2}
@@ -413,6 +427,7 @@
             <button class="tb" data-line="- " title="רשימה">• רשימה</button>
             <button class="tb" type="button" id="ed-emoji-btn" title="אימוג'י" aria-haspopup="true" aria-expanded="false">😊</button>
             <div class="emojis" id="ed-emojis" hidden></div>
+            <button class="tb imp-btn" type="button" id="ed-improve" title="לשפר את ההודעה עם Gemini או Claude">✨ לשפר</button>
           </div>
           <textarea id="ed-text" dir="rtl" placeholder="הטיפ של היום…"></textarea>
           <div class="count" id="ed-count"></div>
@@ -438,6 +453,7 @@
       </div>
       <div class="proof hrs" id="hours" hidden></div>
       <div class="proof" id="proof" hidden></div>
+      <div class="proof imp" id="improve" hidden></div>
       <div class="actions">
         <button class="btn primary" id="ed-fix" hidden>✏️ לתקן בוואטסאפ</button>
         <button class="btn primary" id="ed-approve" hidden>✅ לאשר לשליחה</button>
@@ -1283,7 +1299,7 @@
       // the phone's back button closes the editor (as "סגירה": what changed becomes a draft), not the app
       if(!edHist){ try{ history.pushState({wa_ed:1},''); edHist=true; }catch(_){ } }
     }
-    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; ideaInEditor=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof(); hideHours();
+    function closeEditor(){ $('overlay').classList.remove('open'); editing=null; ideaInEditor=null; dropBackup(); toggleEmojis(false); toggleMenu(false); hideProof(); hideHours(); hideImprove();
       if(edHist){ edHist=false; try{ history.back(); }catch(_){ } } }
     let edHist=false;
     window.addEventListener('popstate',async()=>{
@@ -1319,6 +1335,57 @@
       if(i.done) return; const v=ta.value, n=v.indexOf(i.wrong); if(n<0) return;
       ta.value=v.slice(0,n)+i.fix+v.slice(n+i.wrong.length); i.done=true; ta.dispatchEvent(new Event('input'));
     }
+    // ---- ✨ לשפר (Omri, 2026-11-22): Gemini or Claude improves the text with his rules, the Hormozi check
+    // and the caveman test (POST /improve, bot/improve.py). Nothing changes until he presses "להחליף".
+    let improveBusy=false;
+    function hideImprove(){ const b=$('improve'); b.hidden=true; b.innerHTML=''; }
+    function improveButtons(box,list){
+      const btns=document.createElement('div'); btns.className='pbtns';
+      for(const [t,cls,fn] of list){ const b=document.createElement('button'); b.type='button'; b.className='btn '+cls; b.textContent=t; b.onclick=fn; btns.appendChild(b); }
+      box.appendChild(btns);
+    }
+    function improveStart(){
+      const box=$('improve'), text=$('ed-text').value.trim();
+      if(!text){ say('קודם כותבים הודעה, ואז אפשר לשפר אותה',true); return; }
+      box.hidden=false;
+      box.innerHTML='<b>✨ לשפר את ההודעה</b><p class="ihint">המודל מקבל את כללי הכתיבה שלך, הדוגמאות מה-Playbook ובודק את ההודעה בבדיקת הרמוזי ובמבחן איש המערות. ההודעה שלך לא משתנה עד שלוחצים „להחליף”.</p>';
+      improveButtons(box,[['לשפר עם Gemini','primary',()=>improveRun('gemini')],['לשפר עם Claude','primary',()=>improveRun('claude')],['ביטול','ghost',hideImprove]]);
+      box.scrollIntoView({block:'nearest'});
+    }
+    async function improveRun(model){
+      if(improveBusy) return;
+      const box=$('improve'), ta=$('ed-text'), mine=ta.value, name=model==='claude'?'Claude':'Gemini';
+      improveBusy=true; box.hidden=false;
+      box.innerHTML='<b>✨ '+name+' משפר את ההודעה…</b><p class="ihint">זה לוקח כמה שניות.</p>';
+      let r;
+      try{ r=await apiJson('/improve',{method:'POST',json:{text:mine,date:$('ed-date').value||today(),model}}); }
+      catch(e){ r={ok:false,error:e.message}; }
+      improveBusy=false;
+      if(!$('overlay').classList.contains('open')) return;
+      box.innerHTML='';
+      if(!r.ok){
+        box.innerHTML='<b>⚠️ השיפור לא רץ</b> <span class="why">'+esc(r.error||'')+'</span>';
+        const other=model==='claude'?'gemini':'claude';
+        improveButtons(box,[['לנסות עם '+(other==='claude'?'Claude':'Gemini'),'primary',()=>improveRun(other)],['סגירה','ghost',hideImprove]]);
+        return;
+      }
+      const same=r.text.trim()===mine.trim();
+      box.insertAdjacentHTML('beforeend','<b>✨ '+(same?name+' לא מצא מה לשפר':'הגרסה של '+name)+'</b>');
+      if(!same) box.insertAdjacentHTML('beforeend','<div class="icols"><div class="icol"><h4>שלך</h4><div class="itext" dir="rtl">'+esc(mine)+'</div></div><div class="icol new"><h4>החדשה</h4><div class="itext" dir="rtl">'+esc(r.text)+'</div></div></div>');
+      box.insertAdjacentHTML('beforeend','<div class="itests"><div><b>בדיקת הרמוזי.</b> '+esc(r.hormozi||'')+'</div><div><b>מבחן איש המערות.</b> '+esc(r.caveman||'')+'</div>'
+        +(r.warnings||[]).map(w=>'<div class="iwarn">⚠️ '+esc(w)+'</div>').join('')+'</div>');
+      if((r.changes||[]).length) box.insertAdjacentHTML('beforeend','<ul class="ichg">'+r.changes.map(c=>'<li>'+esc(c)+'</li>').join('')+'</ul>');
+      if(same){ improveButtons(box,[['סגירה','ghost',hideImprove]]); box.scrollIntoView({block:'nearest'}); return; }
+      improveButtons(box,[
+        ['להחליף בגרסה הזאת','primary',()=>{
+          ta.value=r.text; ta.dispatchEvent(new Event('input'));
+          box.innerHTML='<b>✓ ההודעה הוחלפה בגרסה של '+name+'</b>';
+          improveButtons(box,[['↩️ לחזור לנוסח שלי','ghost',()=>{ ta.value=mine; ta.dispatchEvent(new Event('input')); hideImprove(); }],['סגירה','ghost',hideImprove]]);
+        }],
+        ['להשאיר את שלי','ghost',hideImprove]]);
+      box.scrollIntoView({block:'nearest'});
+    }
+    $('ed-improve').addEventListener('click',improveStart);
     function showProof(r,go,resolve,ta=$('ed-text'),box=$('proof')){
       box.hidden=false; box.innerHTML='';
       const done=v=>{ box.hidden=true; box.innerHTML=''; if(v&&ta===$('ed-text')) proofed=ta.value; resolve(v); };
